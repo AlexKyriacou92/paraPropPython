@@ -209,7 +209,7 @@ for ind_tx in range(nTX):
     if simul_mode == "backwards_solver":
         sim.backwards_solver_2way(rxList, freqMin, freqMax, 1, 0.1)
     elif simul_mode == "2D":
-        sim.do_solver2(rxList, freqMin, freqMax, 1, 0.1)
+        sim.do_solver2(rxList, freqMin, freqMax, 1)
     elif simul_mode == "1D":
         sim.do_solver(rxList)
     else:
