@@ -198,8 +198,8 @@ for ind_tx in range(nTX):
     print("Set Pulse Parameters")
     impulse = util.make_pulse(tspace, tCentral, Amplitude, freqCentral)
     tx_pulse = util.normToMax(util.butterBandpassFilter(impulse, freqHP, freqLP, freqSample, 4))
-    tx_hdf.create_dataset("signalPulse", data = tx_pulse)
-    tx_hdf.create_dataset("signalSpectrum", data = np.fft.fft(tx_pulse))
+    tx_hdf.create_dataset("signalPulse", data = tx_pulse, compression="gzip", compression_opts=4)
+    tx_hdf.create_dataset("signalSpectrum", data = np.fft.fft(tx_pulse), compression="gzip", compression_opts=4)
     sim.set_td_source_signal(tx_pulse, dt)
 
     print("Solve PE...")
@@ -230,8 +230,8 @@ for ind_tx in range(nTX):
 
         rx_signal = rx.get_signal()
         rx_spectrum = rx.get_spectrum()
-        rx_hdf.create_dataset("rxPulse", data=rx_signal)
-        rx_hdf.create_dataset("rxSpectrum", data=rx_spectrum)
+        rx_hdf.create_dataset("rxPulse", data=rx_signal, compression="gzip", compression_opts=4)
+        rx_hdf.create_dataset("rxSpectrum", data=rx_spectrum, compression="gzip", compression_opts=4)
     print("saving date to file, proceed with next source \n")
 
 simul_end = datetime.datetime.now()
