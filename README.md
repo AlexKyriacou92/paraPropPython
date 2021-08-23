@@ -57,6 +57,8 @@ A BHR scan is created by combing the A-Scan of receivers at equal depth to the t
 
 Simulating a SPR is not yet implemented.
 
+TODO: Add an example of how to run a B-Scan
+
 ## paraPropBackwards
 this is an update of the original code to include a range dependent refractive index (n = n(x,z)) and to allow simulation of backwards scattered EM waves off of objects by implementing a 2 way split step parabolic equation equation solver.
 
