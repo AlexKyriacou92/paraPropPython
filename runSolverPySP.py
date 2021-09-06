@@ -221,4 +221,7 @@ if __name__ == '__main__':
     for i in range(nTX):
         args = get_args(output_h5, tx_depths[i])
         arg_list.append(args)
-]       solver(args)
+        tstart = time.time()
+        print('source depth, Z_tx = ', tx_depths[i])
+        solver(args)
+        tend = time.time()
