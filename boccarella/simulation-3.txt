@@ -24,7 +24,7 @@
 #meteor    300 300 10
 #meteor    400 250 20
 
-#snow_layer 20
+#snow_depth 20
 
 #Pulse Parameters
 #Amplitude  100
