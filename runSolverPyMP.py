@@ -178,7 +178,7 @@ def solver(args):
     ii = 0
     for i in range(nRX_ranges):
         for j in range(nRX_depths):
-            rx_ij = receiver(rxArray[i,j,0], rxArray[i,j,1])
+            rx_ij = ppp.receiver(rxArray[i,j,0], rxArray[i,j,1])
             rxList.append(rx_ij)
     #print('rxList = ', rxList)
     # ===========================
