@@ -272,10 +272,13 @@ class paraProp:
                             Postcondition: n(z<0) = nAir
                         """
         # self.n2 = np.ones((self.xNum, self.zNumFull), dtype='complex')
-        self.n2 = 1 + 1j * np.zeros((self.xNum, self.zNumFull))
+        self.n2 = np.zeros((self.xNum, self.zNumFull), dtype ='complex')
         ### vector method ###
+
         if method == 'matrix':
-            for i in range(self.zNumFull):
+            print(self.n2.shape, nMat.shape)
+
+            for i in range(self.xNum):
                 self.n2[i, :] = nMat[i, :]  # Note that the vector will have to include the air surface as well
 
         ### functional method ###
@@ -603,12 +606,12 @@ class paraProp:
                     # self.field.fill(0) #Deletes Field Afterwards
                 tend_k = time.time()
                 duration = tend_k - tstart_k
-                print('Solution complete, time: ', round(duration, 2), 's')
-                print('Average time per range step: ', range_time, ' approximate solution for freq step: ', range_time*self.xNum)
+                #print('Solution complete, time: ', round(duration, 2), 's')
+                #print('Average time per range step: ', range_time, ' approximate solution for freq step: ', range_time*self.xNum)
                 nRemaining = (idx_max - k) / nDiv
-                print('Remaining Iterations', nRemaining)
+                #print('Remaining Iterations', nRemaining)
                 remainder = datetime.timedelta(seconds=nRemaining * duration)
-                print('Remaining time: ' + str(remainder) + '\n')
+                #print('Remaining time: ' + str(remainder) + '\n')
 
           
     def get_field(self, x0=None, z0=None):
@@ -697,7 +700,7 @@ class paraProp:
                 tstart_i = time.time()  # Start a time for every frequency step
                 freq_i = self.freq[iFreq]  # Frequency_i
 
-                print('solving for: f = ', freq_i, 'GHz, A = ', self.A[iFreq], 'step:', iFreq - idx_min, 'steps left:', idx_max - iFreq)
+                #print('solving for: f = ', freq_i, 'GHz, A = ', self.A[iFreq], 'step:', iFreq - idx_min, 'steps left:', idx_max - iFreq)
 
                 # Add U_positive field
                 u_plus = 2 * self.A[iFreq] * self.source * self.filt * freq_i  # Set Forward Propogating Field u_plus
@@ -731,7 +734,7 @@ class paraProp:
                         u_plus[self.fNum:-self.fNum] *= util.transmission_coefficient(n_j, self.n2[jXstep - 1, :])[self.fNum:-self.fNum] #TODO -> field or u_plus??
 
                         #Create Negative Travelling Reduced Field
-                        print(len(refl_source), len(self.filt) )
+                        #print(len(refl_source), len(self.filt) )
                         u_minus = 2 * refl_source * self.filt * self.freq[iFreq]
                         refl_field[jXstep, :] = u_minus[self.fNum:-self.fNum]
 
@@ -760,11 +763,11 @@ class paraProp:
                         rx.add_spectrum_component(self.freq[iFreq], self.get_field(x0=rx.x, z0=rx.z))
                 tend_i = time.time()
                 duration = tend_i - tstart_i
-                print('Solution complete, time: ', round(duration,2), 's')
+                #print('Solution complete, time: ', round(duration,2), 's')
                 nRemaining = (idx_max-iFreq)/nDiv
-                print('Remaining Iterations', nRemaining)
+                #print('Remaining Iterations', nRemaining)
                 remainder = datetime.timedelta(seconds = nRemaining*duration)
-                print('Remaining time: ' + str(remainder) + '\n')
+                #print('Remaining time: ' + str(remainder) + '\n')
 
     def backwards_solver_2way(self, rxList = np.array([]), freq_min = 0, freq_max = 1, nDiv=1, R_threshold=0.1):
         #New method for calculating backwards waves using u_minus -> use a 3D array to hold reflection sources
