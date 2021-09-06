@@ -86,10 +86,12 @@ for i in range(len(rx_ranges)):
         xRX = rx_ranges[i] #Range of Receiver
         zRX = rx_depths[j] #Depth of Receiver
         rx_ij = rx(xRX, zRX)
-        rxList.append(rx_ij)
+        #rxList.append(rx_ij)
         rxArray[i,j,0] = xRX
         rxArray[i,j,1] = zRX
 nRX = len(rxList)
+
+output_hdf.create_dataset("rxArray", data=rxArray)
 output_hdf.attrs["nReceivers"] = nRX
 
 method = util.select_string("method", fname_in)
@@ -151,7 +153,7 @@ if method == "func":
     if profile_str == "enceladus_environ":
         print("selected: ", profile_str)
         snow_depth0 = util.select_variable("snow_depth", fname_in)
-        print(snow_depth0)
+        print('snow layer:', snow_depth0, 'm')
         crevass_list0 = []
         aquifer_list0 = []
         meteor_list0 = []
