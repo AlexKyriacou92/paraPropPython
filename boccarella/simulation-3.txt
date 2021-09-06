@@ -1,0 +1,40 @@
+
+%Geometry Parameters
+#iceDepth   500
+#iceLength  500
+#airHeight  40
+#dx 5
+#dz 0.05
+
+#simul_mode backwards_solver
+
+%Transmitter & Receiver Parameters
+#tx_depths  -25 500 20
+#rx_depths  -25 500 20
+#rx_ranges  0   1000    50
+
+%nProfile Parameters
+#method func
+#profile    enceladus_environ
+
+%Target Parameters
+#aquifer    200 500 250 400 300 500
+%#crevass    500 0 600 0 550 100
+#meteor    100 400 10
+#meteor    300 300 10
+#meteor    400 250 20
+
+#snow_layer 20
+
+#Pulse Parameters
+#Amplitude  100
+#freqCentral    0.5
+#freqHP 0.4
+#freqLP 0.6
+
+#freqMin    0.3
+#freqMax    0.7
+#freqSample 2.0
+
+#tCentral   50
+#tSample    12000
