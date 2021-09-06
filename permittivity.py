@@ -18,6 +18,10 @@ def eps2m(eps_c): #Return complex refractive index (m) from complex relative per
     m = n + 1j*k
     return m
 
+def m2eps(m):
+    eps_c = m**2
+    return eps_c
+
 def cond2eps_im(sigma, f):
     w = 2*pi*f
     return sigma/(w*epsilon0)
