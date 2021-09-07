@@ -202,7 +202,7 @@ def solver(args):
     sim.set_dipole_source_profile(freqCentral, sourceDepth)
     ii_source = util.findNearest(tx_depths, sourceDepth)
 
-    freq_space = np.fft.fft(nSamples, dt)
+    freq_space = np.fft.fftfreq(nSamples, dt)
     ii_rxList = 0
     ii_freqHP = util.findNearest(freq_space, freqHP)
     ii_freqLP = util.findNearest(freq_space, freqLP)
