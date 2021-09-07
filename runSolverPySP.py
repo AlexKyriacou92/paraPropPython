@@ -49,88 +49,102 @@ else:
 def get_args(output_h5, sourceDepth):
     args = []
 
-    iceDepth = output_h5.attrs["iceDepth"]
+    iceDepth = output_h5.attrs["iceDepth"] # 0
     args.append(iceDepth)
-    iceLength = output_h5.attrs["iceLength"]
+    iceLength = output_h5.attrs["iceLength"] # 1
     args.append(iceLength)
 
-    airHeight0 = output_h5.attrs["airHeight"]
+    airHeight0 = output_h5.attrs["airHeight"] # 2
     args.append(airHeight0)
     # output_hdf.attrs["airHeight"] = airHeight
-    dx = output_h5.attrs["dx"]
+    dx = output_h5.attrs["dx"] # 3
     args.append(dx)
-    dz = output_h5.attrs["dz"]
+    dz = output_h5.attrs["dz"] # 4
     args.append(dz)
 
-    tx_depths = np.array(output_h5.get("tx_depths"))  # get data
+    tx_depths = np.array(output_h5.get("tx_depths"))  # 5
     args.append(tx_depths)
     nTX = len(tx_depths)
 
-    rx_depths = np.array(output_h5.get("rx_depths"))
+    rx_depths = np.array(output_h5.get("rx_depths")) # 6
     args.append(rx_depths)
 
     nRX_depths = len(rx_depths)
 
-    rx_ranges = np.array(output_h5.get("rx_ranges"))
+    rx_ranges = np.array(output_h5.get("rx_ranges")) #7
     args.append(rx_ranges)
     nRX_ranges = len(rx_ranges)
 
     # Fill in blank
     # load geometry
     freqCentral = output_h5.attrs["freqCentral"]
-    args.append(freqCentral)
+    args.append(freqCentral) # 8
 
-    mode = output_h5.attrs["mode"]
+    mode = output_h5.attrs["mode"] # 9
     args.append(mode)
     print('mode:', mode)
     print(nProfile.shape)
 
     # tx pulse
-    tx_pulse = np.array(output_h5.get("signalPulse"))
+    tx_pulse = np.array(output_h5.get("signalPulse")) # 10
     args.append(tx_pulse)
     # tx_spectrum = np.array(output_h5.get("signalSpectrum"))
 
-    freqLP = output_h5.attrs["freqLP"]
+    freqLP = output_h5.attrs["freqLP"] # 11
     args.append(freqLP)
-    freqHP = output_h5.attrs["freqHP"]
+    freqHP = output_h5.attrs["freqHP"] # 12
     args.append(freqHP)
-    nSamples = output_h5.attrs["nSamples"]
+    nSamples = output_h5.attrs["nSamples"] # 13
     args.append(nSamples)
-    dt = output_h5.attrs["dt"]
+    dt = output_h5.attrs["dt"] # 14
     args.append(dt)
 
-    rxArray = np.array(output_h5.get("rxArray"))
+    rxArray = np.array(output_h5.get("rxArray")) #15
     print(rxArray)
     args.append(rxArray)
     rxList = []
     ii = 0
-    args.append(sourceDepth)
+    args.append(sourceDepth) #16
     # print('rxList = ', rxList)
     return args
 
 def solver(args):
     iceDepth = args[0]
+    print('iceDepth = ', iceDepth)
     iceLength = args[1]
+    print('iceLength = ', iceLength)
+
     airHeight0 = args[2]
+    print('airHeight = ', airHeight0)
     dx = args[3]
+    print('dx =', dx)
     dz = args[4]
+    print('dz =', dz)
     tx_depths = args[5]
+    print('tx_depths = ', tx_depths)
     nTX = len(tx_depths)
 
     rx_depths = args[6]
+    print('rx_depths =', rx_depths)
     nRX_depths = len(rx_depths)
 
     rx_ranges = args[7]
+    print('rx_ranges = ', rx_ranges)
     nRX_ranges = len(rx_ranges)
 
     freqCentral = args[8]
+    print('freq_central = ', freqCentral)
     mode = args[9]
+    print('mode = ', mode)
     tx_pulse = args[10]
+    print('tx_pulse =', tx_pulse)
     freqLP = args[11]
     freqHP = args[12]
 
     nSamples = args[13]
+    print('nSamples =', nSamples)
     dt = args[14]
+    print('dt = ', dt)
     rxArray = args[15]
     sourceDepth = args[16]
     """
@@ -202,7 +216,7 @@ def solver(args):
     sim.set_dipole_source_profile(freqCentral, sourceDepth)
     ii_source = util.findNearest(tx_depths, sourceDepth)
 
-    freq_space = np.fft.fft(nSamples, dt)
+    freq_space = np.fft.fftfreq(nSamples, dt)
     ii_rxList = 0
     ii_freqHP = util.findNearest(freq_space, freqHP)
     ii_freqLP = util.findNearest(freq_space, freqLP)
