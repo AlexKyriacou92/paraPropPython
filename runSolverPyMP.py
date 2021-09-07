@@ -210,7 +210,7 @@ def solver(args):
     for i in range(nRX_ranges):
         for j in range(nRX_depths):
             rx = rxList[ii_rxList]
-            spectrum = rx.spectrum()
+            spectrum = rx.spectrum
             output_npy[ii_source, i, j, ii_freqHP:ii_freqLP] = spectrum[ii_freqHP:ii_freqLP]
             ii_rxList += 1
 

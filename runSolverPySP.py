@@ -199,7 +199,8 @@ def solver(args):
 
     sim = ppp.paraProp(iceLength, iceDepth, dx, dz, airHeight=airHeight0, filterDepth=100, refDepth=sourceDepth)
     # Set profile
-
+    print('nSamples: ', nSamples, dt)
+    freq_space = np.fft.fftfreq(nSamples, dt)
 
     if mode == "1D":
         sim.set_n(method='vector', nVec=nProfile)
@@ -216,7 +217,6 @@ def solver(args):
     sim.set_dipole_source_profile(freqCentral, sourceDepth)
     ii_source = util.findNearest(tx_depths, sourceDepth)
 
-    freq_space = np.fft.fftfreq(nSamples, dt)
     ii_rxList = 0
     ii_freqHP = util.findNearest(freq_space, freqHP)
     ii_freqLP = util.findNearest(freq_space, freqLP)
@@ -224,7 +224,7 @@ def solver(args):
     for i in range(nRX_ranges):
         for j in range(nRX_depths):
             rx = rxList[ii_rxList]
-            spectrum = rx.spectrum()
+            spectrum = rx.spectrum
             output_npy[ii_source, i, j, ii_freqHP:ii_freqLP] = spectrum[ii_freqHP:ii_freqLP]
             ii_rxList += 1
 
@@ -235,7 +235,16 @@ if __name__ == '__main__':
     for i in range(nTX):
         args = get_args(output_h5, tx_depths[i])
         arg_list.append(args)
+        start = datetime.datetime.now()
+        start_str = start.strftime("%d/%m/%Y %H:%M:%S")
+        print('solution started, date and time:', start_str)
         tstart = time.time()
         print('source depth, Z_tx = ', tx_depths[i])
         solver(args)
         tend = time.time()
+        end = datetime.datetime.now()
+        end_str = end.strftime("%d/%m/%Y %H:%M:%S")
+        print('solution finished, date and time:', start_str)
+        #solver_time = tend - tstart
+        solver_time = datetime.timedelta(seconds=(tend-tstart))
+        print('solver time: ', solver_time)
