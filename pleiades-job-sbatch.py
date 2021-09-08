@@ -12,7 +12,7 @@ joblist = str(sys.argv[1])
 nNodes_min = int(8)
 nNodes_max = int(300)
 
-nodeMemory = int(128)
+nodeMemory = int(350) #need to guess this before hand, should be in MB
 
 jobname = str(sys.argv[2])
 days = int(3.)
