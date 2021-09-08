@@ -223,7 +223,9 @@ if simul_mode == "2D" or simul_mode == "backwards_solver":
     cbar = pl.colorbar(pmesh)
     cbar.set_label(r"Permittivity (real) $\epsilon_{r}^{'}$")
     pl.savefig(fname_out + '-nref-real.png')
-    pl.show()
+    #pl.show()
+    pl.close()
+
 elif simul_mode == "1D":
     n1vector = np.zeros(zNumFull, dtype='complex')
     output_vector = fname_out + '-nProf.npy'
