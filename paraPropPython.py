@@ -276,7 +276,7 @@ class paraProp:
         ### vector method ###
 
         if method == 'matrix':
-            print(self.n2.shape, nMat.shape)
+            #print(self.n2.shape, nMat.shape)
 
             for i in range(self.xNum):
                 self.n2[i, :] = nMat[i, :]  # Note that the vector will have to include the air surface as well
@@ -504,7 +504,8 @@ class paraProp:
         if (self.freqNum != 1):
             ### check for Receivers ###
             if (len(rxList) == 0):
-                print("Warning: Running time-domain simulation with no receivers. Field will not be saved.")
+                #print("Warning: Running time-domain simulation with no receivers. Field will not be saved.")
+                pass
             for rx in rxList:
                 rx.setup(self.freq, self.dt)
                 
@@ -691,7 +692,8 @@ class paraProp:
 
         ### check for Receivers ###
         if (len(rxList) == 0):
-            print("Warning: Running time-domain selfulation with no receivers. Field will not be saved.")
+            print("Warning: Running time-domain simulation with no receivers. Field will not be saved.")
+            #pass
         for rx in rxList:
             rx.setup(self.freq, self.dt)
 
@@ -783,7 +785,8 @@ class paraProp:
 
         ### check for Receivers ###
         if (len(rxList) == 0):
-            print("Warning: Running time-domain selfulation with no receivers. Field will not be saved.")
+            #pass
+            print("Warning: Running time-domain simulation with no receivers. Field will not be saved.")
         for rx in rxList:
             rx.setup(self.freq, self.dt)
         for iFreq in range(idx_min, idx_max):
@@ -791,7 +794,7 @@ class paraProp:
                 tstart_i = time.time()  # Start a time for every frequency step
                 freq_i = self.freq[iFreq]  # Frequency_i
 
-                print('solving for: f = ', freq_i, 'GHz, A = ', self.A[iFreq], 'step:', iFreq - idx_min, 'steps left:', idx_max - iFreq)
+                #print('solving for: f = ', freq_i, 'GHz, A = ', self.A[iFreq], 'step:', iFreq - idx_min, 'steps left:', idx_max - iFreq)
 
                 # Add U_positive field
                 u_plus = 2 * self.A[iFreq] * self.source * self.filt * freq_i  # Set Forward Propogating Field u_plus
@@ -843,7 +846,7 @@ class paraProp:
 
                 #Complete forward propagation
                 #Commence backwards propagation
-                print('Number of reflections encountered: ', nRefl)
+                #print('Number of reflections encountered: ', nRefl)
                 if nRefl > 0:
                     refl_source_3arr = np.zeros((self.xNum, self.zNumFull, nRefl), dtype='complex')
                     for k in range(nRefl):
@@ -854,7 +857,7 @@ class paraProp:
                     alpha_minus = np.exp(1.j * self.dx * self.k0[iFreq] * (np.sqrt(1. - (self.kz / self.k0[iFreq]) ** 2) - 1.))
                     refl_field_3arr = np.zeros((self.xNum, self.zNum, nRefl))
 
-                    print('zNum',self.zNum, 'zNumFull (including filtered depths', self.zNumFull)
+                    #print('zNum',self.zNum, 'zNumFull (including filtered depths', self.zNumFull)
                     for kBack in range(1, self.xNum): #Make j steps backwards
                         tstart_xminus = time.time()
                         if refl_source_3arr[kBack].any() > 0:
@@ -887,9 +890,9 @@ class paraProp:
                 for k in range(nRefl):
                     self.field[:,:] += refl_field_3arr[:,:,k]
                 tend_i = time.time()
-                print('time per pos x step', np.mean(time_plus_l))
-                print('time per negative x step', np.mean(time_minus_l))
-                print('simulation per frequency step', tend_i - tstart_i, 'time per x step (average)', (tend_i-tstart_i)/self.xNum)
+                #print('time per pos x step', np.mean(time_plus_l))
+                #print('time per negative x step', np.mean(time_minus_l))
+                #print('simulation per frequency step', tend_i - tstart_i, 'time per x step (average)', (tend_i-tstart_i)/self.xNum)
                 if len(rxList) > 0:
                     for rx in rxList:
                         rx.add_spectrum_component(self.freq[iFreq], self.get_field(x0=rx.x, z0=rx.z))

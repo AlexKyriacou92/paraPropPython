@@ -64,7 +64,7 @@ def poro2n(poro,eps_r0):
 sigma_solid_pure_ice = 8.7e-6 #uS/m
 P_surface = 0.9
 sigma_pure_snow = sigma_from_p(P_surface, sigma_solid_pure_ice)
-print(sigma_pure_snow)
+#print(sigma_pure_snow)
 
 freq_test = 500e6 #100 MHz
 eps_i_ice = cond2eps_im(sigma_solid_pure_ice, freq_test)
@@ -75,8 +75,8 @@ m_snow = eps2m(eps_snow) #
 
 eps_ice = 3.2 + 1j*eps_i_ice
 m_ice = eps2m(eps_ice)
-print('Snow, eps_r =', eps_snow, 'n = ', m_snow, 'alpha = ', alpha(eps_snow, freq_test))
-print('Ice, eps_r =', eps_ice, 'n =', m_ice, 'alpha = ', alpha(eps_ice, freq_test))
+#print('Snow, eps_r =', eps_snow, 'n = ', m_snow, 'alpha = ', alpha(eps_snow, freq_test))
+#print('Ice, eps_r =', eps_ice, 'n =', m_ice, 'alpha = ', alpha(eps_ice, freq_test))
 
 eps_meteor = 8.2 + 0.1558j #Taken from Herique et al. (2018) Direct Observations of Asteroid Interior and Regolith Structure: Science Measurement Requirements
 eps_vacuum = 1.0
