@@ -31,7 +31,7 @@ fout.write(sbatch + " --job-name=" + jobname +"\n")
 fout.write(sbatch + " --partition=" + partition + "\n")
 fout.write(sbatch + " --time=" +str(days) + "-" + str(hours) + ":" + str(minutes) + ":" + str(seconds) + " # days-hours:minutes:seconds\n")
 fout.write(sbatch + " --nodes=" + str(nNodes_min) + "-" + str(nNodes_max) + "\n")
-fout.write(sbatch + " --mem-per-cpu" + str(nodeMemory) + " # in MB\n")
+fout.write(sbatch + " --mem-per-cpu=" + str(nodeMemory) + " # in MB\n")
 
 fin = open(joblist, "r+")
 for line in fin:
