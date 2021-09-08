@@ -25,7 +25,7 @@ sbatch = "#SBATCH"
 fname = jobname + '.sh'
 
 fout = open(fname, 'w+')
-fout.write("#!bin/sh\n")
+fout.write("#!/bin/sh\n")
 
 fout.write(sbatch + " --job-name=" + jobname +"\n")
 fout.write(sbatch + " --partition=" + partition + "\n")
