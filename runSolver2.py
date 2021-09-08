@@ -82,11 +82,12 @@ nRX_ranges = len(RX_ranges)
 
 rxArray = np.array(output_h5.get("rxArray"))
 rxList = []
-    ii = 0
-    for i in range(nRX_ranges):
-        for j in range(nRX_depths):
-            rx_ij = ppp.receiver(rxArray[i,j,0], rxArray[i,j,1])
-            rxList.append(rx_ij)
+ii = 0
+for i in range(nRX_ranges):
+    for j in range(nRX_depths):
+        rx_ij = ppp.receiver(rxArray[i, j, 0], rxArray[i, j, 1])
+        rxList.append(rx_ij)
+
 #print('mode', mode)
 if mode == "1D":
     sim.do_solver(rxList)
