@@ -238,10 +238,25 @@ npy_memmap = util.create_memmap(fname_npy, dimensions)
 
 output_hdf.close()
 
-#create job list
-job_file = open(fname_out + '-job-list.txt','w')
-freq_list = np.arange(freqHP, freqLP, df)
+#create -> a job list for each source
+path2jobs = fname_out + '-jobs'
+if os.path.isdir(path2jobs) == False:
+    os.mkdir(path2jobs)
+
+script_list = []
+
 for i_tx in range(nTX):
+    jobname = "src=" + str(tx_depths[i_tx])
+    jobfname = path2jobs + "/" + jobname + '.txt'
+
+    job_file = open(jobfname, 'w+')
+    freq_list = np.arange(freqHP, freqLP, df)
     for j_freq in range(len(freq_list)):
         line = "python runSolver.py " + fname_out + " " + str(freq_list[j_freq]) + " " + str(tx_depths[i_tx]) + "\n"
         job_file.write(line)
+    job_file.close()
+    #Make a job submission script for pleaides
+    shfile = path2jobs + "/" + jobname
+    makescript = "python pleiades-job-sbatch.py " + jobfname + " " + shfile
+    os.system(makescript)
+    os.remove(jobfname)

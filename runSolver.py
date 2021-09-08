@@ -55,14 +55,14 @@ if len(sys.argv) != 4:
     sys.exit()
 
 output = str(sys.argv[1])
-print(output)
+#print(output)
 fname_h5 = output + '.h5'
 output_h5 = h5py.File(fname_h5, 'r+')
 
 fname_npy = output + '.npy'
 output_npy = np.load(fname_npy, 'r+')
 
-nProfile = np.load(output +  '-nProf.npy', 'r')
+nProfile = np.load(output + '-nProf.npy', 'r')
 
 #Check if input/output files exist
 if (os.path.isfile(fname_h5) == True) and (os.path.isfile(fname_npy)) == True:
@@ -87,6 +87,7 @@ airHeight0 = output_h5.attrs["airHeight"]
 dx = output_h5.attrs["dx"]
 dz = output_h5.attrs["dz"]
 
+tstart = time.time()
 sim = ppp.paraProp(iceLength, iceDepth, dx, dz,airHeight=airHeight0, filterDepth=100, refDepth=sourceDepth)
 tx_depths = output_h5["tx_depths"] #get data
 rx_depths = output_h5["rx_depths"]
@@ -96,8 +97,8 @@ rx_depths = output_h5["rx_depths"]
 freqCentral = output_h5.attrs["freqCentral"]
 
 mode = output_h5.attrs["mode"]
-print('mode:',mode)
-print(nProfile.shape)
+#print('mode:',mode)
+#print(nProfile.shape)
 if mode == "1D":
     sim.set_n(method='vector', nVec=nProfile)
 else:
@@ -125,7 +126,7 @@ amplitude = tx_spectrum[ii_freq]
 #Set CW
 sim.set_cw_source_signal(freq, amplitude)
 rxList = np.array(output_h5.get("rxList"))
-print('mode', mode)
+#print('mode', mode)
 if mode == "1D":
     sim.do_solver()
 elif mode == "2D":
@@ -143,7 +144,6 @@ RX_ranges = np.array(output_h5.get("rx_ranges"))
 ii = 0
 for i in range(len(RX_ranges)):
     for j in range(len(RX_depths)):
-
         x_rx = RX_ranges[i]
         z_rx = RX_depths[j]
         field_amp = sim.get_field(x0=x_rx, z0=z_rx)
@@ -152,3 +152,10 @@ for i in range(len(RX_ranges)):
         #amp_ij = rxList[ii]
         #output_npy[ii_tx, i, j, ii_freq] = rxList[ii].get_amplitude()
         #ii += 1
+
+tend = time.time()
+duration = tend - tstart
+solver_time = datetime.timedelta(seconds=duration)
+completion_date = datetime.datetime.now()
+date_str = completion_date.strftime("%d/%m/%Y %H:%M:%S")
+print("simulation: " + sys.argv[2] + " " + sys.argv[2] + " " + sys.argv[3] + ", duration: " + str(solver_time) + " completed at: " + date_str)
