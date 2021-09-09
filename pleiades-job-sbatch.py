@@ -47,6 +47,7 @@ def make_sbatch(jobline, fname, jobname, nNodes_min, nNodes_max, partition, days
 
 if __name__ == "__main__":
     fin = open(fname_in, "r+")
+    os.mkdir(path2jobs)
     for jobline in fin:
         cols = jobline.split()
         src_depth = cols[3]
