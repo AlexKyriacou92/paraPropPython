@@ -92,7 +92,7 @@ if mode == "1D":
 elif mode == "2D":
     sim.do_solver2(rxList, freq_min = freqHP, freq_max = freqLP)
 elif mode == "backwards_solver":
-    sim.backwards_solver(rxList, freq_min = freqHP, freq_max = freqLP)
+    sim.backwards_solver_2way(rxList, freq_min = freqHP, freq_max = freqLP)
 
 tx_depths = np.array(output_h5.get("tx_depths"))
 ii_tx = util.findNearest(tx_depths, sourceDepth)

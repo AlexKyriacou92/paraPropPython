@@ -197,7 +197,7 @@ def solver(args):
     elif mode == "2D":
         sim.do_solver2(rxList, freq_min = freqHP, freq_max = freqLP)
     elif mode == "backwards_solver":
-        sim.backwards_solver(rxList, freq_min = freqHP, freq_max = freqLP)
+        sim.backwards_solver_2way(rxList, freq_min = freqHP, freq_max = freqLP)
 
     sim.set_dipole_source_profile(freqCentral, sourceDepth)
     ii_source = util.findNearest(tx_depths, sourceDepth)

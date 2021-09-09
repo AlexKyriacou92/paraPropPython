@@ -57,25 +57,9 @@ if len(sys.argv) != 4:
 output = str(sys.argv[1])
 #print(output)
 fname_h5 = output + '.h5'
-output_h5 = h5py.File(fname_h5, 'r+')
-
-fname_npy = output + '.npy'
-output_npy = np.load(fname_npy, 'r+')
-
+output_h5 = h5py.File(fname_h5, 'r')
 nProfile = np.load(output + '-nProf.npy', 'r')
 
-#Check if input/output files exist
-if (os.path.isfile(fname_h5) == True) and (os.path.isfile(fname_npy)) == True:
-    pass
-elif os.path.isfile(fname_h5) == False:
-    print('No h5 file -> process aborted')
-    sys.exit()
-elif os.path.isfile(fname_npy) == False:
-    print('No npy file -> process aborted')
-    sys.exit()
-else:
-    print('no input or output files -> process aborted')
-    sys.exit()
 
 freq = float(sys.argv[2]) #Frequency of Simulation
 sourceDepth = float(sys.argv[3]) #source depth
@@ -89,6 +73,9 @@ dz = output_h5.attrs["dz"]
 
 tstart = time.time()
 sim = ppp.paraProp(iceLength, iceDepth, dx, dz,airHeight=airHeight0, filterDepth=100, refDepth=sourceDepth)
+
+x = sim.get_x()
+z = sim.get_z()
 tx_depths = output_h5["tx_depths"] #get data
 rx_depths = output_h5["rx_depths"]
 
@@ -132,8 +119,20 @@ if mode == "1D":
 elif mode == "2D":
     sim.do_solver2()
 elif mode == "backwards_solver":
-    sim.backwards_solver()
+    sim.backwards_solver_2way()
 
+### plot absolute value of field for whole simulation space ###
+fig = pl.figure()
+ax = fig.add_subplot(111)
+
+pl.imshow(np.transpose(abs(sim.get_field())), aspect='auto', cmap='hot',  vmin=1e-5, vmax=1e-2,
+          extent=(x[0], x[-1], z[-1], z[0]))
+pl.title("Absolute Field, " + str(int(freq*1000))+" MHz")
+pl.xlabel("x (m)")
+pl.ylabel("z (m)")
+pl.show()
+
+"""
 tx_depths = np.array(output_h5.get("tx_depths"))
 ii_tx = util.findNearest(tx_depths, sourceDepth)
 
@@ -159,3 +158,4 @@ solver_time = datetime.timedelta(seconds=duration)
 completion_date = datetime.datetime.now()
 date_str = completion_date.strftime("%d/%m/%Y %H:%M:%S")
 print("simulation: " + sys.argv[2] + " " + sys.argv[2] + " " + sys.argv[3] + ", duration: " + str(solver_time) + " completed at: " + date_str)
+"""
