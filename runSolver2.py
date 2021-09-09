@@ -15,11 +15,9 @@ if len(sys.argv) != 3:
 output = str(sys.argv[1])
 #print(output)
 fname_h5 = output + '.h5'
-output_h5 = h5py.File(fname_h5, 'r+')
-
+output_h5 = h5py.File(fname_h5, 'r')
 fname_npy = output + '.npy'
 output_npy = np.load(fname_npy, 'r+')
-
 nProfile = np.load(output + '-nProf.npy', 'r')
 
 #Check if input/output files exist
@@ -115,3 +113,4 @@ solver_time = datetime.timedelta(seconds=duration)
 completion_date = datetime.datetime.now()
 date_str = completion_date.strftime("%d/%m/%Y %H:%M:%S")
 print("simulation: " + sys.argv[2] + " src = " + sys.argv[2] + ", duration: " + str(solver_time) + " completed at: " + date_str)
+output_h5.close()
