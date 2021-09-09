@@ -13,5 +13,5 @@ output_h5.create_dateset('receiverData', data=output_npy)
 simul_end = datetime.datetime.now()
 output_h5.attrs["EndTime"] = simul_end.strftime("%Y\%m\%d %H:%M:%S") #time that simulation ends
 
-os.remove(output_npy)
+#os.remove(output_npy)
 output_h5.close()
