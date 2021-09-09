@@ -171,8 +171,9 @@ if method == "func":
             def nProf(x,z):
                 return epsilon.enceladus_environ(x, z, snow_depth = snow_depth0)
         elif simul_mode == "1D":
+            water_depth0 = util.select_variable("water_depth", fname_in)
             def nProf(z):
-                return epsilon.enceladus_2layer(z, snow_depth=snow_depth0)
+                return epsilon.enceladus_2layer(z, snow_depth=snow_depth0, water_depth = water_depth0)
     elif profile_str == 'pure_ice':
         def nProf(x,z):
             return epsilon.pure_ice(x,z)

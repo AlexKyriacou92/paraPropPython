@@ -81,16 +81,19 @@ m_ice = eps2m(eps_ice)
 eps_meteor = 8.2 + 0.1558j #Taken from Herique et al. (2018) Direct Observations of Asteroid Interior and Regolith Structure: Science Measurement Requirements
 eps_vacuum = 1.0
 eps_water = 82 + 899j #Based on the Conductivity of Salt Water -> 5 S/m
-def enceladus_2layer(z, snow_depth=100): #Create a flat layer of snow above ice
+def enceladus_2layer(z, snow_depth=100, water_depth = 500): #Create a flat layer of snow above ice
     n_snow = eps2m(eps_snow)
     n_ice = eps2m(eps_ice)
     n_vacuum = 1.0
     n_material = n_vacuum
+    n_water = eps2m(eps_water)
 
     if z >= 0 and z < snow_depth:
         n_material = n_snow
-    elif z >= snow_depth:
+    elif z >= snow_depth and z < water_depth:
         n_material = n_ice
+    elif z >= water_depth:
+        n_material = n_water
     return n_material
 
 def enceladus_environ(x, z, snow_depth = 100, meteor_list = [], crevass_list = [], aquifer_list=[]): #Creates a 2 layer geometry with added meteorites (spheres), crevasses and aquifers (triangles)
