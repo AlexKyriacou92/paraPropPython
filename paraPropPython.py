@@ -547,9 +547,13 @@ class paraProp:
                 optional for cw signal simulation
                 required for non cw signal simulation
         """
-        idx_min = util.findNearest(freq_min, self.freq)
-        idx_max = util.findNearest(freq_max, self.freq)
 
+        if self.freqNum > 1:
+            idx_min = util.findNearest(freq_min, self.freq)
+            idx_max = util.findNearest(freq_max, self.freq)
+        else:
+            idx_min = 0
+            idx_max = 1
         if (self.freqNum != 1):
             ### check for Receivers ###
             if (len(rxList) == 0):
@@ -830,8 +834,8 @@ class paraProp:
                     time_plus_l.append(tend_xplus - tstart_xplus)
 
                     # Calculate Reflections range-wise
-                    dNx = n_j - self.n2[jXstep - 1, :]
-                    reflelction_z = util.reflection_coefficient(n_j, self.n2[jXstep - 1,:])  # Calculate Reflection coefficient
+                    dNx = n_j.real - (self.n2[jXstep - 1, :]).real
+                    reflelction_z = util.reflection_coefficient(n_j.real, (self.n2[jXstep - 1,:]).real)  # Calculate Reflection coefficient
 
                     if any(reflelction_z) > R_threshold:
                         nRefl += 1
@@ -896,3 +900,132 @@ class paraProp:
                 if len(rxList) > 0:
                     for rx in rxList:
                         rx.add_spectrum_component(self.freq[iFreq], self.get_field(x0=rx.x, z0=rx.z))
+
+
+    def get_backwards_field(self, rxList = np.array([]), freq_min = 0, freq_max = 1, nDiv=1, R_threshold=0.1):
+        #New method for calculating backwards waves using u_minus -> use a 3D array to hold reflection sources
+        # Cut over your frequency space
+        # freq_cut = util.cut_xaxis(self.freq, freq_min, freq_max)
+        if self.freqNum > 1:
+            idx_min = util.findNearest(freq_min, self.freq)
+            idx_max = util.findNearest(freq_max, self.freq)
+        else:
+            idx_min = 0
+            idx_max = 1
+        # nFreq = len(freq_cut)
+        field_backwards = np.zeros((self.xNum, self.zNum), dtype='complex')
+
+        ### check for Receivers ###
+        if (len(rxList) == 0):
+            #pass
+            print("Warning: Running time-domain simulation with no receivers. Field will not be saved.")
+        for rx in rxList:
+            rx.setup(self.freq, self.dt)
+        for iFreq in range(idx_min, idx_max):
+            if iFreq % nDiv == 0:
+                tstart_i = time.time()  # Start a time for every frequency step
+                freq_i = self.freq[iFreq]  # Frequency_i
+
+                #print('solving for: f = ', freq_i, 'GHz, A = ', self.A[iFreq], 'step:', iFreq - idx_min, 'steps left:', idx_max - iFreq)
+
+                # Add U_positive field
+                u_plus = 2 * self.A[iFreq] * self.source * self.filt * freq_i  # Set Forward Propogating Field u_plus
+                self.field[0, :] = u_plus[self.fNum:-self.fNum]
+                alpha = np.exp(1.j * self.dx * self.k0[iFreq] * (np.sqrt(1. - (self.kz/self.k0[iFreq])**2) - 1.))
+
+                #Backwards Reflection Source
+                #refl_source_3arr = np.zeros((self.xNum, self.zNum), dtype='complex')
+                refl_source_list = [] #list that contains the reflection sources
+                nRefl = 0
+
+                #Solve for u_plus -> from x = 0, x = R
+                time_plus_l = []
+                time_minus_l = []
+                time_xtotal_l = []
+                tstart_i = time.time()
+                for jXstep in range(1, self.xNum):
+                    tstart_xplus = time.time()
+
+                    n_j = self.n2[jXstep, :]  # Verticle referactive index profile at x_i, n_i(z) = n(x = x_i, z)
+                    x_j = self.x[jXstep]
+
+                    B = n_j ** 2 - 1
+                    Y = np.sqrt(1. + (n_j / self.n0) ** 2)
+                    beta = np.exp(1.j * self.dx * self.k0[iFreq] * (np.sqrt(B + Y ** 2) - Y))
+
+                    u_plus = alpha * (util.doFFT(u_plus))
+                    u_plus = beta * (util.doIFFT(u_plus))
+                    u_plus = self.filt * u_plus
+
+                    self.field[jXstep, :] = (u_plus[self.fNum:-self.fNum] / np.sqrt(x_j)) * np.exp(1.j * self.k0[iFreq] * x_j)
+                    tend_xplus = time.time()
+                    time_plus_l.append(tend_xplus - tstart_xplus)
+
+                    # Calculate Reflections range-wise
+                    dNx = n_j - self.n2[jXstep - 1, :]
+                    reflelction_z = util.reflection_coefficient(n_j, self.n2[jXstep - 1,:])  # Calculate Reflection coefficient
+
+                    if any(reflelction_z) > R_threshold:
+                        nRefl += 1
+                        refl_source = np.zeros(self.zNumFull, dtype='complex')
+                        refl_source[self.fNum:-self.fNum] = self.field[jXstep, :] * reflelction_z[self.fNum:-self.fNum]
+
+                        refl_field = np.zeros((self.xNum, self.zNum), dtype='complex')
+                        refl_field[jXstep,:] = refl_source[self.fNum:-self.fNum]
+                        refl_source_list.append(refl_field)
+                        # Scale forward going reduced field by transmission coefficient (has to be smaller than last one)
+                        u_plus[self.fNum:-self.fNum] *= util.transmission_coefficient(n_j, self.n2[jXstep - 1, :])[self.fNum:-self.fNum]  # TODO -> field or u_plus??
+
+                #Complete forward propagation
+                #Commence backwards propagation
+                #print('Number of reflections encountered: ', nRefl)
+                if nRefl > 0:
+                    refl_source_3arr = np.zeros((self.xNum, self.zNumFull, nRefl), dtype='complex')
+                    for k in range(nRefl):
+                        refl_source_3arr[:,self.fNum:-self.fNum,k] = refl_source_list[k]
+
+                    mXstep = self.xNum - 1
+                    u_minus = np.zeros((nRefl, self.zNumFull), dtype='complex')
+                    alpha_minus = np.exp(1.j * self.dx * self.k0[iFreq] * (np.sqrt(1. - (self.kz / self.k0[iFreq]) ** 2) - 1.))
+                    refl_field_3arr = np.zeros((self.xNum, self.zNum, nRefl))
+
+                    #print('zNum',self.zNum, 'zNumFull (including filtered depths', self.zNumFull)
+                    for kBack in range(1, self.xNum): #Make j steps backwards
+                        tstart_xminus = time.time()
+                        if refl_source_3arr[kBack].any() > 0:
+                            filt2 = np.array([self.filt]*nRefl)
+                            u_minus[:,:] += 2 * np.transpose(refl_source_3arr[mXstep,:,:]) * filt2 * self.freq[iFreq]
+
+                        n_k = np.array([self.n2[mXstep, :]]*nRefl)
+                        x_minus = abs(self.iceLength - self.x[mXstep])
+
+                        B_minus = n_k ** 2 - 1
+                        #n0_k = np.array([self.n0]*nRefl)
+                        Y_minus = np.sqrt(1. + (n_k / self.n0) ** 2)
+                        k0_k = np.array([self.k0]*nRefl)
+                        beta_minus = np.exp(1.j * self.dx * k0_k * (np.sqrt(B_minus + Y_minus ** 2) - Y_minus))
+
+                        filt_k = np.array([self.filt]*nRefl)
+
+                        #TODO: Check if FFT can operate on a 2D array?
+                        u_minus = alpha_minus * (util.doFFT(u_minus))
+                        #print(u_minus.shape)
+                        u_minus = beta_minus * (util.doIFFT(u_minus))
+                        #print(u_minus.shape)
+                        u_minus = filt_k * u_minus
+                        #print(u_minus.shape)
+
+                        mXstep -= 1
+                        refl_field_3arr[mXstep, :, :] = np.transpose((u_minus[:, self.fNum:-self.fNum] / np.sqrt(x_minus)) * np.exp(1j * x_minus * k0_k))
+                        tend_xminus = time.time()
+                        time_minus_l.append(tend_xminus - tstart_xminus)
+                for k in range(nRefl):
+                    field_backwards += refl_field_3arr[:,:,k]
+                    self.field[:,:] += refl_field_3arr[:,:,k]
+                tend_i = time.time()
+                if len(rxList) > 0:
+                    for rx in rxList:
+                        rx.add_spectrum_component(self.freq[iFreq], self.get_field(x0=rx.x, z0=rx.z))
+        return field_backwards
+
+
