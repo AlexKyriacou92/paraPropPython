@@ -245,10 +245,12 @@ for itx in range(nTX):
     line = "python runSolver2.py " + fname_out + " " + str(tx_depths[itx]) + "\n"
     job_list.write(line)
 job_list.close()
+
+"""
 shfile = fname_out + "-submitjobs"
 makescript = "python pleiades-job-sbatch.py " + jobfile + " " + shfile
 os.system(makescript)
-"""
+
 script_list = []
 
 for i_tx in range(nTX):
@@ -266,5 +268,4 @@ for i_tx in range(nTX):
     makescript = "python pleiades-job-sbatch.py " + jobfname + " " + shfile
     os.system(makescript)
     os.remove(jobfname)
-
 """
