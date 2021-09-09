@@ -169,7 +169,8 @@ if method == "func":
                 return epsilon.enceladus_environ(x, z, snow_depth = snow_depth0)
         elif simul_mode == "1D":
             def nProf(z):
-                return epsilon.enceladus_2layer(z, snow_depth=snow_depth0)
+                water_depth0 = util.select_variable("water_depth", fname_in)
+                return epsilon.enceladus_2layer(z, snow_depth=snow_depth0, water_depth = water_depth0)
     elif profile_str == 'pure_ice':
         def nProf(x,z):
             return epsilon.pure_ice(x,z)
@@ -228,6 +229,15 @@ elif simul_mode == "1D":
     output_vector = fname_out + '-nProf.npy'
     for i in range(zNumFull):
         n1vector[i] = nProf(zFull[i])
+
+    pl.figure(figsize=(10, 10), dpi=120)
+    pl.plot(zFull, n1vector)
+    pl.xlabel('Depth')
+    pl.ylabel('n')
+    pl.xlim(z[-1],z[0])
+    pl.savefig(fname_out + '-nref-real.png')
+    # pl.show()
+    pl.close()
     np.save(output_vector, n1vector)
 
 #Create Numpy File:
