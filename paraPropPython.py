@@ -823,6 +823,7 @@ class paraProp:
 
                     B = n_j ** 2 - 1
                     Y = np.sqrt(1. + (n_j / self.n0) ** 2)
+                    #print('shape k0', self.k0[iFreq].shape, 'shape B', B.shape, 'shape Y', Y.shape)
                     beta = np.exp(1.j * self.dx * self.k0[iFreq] * (np.sqrt(B + Y ** 2) - Y))
 
                     u_plus = alpha * (util.doFFT(u_plus))
@@ -874,9 +875,11 @@ class paraProp:
                         B_minus = n_k ** 2 - 1
                         #n0_k = np.array([self.n0]*nRefl)
                         Y_minus = np.sqrt(1. + (n_k / self.n0) ** 2)
-                        k0_k = np.array([self.k0]*nRefl)
-                        beta_minus = np.exp(1.j * self.dx * k0_k * (np.sqrt(B_minus + Y_minus ** 2) - Y_minus))
+                        #k0_k = np.array([self.k0]*nRefl)
 
+                        #print(k0_k.shape, B_minus.shape, Y_minus.shape)
+                        #beta_minus = np.exp(1.j * self.dx * k0_k[iFreq] * (np.sqrt(B_minus + Y_minus ** 2) - Y_minus))
+                        beta_minus = np.exp(1.j * self.dx * self.k0[iFreq] * (np.sqrt(B_minus + Y_minus ** 2) - Y_minus))
                         filt_k = np.array([self.filt]*nRefl)
 
                         #TODO: Check if FFT can operate on a 2D array?
@@ -888,7 +891,9 @@ class paraProp:
                         #print(u_minus.shape)
 
                         mXstep -= 1
-                        refl_field_3arr[mXstep, :, :] = np.transpose((u_minus[:, self.fNum:-self.fNum] / np.sqrt(x_minus)) * np.exp(1j * x_minus * k0_k))
+                        #refl_field_3arr[mXstep, :, :] = np.transpose((u_minus[:, self.fNum:-self.fNum] / np.sqrt(x_minus)) * np.exp(1j * x_minus * k0_k))
+                        refl_field_3arr[mXstep, :, :] = np.transpose(
+                            (u_minus[:, self.fNum:-self.fNum] / np.sqrt(x_minus)) * np.exp(1j * x_minus * self.k0[iFreq]))
                         tend_xminus = time.time()
                         time_minus_l.append(tend_xminus - tstart_xminus)
                 for k in range(nRefl):
