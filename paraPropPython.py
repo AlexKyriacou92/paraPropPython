@@ -775,7 +775,7 @@ class paraProp:
                 remainder = datetime.timedelta(seconds = nRemaining*duration)
                 #print('Remaining time: ' + str(remainder) + '\n')
 
-    def backwards_solver_2way(self, rxList = np.array([]), freq_min = 0, freq_max = 1, nDiv=1, R_threshold=0.1):
+    def backwards_solver_2way(self, rxList = np.array([]), freq_min = 0, freq_max = 1, nDiv=1, R_threshold=0.01):
         #New method for calculating backwards waves using u_minus -> use a 3D array to hold reflection sources
         # Cut over your frequency space
         # freq_cut = util.cut_xaxis(self.freq, freq_min, freq_max)
