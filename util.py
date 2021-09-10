@@ -550,14 +550,25 @@ def select_range(var_str,fname):
 
 #Implement Backwards Solution -> based on do_solver()
 def cut_xaxis(x, xmin, xmax):
-    idx_min = util.findNearest(xmin, x)
-    idx_max = util.findNearest(xmax, x)
+    idx_min = findNearest(xmin, x)
+    idx_max = findNearest(xmax, x)
     return x[idx_min:idx_max]
 
 #Reflection Coefficient -> inputs can be complex
-def reflection_coefficient(n1, n2):
-    return abs(n1.real - n2.real) / (n1.real + n2.real)
+def reflection_coefficient(m1, m2):
+    if any(m1.imag) > 0 or any(m2.imag) > 0:
+        n1 = m1.real
+        k1 = m1.imag
+        n2 = m2.real
+        k2 = m2.imag
+        return (abs(n1 - n2)**2 + abs(k1-k2)**2) / (abs(n1+n2)**2 + abs(k1 + k2)**2)
+    else:
+        n1 = m1.real
+        n2 = m2.real
+        return (abs(n1 - n2)**2) / (abs(n1+n2)**2)
+
+    #return abs(n1.real - n2.real) / (n1.real + n2.real)
 
 #Transmission Coefficient
-def transmission_coefficient(n1, n2):
-    return 1 - reflection_coefficient(n1, n2)
+def transmission_coefficient(m1, m2):
+    return 1 - reflection_coefficient(m1, m2)
