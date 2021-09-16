@@ -50,6 +50,7 @@ iceLength = util.select_variable("iceLength", fname_in) #Ice Length -> Max Range
 airHeight = util.select_variable("airHeight", fname_in) #Air/Vacuum Height (defined as z < 0) of Simulation (not including buffer)
 dx = util.select_variable("dx", fname_in) #Range Resolution
 dz = util.select_variable("dz", fname_in) #Depth Resolution
+filterDepth = util.select_variable("filterDepth", fname_in)
 
 #simul_mode = 'backwards_solver'
 simul_mode = util.select_string("simul_mode", fname_in) #Selects simulation mode: choices: 1D, 2D, backwards_solver
@@ -62,6 +63,9 @@ output_hdf.attrs["iceLength"] = iceLength
 output_hdf.attrs["airHeight"] = airHeight
 output_hdf.attrs["dx"] = dx
 output_hdf.attrs["dz"] = dz
+
+filterDepth = 100. #TODO: Include Filter Depth in txt file
+output_hdf.attrs["filterDepth"] = 100.
 
 tx_depths = util.select_range("tx_depths", fname_in) #list array containing the depth of each transmitter in the simulation run
 rx_depths = util.select_range("rx_depths", fname_in) #list array containing the depth of each receiver in simulation

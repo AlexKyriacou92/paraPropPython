@@ -76,6 +76,7 @@ sim = ppp.paraProp(iceLength, iceDepth, dx, dz,airHeight=airHeight0, filterDepth
 
 x = sim.get_x()
 z = sim.get_z()
+zFull = sim.zFull
 tx_depths = output_h5["tx_depths"] #get data
 rx_depths = output_h5["rx_depths"]
 
@@ -126,8 +127,9 @@ fig = pl.figure()
 ax = fig.add_subplot(111)
 
 pl.imshow(np.transpose(abs(sim.get_field())), aspect='auto', cmap='hot',  vmin=1e-5, vmax=1e-2,
-          extent=(x[0], x[-1], z[-1], z[0]))
+          extent=(x[0], x[-1], zFull[-1], zFull[0]))
 pl.title("Absolute Field, " + str(int(freq*1000))+" MHz")
+pl.ylim(zFull[-1],zFull[0])
 pl.xlabel("x (m)")
 pl.ylabel("z (m)")
 pl.show()
