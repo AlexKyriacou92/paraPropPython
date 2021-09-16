@@ -154,6 +154,8 @@ if method == "func":
     if profile_str == "enceladus_environ":
         print("selected: ", profile_str)
         snow_depth0 = util.select_variable("snow_depth", fname_in)
+        sinter_depth0 = util.select_variable("sinter_depth", fname_in)
+
         print('snow layer:', snow_depth0, 'm')
         crevass_list0 = []
         aquifer_list0 = []
@@ -168,6 +170,10 @@ if method == "func":
             print('backwards solver')
             def nProf(x,z):
                 return epsilon.enceladus_environ(x, z, snow_depth = snow_depth0, crevass_list = crevass_list0, aquifer_list = aquifer_list0, meteor_list = meteor_list0)
+            if sinter_depth0 != np.nan:
+                def nProf(x, z):
+                    return epsilon.enceladus_environ(x, z, snow_depth=snow_depth0, sinter_depth = sinter_depth0, crevass_list=crevass_list0,
+                                                     aquifer_list=aquifer_list0, meteor_list=meteor_list0)
         elif simul_mode == "2D":
             def nProf(x,z):
                 return epsilon.enceladus_environ(x, z, snow_depth = snow_depth0)

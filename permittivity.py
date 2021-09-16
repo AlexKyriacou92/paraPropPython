@@ -60,13 +60,19 @@ def rho2n(rho):
 def poro2n(poro,eps_r0):
     eps_r = eps_r0*poro*(0.68 + 0.32*poro)**2
     return eps2m(eps_r)
+freq_test = 500e6 #100 MHz
 
 sigma_solid_pure_ice = 8.7e-6 #uS/m
 P_surface = 0.9
 sigma_pure_snow = sigma_from_p(P_surface, sigma_solid_pure_ice)
+
+P_sinter = 0.4
+sigma_III_snow = 3.889e-3 #conductivity of TypeII
+sigma_sinter = sigma_from_p(P_sinter, sigma_III_snow)
+eps_i_sinter = cond2eps_im(sigma_sinter, freq_test)
+eps_sinter = 2.2 + 1j*eps_i_sinter
 #print(sigma_pure_snow)
 
-freq_test = 500e6 #100 MHz
 eps_i_ice = cond2eps_im(sigma_solid_pure_ice, freq_test)
 print(eps_i_ice)
 
@@ -96,8 +102,27 @@ def enceladus_2layer(z, snow_depth=100, water_depth = 500): #Create a flat layer
         n_material = n_water
     return n_material
 
-def enceladus_environ(x, z, snow_depth = 100, meteor_list = [], crevass_list = [], aquifer_list=[]): #Creates a 2 layer geometry with added meteorites (spheres), crevasses and aquifers (triangles)
+def enceladus_3layer(z, snow_depth=100, sinter_depth = 150, water_depth = 500): #Create a flat layer of snow above ice
+    n_snow = eps2m(eps_snow)
+    n_ice = eps2m(eps_ice)
+    n_vacuum = 1.0
+    n_material = n_vacuum
+    n_water = eps2m(eps_water)
+    n_sinter = eps2m(eps_sinter)
+    if z >= 0 and z < snow_depth:
+        n_material = n_snow
+    elif z >= snow_depth and z < sinter_depth:
+        n_material = n_sinter
+    elif z>= sinter_depth and z < water_depth:
+        n_material = n_ice
+    elif z >= water_depth:
+        n_material = n_water
+    return n_material
+
+def enceladus_environ(x, z, snow_depth = 100, sinter_depth = np.nan, meteor_list = [], crevass_list = [], aquifer_list=[]): #Creates a 2 layer geometry with added meteorites (spheres), crevasses and aquifers (triangles)
     n_medium = enceladus_2layer(z, snow_depth)
+    if sinter_depth != np.nan:
+        n_medium = enceladus_3layer(z, snow_depth, sinter_depth)
 
     numMeteors = len(meteor_list)
     numCrevasses = len(crevass_list)
