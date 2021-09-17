@@ -125,11 +125,13 @@ elif mode == "backwards_solver":
 ### plot absolute value of field for whole simulation space ###
 fig = pl.figure()
 ax = fig.add_subplot(111)
-
-pl.imshow(np.transpose(abs(sim.get_field())), aspect='auto', cmap='hot',  vmin=1e-5, vmax=1e-2,
-          extent=(x[0], x[-1], zFull[-1], zFull[0]))
+#pl.imshow(10*np.log10(np.transpose(abs(sim.get_field()))), aspect='auto', cmap='hot',  vmin=-50, vmax=-20, extent=(x[0], x[-1], zFull[-1], zFull[0])) #dB Amplitude
+#pl.imshow(20*np.log10(np.transpose(abs(sim.get_field()))), aspect='auto', cmap='hot',  vmin=-100, vmax=-40, extent=(x[0], x[-1], zFull[-1], zFull[0])) #dB Power
+pmesh = pl.imshow(np.transpose(abs(sim.get_field())), aspect='auto', cmap='hot',  vmin=1e-5, vmax=1e-2, extent=(x[0], x[-1], zFull[-1], zFull[0]))
+cbar = pl.colorbar(pmesh)
+cbar.set_label()
 pl.title("Absolute Field, " + str(int(freq*1000))+" MHz")
-pl.ylim(zFull[-1],zFull[0])
+pl.ylim(z[-1],z[0])
 pl.xlabel("x (m)")
 pl.ylabel("z (m)")
 pl.show()
