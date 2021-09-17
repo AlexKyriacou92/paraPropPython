@@ -17,14 +17,14 @@ fname_in = sys.argv[1] #List of jobs to be executed
 path2jobs = sys.argv[2] #Directory to save bash scripts to
 
 #Cluster Settings
-NODES_MIN = 4
-NODES_MAX = 100
-PARTITION = 'long'
+NODES_MIN = 1
+NODES_MAX = 4
+PARTITION = 'normal'
 DAYS = 3
 HOURS = 0
-MEMORY = 400 # in MB
+MEMORY = 4000 # in MB
 
-def make_sbatch(jobline, fname, jobname, nNodes_min, nNodes_max, partition, days, hours, nodeMemory): #Make batch file to execute job
+def make_sbatch(jobline, fname, fname_out, jobname, nNodes_min, nNodes_max, partition, days, hours, nodeMemory): #Make batch file to execute job
     sbatch = "#SBATCH"
     fout = open(fname, 'w+')
     fout.write("#!/bin/sh\n")
@@ -40,6 +40,7 @@ def make_sbatch(jobline, fname, jobname, nNodes_min, nNodes_max, partition, days
     else:
         fout.write(sbatch + " --nodes=" + str(nNodes_min) + "-" + str(nNodes_max) + "\n")
     fout.write(sbatch + " --mem-per-cpu=" + str(nodeMemory) + " # in MB\n")
+    fout.write(sbatch + " -o " + str(fname_out) + "\n")
     fout.write(jobline)
 
     makeprogram = "chmod u+x " + fname
@@ -54,5 +55,6 @@ if __name__ == "__main__":
         src_depth = cols[3]
         jobname = "src" + src_depth
         sbatch_file = path2jobs + "/src" + src_depth + ".sh"
-        make_sbatch(jobline, sbatch_file, jobname, NODES_MIN, NODES_MAX, PARTITION, DAYS, HOURS, MEMORY)
+        out_file = path2jobs + "/src" + src_depth + ".out"
+        make_sbatch(jobline, sbatch_file, out_file, jobname, NODES_MIN, NODES_MAX, PARTITION, DAYS, HOURS, MEMORY)
     fin.close()
