@@ -1,0 +1,35 @@
+%Geometry Parameters
+#iceDepth   200
+#iceLength  200
+#airHeight  40
+#dx 5
+#dz 0.05
+
+#simul_mode 1D
+
+% #simul_mode 2D
+% #simul_mode backwards_solver
+
+%Transmitter & Receiver Parameters
+#tx_depths  -25 200 5
+#rx_depths  -25 200 5
+#rx_ranges  0   200 5
+
+%nProfile Parameters
+#depth_layer 100
+#eps_r_layer 10.
+#eps_i_layer 1e-5
+#glacier pure-ice
+
+%Pulse Parameters
+#Amplitude  100
+#freqCentral    0.5
+#freqHP 0.4
+#freqLP 0.6
+
+#freqMin    0.3
+#freqMax    0.7
+#freqSample 2.0
+
+#tCentral   50
+#tSample    2000
