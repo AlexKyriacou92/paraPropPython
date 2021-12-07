@@ -77,7 +77,7 @@ def glacier(z, data_file):
     elif z >= 0 and z < zmax:
         ii = util.findNearest(z_arr, z)
         n_medium = nprof[ii]
-    elif z >= zmax
+    elif z >= zmax:
         n_medium = nprof[-1]
     return n_medium
 
