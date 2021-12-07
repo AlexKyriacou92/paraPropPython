@@ -64,7 +64,7 @@ def poro2n(poro,eps_r0):
     return eps2m(eps_r)
 
 def glacier(z, data_file):
-    glacier_data = h5py.Open("share/" + data_file + ".h5", 'r')
+    glacier_data = h5py.File("share/" + data_file + ".h5", 'r')
     eps_data = glacier_data.get("eps-data")
     z_arr = eps_data[:,0]
     eps_r = eps_data[:,1]
