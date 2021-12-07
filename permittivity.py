@@ -78,7 +78,7 @@ def glacier(z, data_file):
         ii = util.findNearest(z_arr, z)
         n_medium = nprof[ii]
     elif z >= zmax:
-        n_medium = nprof[-1]
+        n_medium = 1.78
     return n_medium
 
 def glacier_layer(z, data_file, z_layer, eps_layer):

@@ -2,18 +2,14 @@
 #iceDepth   200
 #iceLength  200
 #airHeight  40
-#dx 5
+#dx 1
 #dz 0.05
-
 #simul_mode 1D
 
-% #simul_mode 2D
-% #simul_mode backwards_solver
-
 %Transmitter & Receiver Parameters
-#tx_depths  -25 200 5
-#rx_depths  -25 200 5
-#rx_ranges  0   200 5
+#tx_depths  -25 100 2
+#rx_depths  -25 100 2
+#rx_ranges  0   100 2
 
 %nProfile Parameters
 #depth_layer 100
