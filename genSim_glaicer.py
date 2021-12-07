@@ -162,17 +162,17 @@ if util.select_variable("depth_layer", fname_in) != np.nan:
 if simul_mode == "1D":
     if glacier_name != "pure-ice":
         if util.select_variable("depth_layer", fname_in) != np.nan:
-            def nProf(x, z):
+            def nProf(z):
                 n_material = epsilon.glacier_layer(z, glacier_name, depth_layer, eps_layer)
         else:
             def nProf(x,z):
                 n_material = epsilon.glacier(z, glacier_name)
     else:
         if util.select_variable("depth_layer", fname_in) != np.nan:
-            def nProf(x, z):
+            def nProf(z):
                 n_material = epsilon.pure_ice_glacier(x, z, depth_layer, eps_layer)
         else:
-            def nProf(x, z):
+            def nProf(z):
                 n_material = epsilon.pure_ice(x,z)
 
 output_hdf.attrs["nProf"] = glacier_name
