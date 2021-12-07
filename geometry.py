@@ -1,6 +1,6 @@
 import numpy as np
 from math import pi
-from permittivity import eps2m
+#from permittivity import eps2m
 from shapely.geometry import Point
 from shapely.geometry.polygon import Polygon
 
@@ -39,7 +39,7 @@ class circle:
 
     def isInside(self, x1, z1):
         dx = x1 - self.x
-        dz = z1 = self.z
+        dz = z1 - self.z
         dr = np.sqrt(dx ** 2 + dz ** 2)
         if dr < self.r:
             return True
@@ -84,10 +84,10 @@ class triangle:
 
 class polygon:
     def __init__(self, list_points, eps_r=1+0j):
-        self.npoints = len(list_coords)
+        self.npoints = len(list_points)
         self.eps_r = eps_r
         self.n = eps2m(eps_r)
-        self.shape = Polygon(list_coords)
+        self.shape = Polygon(list_points)
 
     def isInside(self, x, z):
         pt = Point(x,z)
