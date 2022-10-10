@@ -9,6 +9,20 @@ from inspect import signature
 from scipy.interpolate import interp1d
 from scipy import signal
 
+'''
+This module defines the receiver class
+    -Receivers (RX) are points in the ice geometry which measure the radio signal from the transmitter
+    i.e. the 'observers'
+    -In FD mode, RXs are optional -> this will just tell you the amplitude at the RX point
+    -In TD mode, RXs are mandatory -> the received signal is reconstructed by the spectrum at the RX
+    
+    Parameters:
+    x -> the receiver range
+    z -> the receiver depth (note that z > 0 means below surface, and z < 0 means above)
+'''
+
+#TODO: Define Rx array in this file?
+
 class receiver:
     """
     Parameters
@@ -141,3 +155,5 @@ class receiver:
         1-d float array
         """
         return self.time
+
+#TODO: Add antenna pattern to this module
