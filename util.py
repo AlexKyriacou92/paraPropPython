@@ -2,6 +2,7 @@
 # s. prohira
 # GPL v3
 
+import matplotlib.pyplot as plt
 import numpy as np
 import scipy as sci
 import scipy.constants as constant
@@ -11,9 +12,13 @@ import scipy.interpolate as interp
 from scipy.signal import butter, lfilter
 from numpy import linalg as la
 import csv
+from numpy.lib.format import open_memmap
+import h5py
 
 I=1.j
 c_light = .29979246;#m/ns
+c0 = c_light*1e9
+
 pi = 3.14159265358979323846; #radians
 twoPi = 2.*pi; #radians
 z_0=50; #ohms
@@ -327,6 +332,17 @@ def butterBandpassFilter(data, lowcut, highcut, fs, order=3):
     y = lfilter(b, a, data)
     return y
 
+def butterHighpass(cutoff, fs, order=5):
+    nyq = 0.5 * fs
+    normal_cutoff = cutoff / nyq
+    b, a = sig.butter(order, normal_cutoff, btype='high', analog=False)
+    return b, a
+
+def butterHighpassFilter(data, cutoff, fs, order=5):
+    b, a = butterHighpass(cutoff, fs, order=order)
+    y = sig.filtfilt(b, a, data)
+    return y
+
 def butterLowpass(highcut, fs, order=5):
     nyq = 0.5 * fs
     high = highcut / nyq
@@ -361,8 +377,208 @@ def reflection_coefficient(m1, m2):
     k1 = m1.imag
     n2 = m2.real
     k2 = m2.imag
-    return (abs(n1 - n2)**2 + abs(k1-k2)**2) / (abs(n1+n2)**2 + abs(k1 + k2)**2)
+    #return abs(n1-n2)/abs(n1+n2)
+
+    return np.sqrt((abs(n1 - n2)**2 + abs(k1-k2)**2) / (abs(n1+n2)**2 + abs(k1 + k2)**2))
 
 #Transmission Coefficient
 def transmission_coefficient(m1, m2):
     return 1 - reflection_coefficient(m1, m2)
+
+def create_memmap(file, dimensions, data_type ='complex'):
+    A = open_memmap(file, shape = dimensions, mode='w+', dtype = data_type)
+    return A
+
+def get_maximum_index(arr):
+    ii = np.argmax(arr)
+    return ii
+
+def get_maximum_x(x, y):
+    ii = np.argmax(y)
+    xMax = x[ii]
+    return xMax
+
+def roll_back(t, sig, t_expected):
+    ii_sim = get_maximum_index(abs(sig))
+    ii_expected = findNearest(t, t_expected)
+    if ii_sim >= ii_expected:
+        delta_ii = ii_sim - ii_expected
+    elif ii_sim < ii_expected:
+        delta_ii = ii_expected - ii_sim
+    sig_roll = np.roll(sig, -delta_ii)
+    return sig_roll
+
+#=================================================================================================
+'''
+Analysis Tools
+'''
+#=================================================================================================
+
+def gaussian(x, mu, sig, norm, base):  # gaussian distribution + nooise
+    a = -1. * pow(x - mu, 2.) / (2 * pow(sig, 2.))
+    return norm * np.exp(a) + base
+
+
+def gaussian_simple(x, mu, sig, norm, base):  # gaussian distribution + nooise
+    a = -1. * pow(x - mu, 2.) / (2 * pow(sig, 2.))
+    return norm * np.exp(a)
+
+def cut_waveform(wvf, dt, t1, t2):
+    N = len(wvf)
+    tmax = N*dt
+    n1 = int(t1/tmax * N)
+    n2 = int(t2/tmax * N)
+    tspace = np.linspace(0, tmax, N)
+    return wvf[n1:n2], tspace[n1:n2]
+
+def median_power(spectrum, dt, f1, f2):
+    N = len(spectrum)
+    f_nyq = (1/(2*dt))
+    print('f_nyq = ', f_nyq)
+    n1 = int(f1/f_nyq * float(N))
+    n2 = int(f2/f_nyq * float(N))
+    print(n1, n2, n2-n1)
+    spectrum_cut = spectrum[n1:n2]
+    print('spectrum cut =', spectrum_cut)
+    print(np.median(spectrum_cut))
+    return np.median(spectrum_cut)
+
+fitfunc = lambda p, x: gaussian(x, p[0], p[1], p[2], p[3])  # fit function for SciPy optimize
+errfunc = lambda p, x, y: fitfunc(p, x) - y  # residual function -> minimized by SciPy optimize\
+
+def padd_wvf(arr, index):
+    nArr = len(arr)
+    hArr = int(float(len(arr)) / 2)
+    nPadd = 2 ** index
+    padded_wvf = np.zeros(nPadd)
+    hPadd = int(float(nPadd) / 2)
+    nPadd_cut = len(padded_wvf[hPadd - hArr: hPadd + hArr])
+    if nPadd_cut == nArr:
+        padded_wvf[hPadd - hArr: hPadd + hArr] = arr
+    elif nPadd_cut > nArr:
+        dArr = nPadd_cut - nArr
+        padded_wvf[hPadd - hArr: hPadd + hArr - dArr] = arr
+    elif nArr > nPadd_cut:
+        padded_wvf[hPadd - hArr: hPadd + hArr] = arr[:nPadd_cut]
+    return padded_wvf
+
+def padded_frequency(index, dt):
+    nPadd = 2**index
+    return np.fft.rfftfreq(nPadd, dt)
+
+fitfunc = lambda p, x: gaussian(x, p[0], p[1], p[2], p[3])  # fit function for SciPy optimize
+errfunc = lambda p, x, y: fitfunc(p, x) - y  # residual function -> minimized by SciPy optimize
+
+def get_fft_data(fname_hdf, t_cut0 = 0, t_cut1 = 600e-9):
+    hdf_input = h5py.File(fname_hdf, 'r')
+    wvf_ave = np.array(hdf_input.get('wvf_ave'))
+    dt = float(hdf_input.attrs['dt'])
+    nSamples = int(hdf_input.attrs['nSamples'])
+    tspace = np.linspace(0, nSamples * dt, nSamples)
+
+    B = float(hdf_input.attrs['band'])
+    dfdt = float(hdf_input.attrs['dfdt'])
+    T = float(hdf_input.attrs['T'])
+    Tmin = 0.05 * T
+    Tmax = 0.95 * T
+
+    L = float(hdf_input.attrs['L_tx']) - float(hdf_input.attrs['L_rx'])
+    R = float(hdf_input.attrs['R'])
+
+    t_cutoff = L/(c0*0.66)
+    fcutoff = dfdt * L / (c0 * 0.66) / 4.
+
+    # Procedure -->
+    # Cutt Wvf --->
+    wvf_cut, t_cut = cut_waveform(wvf_ave, dt, Tmin, Tmax)
+
+    # Apply High Pass Filter > dfdt * L/v_cable / 4 -> 2.5 kHz
+    wvf_filt = butterHighpassFilter(wvf_cut, fcutoff, 1 / dt, order=3)
+
+    # Apply Blackman Window Function
+    wvf_filt *= np.blackman(len(wvf_filt))
+
+    # Apply Padding
+    i_padd = 20
+    wvf_padd = padd_wvf(wvf_filt, i_padd)
+
+    fft_padd = np.fft.rfft(wvf_padd)
+    freq_padd = padded_frequency(i_padd, dt)
+
+    fft_abs = abs(fft_padd) ** 2
+    time_of_flight = freq_padd / dfdt - t_cutoff
+    ii_min = findNearest(time_of_flight, t_cut0)
+    ii_max = findNearest(time_of_flight, t_cut1)
+    fft_abs_out = fft_abs[ii_min:ii_max]
+    time_of_flight_out = time_of_flight[ii_min:ii_max]
+    hdf_input.close()
+    return fft_abs_out, time_of_flight_out
+
+def get_waveform_simulation(fname, zTx, xRx, zRx):
+    fname_h5 = fname + '.h5'
+    fname_npy = fname + '.npy'
+
+    input_hdf = h5py.File(fname_h5, 'r')
+
+    dt = input_hdf.attrs["dt"]
+    nSamples = input_hdf.attrs["nSamples"]
+
+    tspace = np.linspace(0, dt * nSamples, nSamples) * 1e-9
+    bscan = np.load(fname_npy, 'r')
+
+    tx_depths = np.array(input_hdf.get('source_depths'))
+    rx_depths = np.array(input_hdf.get('rx_depths'))
+    rx_ranges = np.array(input_hdf.get('rx_range'))
+
+    ii_tx_z = findNearest(tx_depths, zTx)
+    ii_rx_x = findNearest(rx_ranges, xRx)
+    ii_rx_z = findNearest(rx_depths, zRx)
+
+    sig_rx = bscan[ii_tx_z, ii_rx_x, ii_rx_z]
+    return sig_rx, tspace
+
+def create_hdf(fname, sim, tx_signal, tx_depths, rx_ranges, rx_depths, comment=""):
+    output_hdf = h5py.File(fname, 'w')
+    output_hdf.attrs["iceDepth"] = sim.iceDepth
+    output_hdf.attrs["iceLength"] = sim.iceLength
+    output_hdf.attrs["airHeight"] = sim.airHeight
+    output_hdf.attrs["dx"] = sim.dx
+    output_hdf.attrs["dz"] = sim.dz
+    output_hdf.create_dataset('n_matrix', data=sim.get_n())
+
+    output_hdf.attrs["Amplitude"] = tx_signal.amplitude
+    output_hdf.attrs["freqCentral"] = tx_signal.frequency
+    output_hdf.attrs["Bandwidth"] = tx_signal.bandwidth
+    output_hdf.attrs["freqLP"] = tx_signal.freqMax
+    output_hdf.attrs["freqHP"] = tx_signal.freqMin
+    output_hdf.attrs["freqSample"] = tx_signal.fsample
+    output_hdf.attrs["freqNyquist"] = tx_signal.freq_nyq
+    output_hdf.attrs["tCentral"] = tx_signal.t_centre
+    output_hdf.attrs["tSample"] = tx_signal.tmax
+    output_hdf.attrs["dt"] = tx_signal.dt
+    output_hdf.attrs["nSamples"] = tx_signal.nSamples
+
+    n_profile_data = np.zeros((2, len(sim.get_n(x=0))))
+    n_profile_data[0] = sim.z
+    n_profile_data[1] = sim.get_n(x=0)
+
+    nRX_x = len(rx_ranges)
+    nRX_z = len(rx_depths)
+    rxArray = np.ones((nRX_x, nRX_z, 2))
+    for i in range(nRX_x):
+        for j in range(nRX_z):
+            rxArray[i,j,0] = rx_ranges[i]
+            rxArray[i,j,1] = rx_depths[j]
+
+    output_hdf.create_dataset("rxArray", data=rxArray)
+    output_hdf.create_dataset('n_profile', data=n_profile_data)
+    output_hdf.create_dataset("source_depths", data=tx_depths)
+    output_hdf.create_dataset('tspace', data=tx_signal.tspace)
+    output_hdf.create_dataset('signalPulse', data=tx_signal.pulse)
+    output_hdf.create_dataset('signalSpectrum', data=tx_signal.spectrum)
+    output_hdf.create_dataset("rx_range", data= rx_ranges)
+    output_hdf.create_dataset("rx_depths", data = rx_depths)
+
+    output_hdf.attrs["comment"] = comment
+
+    return output_hdf
