@@ -12,6 +12,11 @@ import configparser
 import argparse
 
 def create_sim(fname_config): #Creates Simulation from config file using parser
+    '''
+    Creates paraProp simulation object (see paraPropPython.py) object from config file
+
+    Note -> paraProp object defines geometry only -> source, signal, receivers and n-profile has to be defined afterwards
+    '''
     config = configparser.ConfigParser()
     config.read(fname_config)
     geometry = config['GEOMETRY']
@@ -21,6 +26,12 @@ def create_sim(fname_config): #Creates Simulation from config file using parser
     return sim
 
 def create_tx_signal(fname_config):
+    '''
+    Defines time-domain at transmitter
+
+    Input:
+     - fname_config : config file -> sets all the parameters of the simulation
+    '''
     config = configparser.ConfigParser()
     config.read(fname_config)
     signal_config = config['TX_SIGNAL']
@@ -30,6 +41,12 @@ def create_tx_signal(fname_config):
     return sig_tx
 
 def create_receiver_array(fname_config):
+    '''
+        Defines receiver array
+
+        Input:
+         - fname_config : config file -> sets all the parameters of the simulation
+    '''
     config = configparser.ConfigParser()
     config.read(fname_config)
     receiver_config = config['RECEIVER']
@@ -42,6 +59,12 @@ def create_receiver_array(fname_config):
     return rx_ranges, rx_depths
 
 def create_rx_ranges(fname_config):
+    '''
+            Defines receiver ranges from an external file
+
+            Input:
+             - fname_config : config file -> sets all the parameters of the simulation
+    '''
     config = configparser.ConfigParser()
     config.read(fname_config)
     receiver_config = config['RECEIVER']
