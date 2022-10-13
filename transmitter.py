@@ -6,6 +6,11 @@ from scipy.interpolate import interp1d
 from scipy import signal
 # A. Kyriacou
 
+'''
+This module defines the transmitter and transmitted signal
+Trasnmitter acts as the source for the radio emission that is observed at the receiver points
+'''
+
 class tx_signal:
     def __init__(self, frequency, bandwidth, t_centre, dt, tmax, amplitude = 1, freqMin=None, freqMax=None):
         self.amplitude = amplitude
