@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as pl
 from random import random, randint, uniform
 
-
+#Test functions for mutation and cloning
 
 def cross_breed(prof1, prof2):
     '''
