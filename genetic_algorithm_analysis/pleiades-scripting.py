@@ -64,8 +64,8 @@ def make_job(fname_shell, fname_outfile, jobname, command, nNodes_min=NODES_MIN,
     os.system(makeprogram)
     return -1
 
-def make_command(ref_file, nprof_matrix, ii):
-    command = 'python runSim_nprofile.py ' + ref_file + ' ' + nprof_matrix + ' ' + str(ii)
+def make_command(config_file, bscan_data_file, nprof_matrix_file, ii, jj):
+    command = 'python runSim_nprofile.py ' + config_file + ' ' + bscan_data_file + ' ' + nprof_matrix_file + ' ' + str(ii) + str(jj)
     return command
 
 def submitjob(fname_sh):
@@ -73,20 +73,20 @@ def submitjob(fname_sh):
     command = sbatch + " " + fname_sh
     os.system(command)
 
-def run_jobs(prefix, ref_file, fname_nprof_matrix, gen):
-    nprof_h5 = h5py.File(fname_nprof_matrix, 'r')
+def run_jobs(prefix, config_file, bscan_data_file, nprof_matrix_file, gene):
+    nprof_h5 = h5py.File(nprof_matrix_file, 'r')
     nprof_matrix = np.array(nprof_h5.get(nprof_h5.get('n_profile_matrix')))
-    nprof_list = nprof_matrix[gen]
+    nprof_list = nprof_matrix[gene]
     nProf = len(nprof_list)
     nprof_h5.close()
 
     fname_joblist = prefix + '-joblist.txt'
     fout_joblist = open(fname_joblist,'w')
     fout_joblist.write('Joblist ' + prefix + '\n')
-    fout_joblist.write(prefix + '\t' + ref_file + '\t' + fname_nprof_matrix + '\t' + str(gen) + '\n')
+    fout_joblist.write(prefix + '\t' + config_file + '\t' + bscan_data_file + '\t' + nprof_matrix_file + '\t' + str(gene) + '\n')
     fout_joblist.write('shell_file' + '\t' + 'output_file' + '\t' + 'prof_number' + '\n \n')
     for i in range(nProf):
-        command = make_command(ref_file, fname_nprof_matrix, i)
+        command = make_command(config_file, bscan_data_file, nprof_matrix_file, gene, i)
         jobname = 'job-' + str(i)
         fname_shell = prefix + jobname + '.sh'
         fname_out = prefix + jobname + '.out'
