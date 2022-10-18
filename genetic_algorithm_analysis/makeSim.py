@@ -24,12 +24,16 @@ nGenerations = int(sys.argv[4]) #number of generations
 
 def createMatrix(fname_config, n_prof_initial, fname_nmatrix, nGenerations): #creates matrix
     nProf = len(n_prof_initial)
-    nmatrix_hdf = h5py.File(fname_nmatrix)
+    nDepths = len(n_prof_initial[0])
+    nmatrix_hdf = h5py.File(fname_nmatrix,'w')
     
-    S_arr = np.zeros(nGenerations, nProf)
-    n_matrix = np.zeros(nGenerations, nProf)
-    nmatrix_hdf.create_dataset('n_profile_matrix', n_matrix)
-    nmatrix_hdf.create_dataset('S_arr', S_arr)
+    S_arr = np.zeros((nGenerations, nProf))
+    n_matrix = np.zeros((nGenerations, nProf, nDepths))
+    n_matrix[0] = n_prof_initial
+    nmatrix_hdf.create_dataset('n_profile_matrix', data=n_matrix)
+    nmatrix_hdf.create_dataset('S_arr', data=S_arr)
+    nmatrix_hdf.attrs["nGenerations"] = nGenerations
+    nmatrix_hdf.attrs["nIndividuals"] = nProf
 
     sim = create_sim(fname_config)
     nmatrix_hdf.attrs["iceDepth"] = sim.iceDepth
@@ -66,6 +70,8 @@ def createMatrix(fname_config, n_prof_initial, fname_nmatrix, nGenerations): #cr
     nmatrix_hdf.create_dataset("rxArray", data=rxArray)
     nmatrix_hdf.create_dataset("source_depths", data=tx_depths)
     nmatrix_hdf.create_dataset('tspace', data=tx_signal.tspace)
+
+    tx_signal.get_gausspulse()
     nmatrix_hdf.create_dataset('signalPulse', data=tx_signal.pulse)
     nmatrix_hdf.create_dataset('signalSpectrum', data=tx_signal.spectrum)
     nmatrix_hdf.create_dataset("rx_range", data=rx_ranges)
