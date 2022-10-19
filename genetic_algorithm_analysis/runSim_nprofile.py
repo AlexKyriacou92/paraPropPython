@@ -27,7 +27,7 @@ jj_select = int(sys.argv[5])
 n_matrix_hdf = h5py.File(fname_n_matrix,'r')
 n_profile_matrix = np.array(n_matrix_hdf.get('n_profile_matrix'))
 n_profile_ij = n_profile_matrix[ii_gene,jj_select]
-z_profile_ij = np.array(n_matrix_hdf.get('z_profile_output'))
+z_profile_ij = np.array(n_matrix_hdf.get('z_profile'))
 
 n_matrix_hdf.close()
 
@@ -52,6 +52,9 @@ nRX_z = len(rx_depths)
 
 bscan_npy = np.zeros((nDepths, nRX_x, nRX_z, tx_signal.nSamples),dtype='complex')
 
+print(n_profile_ij)
+print('')
+print(z_profile_ij)
 for i in range(nDepths):
 
     tstart = time.time()

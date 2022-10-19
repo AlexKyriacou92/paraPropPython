@@ -22,15 +22,16 @@ fname_nmatrix = sys.argv[3] #h5 file -> will contain all n_profiles, and fitness
 nGenerations = int(sys.argv[4]) #number of generations
 '''
 
-def createMatrix(fname_config, n_prof_initial, fname_nmatrix, nGenerations): #creates matrix
+def createMatrix(fname_config, n_prof_initial, z_profile, fname_nmatrix, nGenerations): #creates matrix
     nProf = len(n_prof_initial)
     nDepths = len(n_prof_initial[0])
     nmatrix_hdf = h5py.File(fname_nmatrix,'w')
-    
+
     S_arr = np.zeros((nGenerations, nProf))
     n_matrix = np.zeros((nGenerations, nProf, nDepths))
     n_matrix[0] = n_prof_initial
     nmatrix_hdf.create_dataset('n_profile_matrix', data=n_matrix)
+    nmatrix_hdf.create_dataset('z_profile', z_profile)
     nmatrix_hdf.create_dataset('S_arr', data=S_arr)
     nmatrix_hdf.attrs["nGenerations"] = nGenerations
     nmatrix_hdf.attrs["nIndividuals"] = nProf
