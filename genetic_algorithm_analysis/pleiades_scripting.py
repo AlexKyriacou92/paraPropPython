@@ -75,7 +75,7 @@ def submitjob(fname_sh):
 
 def test_job(prefix, config_file, bscan_data_file, nprof_matrix_file, gene, individual):
     nprof_h5 = h5py.File(nprof_matrix_file, 'r')
-    nprof_matrix = np.array(nprof_h5.get(nprof_h5.get('n_profile_matrix')))
+    nprof_matrix = np.array(nprof_h5.get('n_profile_matrix'))
     nprof_list = nprof_matrix[gene]
     nProf = len(nprof_list)
     nprof_h5.close()
