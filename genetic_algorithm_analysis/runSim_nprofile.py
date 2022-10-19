@@ -93,7 +93,7 @@ for i in range(nDepths):
     for j in range(nRX_x):
         for k in range(nRX_z):
             Corr += fitness_correlation(abs(bscan_data.bscan_sig[i,j,k]), abs(bscan_npy[i,j,k]))
-S_corr = 1/Corr
+S_corr = Corr
 print(Corr, S_corr)
 n_matrix_hdf = h5py.File(fname_n_matrix,'r+')
 S_arr = n_matrix_hdf['S_arr']
