@@ -73,6 +73,27 @@ def submitjob(fname_sh):
     command = sbatch + " " + fname_sh
     os.system(command)
 
+def test_job(prefix, config_file, bscan_data_file, nprof_matrix_file, gene, individual):
+    nprof_h5 = h5py.File(nprof_matrix_file, 'r')
+    nprof_matrix = np.array(nprof_h5.get(nprof_h5.get('n_profile_matrix')))
+    nprof_list = nprof_matrix[gene]
+    nProf = len(nprof_list)
+    nprof_h5.close()
+
+    fname_joblist = prefix + '-joblist.txt'
+    fout_joblist = open(fname_joblist, 'w')
+    fout_joblist.write('Joblist ' + prefix + '\n')
+    fout_joblist.write(
+        prefix + '\t' + config_file + '\t' + bscan_data_file + '\t' + nprof_matrix_file + '\t' + str(gene) + '\n')
+    fout_joblist.write('shell_file' + '\t' + 'output_file' + '\t' + 'prof_number' + '\n \n')
+    command = make_command(config_file, bscan_data_file, nprof_matrix_file, gene, individual)
+    jobname = 'job-' + str(individual)
+    fname_shell = prefix + jobname + '.sh'
+    fname_out = prefix + jobname + '.out'
+    line = fname_shell + '\t' + fname_out + '\t' + str(individual) + '\n'
+    fout_joblist.write(line)
+    make_job(fname_shell, fname_out, jobname, command)
+
 def run_jobs(prefix, config_file, bscan_data_file, nprof_matrix_file, gene):
     nprof_h5 = h5py.File(nprof_matrix_file, 'r')
     nprof_matrix = np.array(nprof_h5.get(nprof_h5.get('n_profile_matrix')))
