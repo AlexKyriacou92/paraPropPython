@@ -38,6 +38,7 @@ nIndividuals = 10
 data_nprof0 = np.genfromtxt('start_profiles/parallel-profile-0504_1st-pk.txt')
 zprof_0 = data_nprof0[:,0]
 nprof_0 = data_nprof0[:,1]
+print(zprof_0)
 
 #Initialize Profiles
 n_prof_start = initialize_from_analytical(nprof_0, 0.2*np.ones(len(nprof_0)), nStart)

@@ -31,7 +31,7 @@ def createMatrix(fname_config, n_prof_initial, z_profile, fname_nmatrix, nGenera
     n_matrix = np.zeros((nGenerations, nProf, nDepths))
     n_matrix[0] = n_prof_initial
     nmatrix_hdf.create_dataset('n_profile_matrix', data=n_matrix)
-    nmatrix_hdf.create_dataset('z_profile', z_profile)
+    nmatrix_hdf.create_dataset('z_profile', data=z_profile)
     nmatrix_hdf.create_dataset('S_arr', data=S_arr)
     nmatrix_hdf.attrs["nGenerations"] = nGenerations
     nmatrix_hdf.attrs["nIndividuals"] = nProf

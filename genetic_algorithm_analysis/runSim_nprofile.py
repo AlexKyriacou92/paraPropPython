@@ -28,6 +28,7 @@ n_matrix_hdf = h5py.File(fname_n_matrix,'r')
 n_profile_matrix = np.array(n_matrix_hdf.get('n_profile_matrix'))
 n_profile_ij = n_profile_matrix[ii_gene,jj_select]
 z_profile_ij = np.array(n_matrix_hdf.get('z_profile'))
+print(np.array(n_matrix_hdf['source_depths']))
 
 n_matrix_hdf.close()
 
@@ -95,6 +96,6 @@ for i in range(nDepths):
 S_corr = 1/Corr
 print(Corr, S_corr)
 n_matrix_hdf = h5py.File(fname_n_matrix,'r+')
-S_arr = n_matrix_hdf['S_matrix']
+S_arr = n_matrix_hdf['S_arr']
 S_arr[ii_gene,jj_select] = S_corr
 n_matrix_hdf.close()
