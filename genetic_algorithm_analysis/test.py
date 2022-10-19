@@ -9,7 +9,7 @@ import h5py
 from fitness_function import fitness_correlation
 from makeSim import createMatrix
 from genetic_functions import initialize_from_analytical
-from pleiades_scripting import make_command
+from pleiades_scripting import make_command, test_job
 
 sys.path.append('../')
 import paraPropPython as ppp
@@ -56,16 +56,19 @@ n_prof_initial = n_prof_start[:nIndividuals]
 fname_config = 'config_aletsch.txt'
 fname_nmatrix = 'test_nmatrix.h5'
 nGenerations = 10
-createMatrix(fname_config=fname_config, n_prof_initial=n_prof_initial, fname_nmatrix=fname_nmatrix, nGenerations = nGenerations)
-#=============================================================================================================================
+createMatrix(fname_config=fname_config, n_prof_initial=n_prof_initial,
+             fname_nmatrix=fname_nmatrix, nGenerations = nGenerations)
+#=========================================================================================
 
 #Create Pseudo_Data
 fname_output_pseudo = 'psuedo_data.h5'
 os.system('python runSim_pseudo_data.py ' + fname_config + ' ' + fname_nprof_pseudo + ' ' + fname_output_pseudo)
 
 #make_command(config_file, bscan_data_file, nprof_matrix_file, ii, jj):
-sim_command = make_command(fname_config, fname_output_pseudo, fname_nmatrix, 0, 0)
+#sim_command = make_command(fname_config, fname_output_pseudo, fname_nmatrix, 0, 0)
 
+test_job(prefix='job', config_file=fname_config, bscan_data_file=fname_output_pseudo,
+         nprof_matrix_file=fname_nmatrix, gene=0, individual=0)
 '''
 #First Generation:
 os.command()
