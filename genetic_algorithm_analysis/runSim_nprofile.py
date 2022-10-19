@@ -39,7 +39,6 @@ if jj_select >= len(n_profile_matrix):
 
 bscan_data = bscan()
 bscan_data.load_sim(fname_data)
-rx_ranges = np.array()
 
 tx_signal = create_tx_signal(fname_config)
 tx_signal.get_gausspulse()
