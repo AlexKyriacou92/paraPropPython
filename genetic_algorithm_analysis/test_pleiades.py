@@ -67,9 +67,10 @@ os.system('python runSim_pseudo_data.py ' + fname_config + ' ' + fname_nprof_pse
 #make_command(config_file, bscan_data_file, nprof_matrix_file, ii, jj):
 #sim_command = make_command(fname_config, fname_output_pseudo, fname_nmatrix, 0, 0)
 
-fname_shell = test_job(prefix='test', config_file=fname_config, bscan_data_file=fname_output_pseudo,
-         nprof_matrix_file=fname_nmatrix, gene=0, individual=0)
-submit_job(fname_shell)
+for i in range(nIndividuals):
+    fname_shell = test_job(prefix='test', config_file=fname_config, bscan_data_file=fname_output_pseudo,
+             nprof_matrix_file=fname_nmatrix, gene=0, individual=0)
+    submit_job(fname_shell)
 '''
 #First Generation:
 os.command()
