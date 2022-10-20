@@ -69,7 +69,7 @@ os.system('python runSim_pseudo_data.py ' + fname_config + ' ' + fname_nprof_pse
 
 for i in range(nIndividuals):
     fname_shell = test_job(prefix='test', config_file=fname_config, bscan_data_file=fname_output_pseudo,
-             nprof_matrix_file=fname_nmatrix, gene=0, individual=0)
+             nprof_matrix_file=fname_nmatrix, gene=0, individual=i)
     submit_job(fname_shell)
 '''
 #First Generation:
