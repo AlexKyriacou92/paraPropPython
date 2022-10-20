@@ -54,7 +54,7 @@ for i in range(nDepths):
         n_prof_psuedo_data[i] = n_max
 
 fname_nprof_pseudo = 'test_nprof_start.txt'
-#save_profile(fname_nprof_pseudo, zprof_0, nprof_0)
+save_profile(fname_nprof_pseudo, zprof_0, nprof_0)
 
 n_prof_start = n_prof_start[1:]
 
