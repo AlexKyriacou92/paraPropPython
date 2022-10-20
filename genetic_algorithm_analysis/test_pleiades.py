@@ -35,21 +35,49 @@ def save_profile(fname_profile, z_profile, n_profile):
 
 nStart = 1000
 nIndividuals = 10
-data_nprof0 = np.genfromtxt('start_profiles/parallel-profile-0504_1st-pk.txt')
+#data_nprof0 = np.genfromtxt('start_profiles/parallel-profile-0605_1st-pk.txt')
+data_nprof0 = np.genfromtxt('start_profiles/aletsch_glacier_2.txt')
 zprof_0 = data_nprof0[:,0]
 nprof_0 = data_nprof0[:,1]
-
+nDepths = len(zprof_0)
 #Initialize Profiles
-n_prof_start = initialize_from_analytical(nprof_0, 0.2*np.ones(len(nprof_0)), nStart)
+n_prof_start = initialize_from_analytical(nprof_0, 0.04*np.ones(len(nprof_0)), nStart)
 
-n_prof_psuedo_data = n_prof_start[0]
+n_prof_psuedo_data = nprof_0
+n_min = 1.1
+n_max = 1.8
+
+for i in range(nDepths):
+    if n_prof_psuedo_data[i] < n_min:
+        n_prof_psuedo_data[i] = n_min
+    elif n_prof_psuedo_data[i] > n_max:
+        n_prof_psuedo_data[i] = n_max
+
 fname_nprof_pseudo = 'test_nprof_start.txt'
-save_profile(fname_nprof_pseudo, zprof_0, nprof_0)
+#save_profile(fname_nprof_pseudo, zprof_0, nprof_0)
 
 n_prof_start = n_prof_start[1:]
 
 random.shuffle(n_prof_start)
 n_prof_initial = n_prof_start[:nIndividuals]
+print(len(n_prof_initial))
+for j in range(nIndividuals):
+    n_prof_j = n_prof_initial[j]
+    for i in range(nDepths):
+        if n_prof_j[i] < n_min:
+            n_prof_initial[j][i] = n_min
+        elif n_prof_j[i] > n_max:
+            n_prof_initial[j][i] = n_max
+'''
+fig = pl.figure(figsize=(8,5))
+ax = fig.add_subplot(111)
+for i in range(nIndividuals):
+    ax.plot(zprof_0, n_prof_initial[i],'-o', label = str(i))
+ax.grid()
+ax.legend()
+pl.show()
+'''
+
 #=======================================================================================
 
 #Create n-matrix
@@ -71,7 +99,3 @@ for i in range(nIndividuals):
     fname_shell = test_job(prefix='test', config_file=fname_config, bscan_data_file=fname_output_pseudo,
              nprof_matrix_file=fname_nmatrix, gene=0, individual=i)
     submit_job(fname_shell)
-'''
-#First Generation:
-os.command()
-'''
