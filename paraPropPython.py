@@ -329,7 +329,7 @@ class paraProp:
         centerLmbda = util.c_light/centerFreq
         
         ### wavelength at reference depth ###
-        centerLmbda0 = centerLmbda/self.n0
+        centerLmbda0 = centerLmbda/abs(self.n0)
         
         ### create dipole ###
         z0 = depth

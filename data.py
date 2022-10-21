@@ -127,7 +127,7 @@ def create_hdf_bscan(fname, sim, tx_signal, tx_depths, rx_ranges, rx_depths, com
     output_hdf.attrs["dt"] = tx_signal.dt
     output_hdf.attrs["nSamples"] = tx_signal.nSamples
 
-    n_profile_data = np.zeros((2, len(sim.get_n(x=0))))
+    n_profile_data = np.zeros((2, len(sim.get_n(x=0))), dtype='complex')
     n_profile_data[0] = sim.z
     n_profile_data[1] = sim.get_n(x=0)
 
