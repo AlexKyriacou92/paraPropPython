@@ -135,6 +135,12 @@ def tournament(pop_list, S_list, nprof_initial, clone_fraction = 0.1, parent_fra
     return new_population
 
 def roulette(pop_list, S_list, nprof_initial, clone_fraction = 0.1, parent_fraction = 0.8, immigrant_fraction = 0.1, mutation_thres = 0.95, mutation_prob = 0.5):
+    '''
+    pop_list : list of n_profiles from generation
+    S_list : the fitness function from generation
+    nprof_initial : the initial distribution of n_profiles
+
+    '''
     X = np.array(pop_list)
     Y = np.array(S_list)
     #Z = [x for _, x in sorted(Y,X)]
@@ -185,7 +191,7 @@ def roulette(pop_list, S_list, nprof_initial, clone_fraction = 0.1, parent_fract
     #apply mutations
     children_list = []
 
-    for k in range(nParents):
+    for k in range(len(children_list0)):
         nprof_k = children_list0[k]
         r = random.uniform(0, 1)
         if r > mutation_prob:
@@ -198,12 +204,15 @@ def roulette(pop_list, S_list, nprof_initial, clone_fraction = 0.1, parent_fract
     for l in range(nChildren):
         new_population.append(children_list[l])
 
-    nImmigrants = N - nChildren
+    nImmigrants = N - nChildren - 1
     jj_ints = np.random.randint(0, len(nprof_initial), nImmigrants)
     for m in range(nImmigrants):
         r = random.uniform(0, 1)
         if r > mutation_prob:
+            print(nprof_initial[jj_ints[m]])
             new_population.append(flat_mutation(nprof_initial[jj_ints[m]],mutation_thres=mutation_thres))
         else:
             new_population.append(nprof_initial[jj_ints[m]])
+
+    print('new population length:',len(new_population))
     return new_population
