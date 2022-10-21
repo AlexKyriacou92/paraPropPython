@@ -106,6 +106,7 @@ while jj + 1 < nGenerations:
             submit_job(fname_shell)
         jj += 1
     else:
+        print(jj)
         time.sleep(t_sleep)
 
 '''
