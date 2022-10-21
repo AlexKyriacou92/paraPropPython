@@ -19,8 +19,8 @@ if len(sys.argv) != 6:
     print('error! you must enter argument: \npython ' + sys.argv[0] + ' <config.txt> <fname_data.h5> <fname_nprofile_matrix.h5 i_gene j_individual')
 
 fname_config = sys.argv[1]
-fname_data = sys.argv[2] # This must contain the date or the psuedo-data -> bscan
-fname_n_matrix = sys.argv[3] # I use this to store the results AND the simulation parameters
+fname_n_matrix = sys.argv[2] # I use this to store the results AND the simulation parameters
+fname_output = sys.argv[3]
 ii_gene = int(sys.argv[4])
 jj_select = int(sys.argv[5])
 
@@ -38,9 +38,6 @@ if jj_select >= len(n_profile_matrix):
     sys.exit(-1)
 #fname_out = sys.argv[4]
 
-bscan_data = bscan()
-bscan_data.load_sim(fname_data)
-
 tx_signal = create_tx_signal(fname_config)
 tx_signal.get_gausspulse()
 
@@ -53,6 +50,7 @@ nRX_z = len(rx_depths)
 
 bscan_npy = np.zeros((nDepths, nRX_x, nRX_z, tx_signal.nSamples),dtype='complex')
 
+
 for i in range(nDepths):
 
     tstart = time.time()
@@ -63,6 +61,10 @@ for i in range(nDepths):
     sim.set_dipole_source_profile(tx_signal.frequency, sourceDepth)  # Set Source Profile
     sim.set_td_source_signal(tx_signal.pulse, tx_signal.dt) #Set transmitted signal
     rxList = create_rxList(rx_ranges, rx_depths)
+
+    if i == 0:
+        output_hdf = create_hdf_bscan(fname=fname_output, sim=sim, tx_signal=tx_signal,
+                                      tx_depths=tx_depths, rx_depths=rx_depths, rx_ranges=rx_ranges)
 
     sim.do_solver(rxList, freqMin=tx_signal.freqMin, freqMax=tx_signal.freqMax)
     ii = 0
@@ -87,14 +89,6 @@ for i in range(nDepths):
     print('completion at:', end_time)
     print('')
 
-Corr = 0
-for i in range(nDepths):
-    for j in range(nRX_x):
-        for k in range(nRX_z):
-            Corr += fitness_correlation(abs(bscan_data.bscan_sig[i,j,k]), abs(bscan_npy[i,j,k]))
-S_corr = Corr
-print(Corr, S_corr)
-n_matrix_hdf = h5py.File(fname_n_matrix,'r+')
-S_arr = n_matrix_hdf['S_arr']
-S_arr[ii_gene,jj_select] = S_corr
-n_matrix_hdf.close()
+
+output_hdf.create_dataset('bscan_sig', data=bscan_npy)
+output_hdf.close()

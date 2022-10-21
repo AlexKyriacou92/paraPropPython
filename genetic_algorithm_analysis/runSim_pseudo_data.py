@@ -64,14 +64,18 @@ for i in range(nDepths):
     tend = time.time()
     duration_s = (tend - tstart)
     duration = datetime.timedelta(seconds=duration_s)
-    remainder = duration_s * (nDepths - (i+1))
-    completed = round(float(i+1)/float(nDepths) * 100,2)
-    print(completed, ' % completed')
-    print('remaining steps', nDepths - (i+1),'\nremaining time:', remainder,'\n')
+    remainder_s = duration_s * (nDepths - (i + 1))
+    remainder = datetime.timedelta(seconds=remainder_s)
+
+    completed = round(float(i + 1) / float(nDepths) * 100, 2)
+    print(completed, ' % completed, duration:', duration)
+    print('remaining steps', nDepths - (i + 1), '\nremaining time:', remainder, '\n')
     now = datetime.datetime.now()
     tstamp_now = now.timestamp()
-    end_time = datetime.datetime.fromtimestamp(tstamp_now + duration_s)
+    end_time = datetime.datetime.fromtimestamp(tstamp_now + remainder_s)
     print('completion at:', end_time)
     print('')
+
+
 output_hdf.create_dataset('bscan_sig', data=bscan_npy)
 output_hdf.close()
