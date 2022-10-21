@@ -8,6 +8,8 @@ import numpy as np
 from makeSim import createMatrix
 from genetic_functions import initialize_from_analytical, roulette
 from pleiades_scripting import make_command, test_job, submit_job
+import subprocess
+import time
 
 def save_profile(fname_profile, z_profile, n_profile):
     nDepths = len(z_profile)
@@ -75,7 +77,39 @@ for i in range(nIndividuals):
     fname_shell = test_job(prefix='test', config_file=fname_config, bscan_data_file=fname_output_pseudo,
              nprof_matrix_file=fname_nmatrix, gene=0, individual=i)
     submit_job(fname_shell)
+cmd = 'squeue | grep "kyriacou" | wc -l'
 
+jj = 1
+nMinutes = 10
+minutes_s = 60.0
+t_sleep = nMinutes * minutes_s
+while jj + 1 < nGenerations:
+    nJobs = int(subprocess.check_output(cmd, shell=True))
+    if nJobs > 0:
+        nmatrix_hdf = h5py.File(fname_nmatrix, 'r+')
+        S_arr = nmatrix_hdf['S_arr']
+        n_profile_matrix = nmatrix_hdf['n_profile_matrix']
+
+        n_profile_initial = n_profile_matrix[0]
+        n_profile_parents = n_profile_matrix[j - 1]
+        S_list = S_arr[j - 1]
+        print(j - 1)
+
+        n_profile_children = roulette(n_profile_parents, S_list, n_profile_initial)
+        n_profile_matrix[j] = n_profile_children
+        nmatrix_hdf.close()
+
+        nIndividuals = len(n_profile_children)
+        for ii in range(nIndividuals):
+            fname_shell = test_job(prefix='test', config_file=fname_config, bscan_data_file=fname_output_pseudo,
+                                   nprof_matrix_file=fname_nmatrix, gene=jj, individual=ii)
+            submit_job(fname_shell)
+        jj += 1
+    else:
+        print(jj)
+        time.sleep(t_sleep)
+
+'''
 for j in range(1, nGenerations):
     nmatrix_hdf = h5py.File(fname_nmatrix, 'r+')
     S_arr = nmatrix_hdf['S_arr']
@@ -95,3 +129,5 @@ for j in range(1, nGenerations):
         fname_shell = test_job(prefix='test', config_file=fname_config, bscan_data_file=fname_output_pseudo,
                                nprof_matrix_file=fname_nmatrix, gene=j, individual=i)
         submit_job(fname_shell)
+'''
+
