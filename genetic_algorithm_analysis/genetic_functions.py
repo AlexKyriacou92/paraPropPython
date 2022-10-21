@@ -62,9 +62,18 @@ def tournament(pop_list, S_list, nprof_initial, clone_fraction = 0.1, parent_fra
         jj2 = (n+1)*R
         pop_list_sub = pop_list[jj1:jj2]
         S_list_sub = S_list[jj1:jj2]
+
+        '''
         X = pop_list_sub
         Y = S_list_sub
         Z = [x for _, x in sorted(Y, X)]
+        '''
+        X = np.array(pop_list_sub)
+        Y = np.array(S_list_sub)
+
+        inds = Y.argsort()
+        Z = X[inds]
+        N = len(Z)
 
         ii_clone = int(clone_fraction * float(R))
         ii_parent = int(parent_fraction * float(R))
@@ -126,10 +135,11 @@ def tournament(pop_list, S_list, nprof_initial, clone_fraction = 0.1, parent_fra
     return new_population
 
 def roulette(pop_list, S_list, nprof_initial, clone_fraction = 0.1, parent_fraction = 0.8, immigrant_fraction = 0.1, mutation_thres = 0.95, mutation_prob = 0.5):
-    X = pop_list
-    Y = S_list
-    Z = [x for _, x in sorted(Y,X)]
-
+    X = np.array(pop_list)
+    Y = np.array(S_list)
+    #Z = [x for _, x in sorted(Y,X)]
+    inds = Y.argsort()
+    Z = X[inds]
     N = len(Z)
 
     Norm = clone_fraction + parent_fraction + immigrant_fraction
