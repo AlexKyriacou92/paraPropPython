@@ -30,8 +30,3 @@ n_profile_matrix[ii_gen+1] = n_profile_children
 nmatrix_hdf.close()
 
 nIndividuals = len(n_profile_children)
-
-for i in range(nIndividuals):
-    fname_shell = test_job(prefix='test', config_file=fname_config, bscan_data_file=fname_profile,
-             nprof_matrix_file=fname_matrix, gene=ii_gen+1, individual=i)
-    submit_job(fname_shell)
