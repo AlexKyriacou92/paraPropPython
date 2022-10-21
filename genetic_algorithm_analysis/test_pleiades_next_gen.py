@@ -10,8 +10,9 @@ from genetic_functions import initialize_from_analytical, roulette
 from pleiades_scripting import make_command, test_job, submit_job
 
 fname_config = sys.argv[1]
-fname_matrix = sys.argv[2]
-ii_gen = int(sys.argv[3])
+fname_profile = sys.argv[2]
+fname_matrix = sys.argv[3]
+ii_gen = int(sys.argv[4])
 
 nmatrix_hdf = h5py.File(fname_matrix, 'r+')
 S_arr = nmatrix_hdf['S_arr']
