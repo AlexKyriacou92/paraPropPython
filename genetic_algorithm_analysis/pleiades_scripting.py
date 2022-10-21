@@ -15,8 +15,8 @@ import sys
 
 #Cluster Settings
 NODES_MIN = 1
-NODES_MAX = 4
-PARTITION = 'normal'
+NODES_MAX = 1
+PARTITION = 'short'
 DAYS = 3
 HOURS = 0
 MEMORY = 500 # in MB
