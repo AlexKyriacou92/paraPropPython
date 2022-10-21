@@ -10,7 +10,7 @@ from genetic_functions import initialize_from_analytical, roulette
 from pleiades_scripting import make_command, test_job, submit_job
 
 fname_config = sys.argv[1]
-fname_profile = sys.argv[2]
+fname_data = sys.argv[2]
 fname_matrix = sys.argv[3]
 ii_gen = int(sys.argv[4])
 
@@ -31,6 +31,6 @@ nmatrix_hdf.close()
 
 nIndividuals = len(n_profile_children)
 for i in range(nIndividuals):
-    fname_shell = test_job(prefix='test', config_file=fname_config, bscan_data_file=fname_profile,
+    fname_shell = test_job(prefix='test', config_file=fname_config, bscan_data_file=fname_data,
              nprof_matrix_file=fname_matrix, gene=ii_gen+1, individual=i)
     submit_job(fname_shell)
