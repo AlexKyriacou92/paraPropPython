@@ -24,6 +24,17 @@ class tx_signal:
         self.nSamples = int(tmax/dt)
         self.tspace = np.linspace(0, tmax, self.nSamples)
         self.freq_space = np.fft.fftfreq(self.nSamples, self.dt)
+
+        if freqMin == None:
+            self.freqMin = 0
+        else:
+            self.freqMin = freqMin
+        if freqMax == None:
+            self.freqMax = self.freq_nyq
+        else:
+            freqMax = freqMax
+
+        '''
         if freqMax == None:
             self.freqMax = self.frequency + self.bandwidth/2
         else:
@@ -32,6 +43,7 @@ class tx_signal:
             self.freqMin = self.frequency - self.bandwidth/2
         else:
             self.freqMin = freqMin
+        '''
 
     def get_gausspulse(self, suppression = -60):
         self.pulse = self.amplitude * signal.gausspulse(self.tspace - self.t_centre, self.frequency, self.bandwidth, suppression)
