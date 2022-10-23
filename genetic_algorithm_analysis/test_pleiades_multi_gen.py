@@ -64,7 +64,7 @@ for j in range(nIndividuals):
 #Create n-matrix
 fname_config = 'config_aletsch.txt'
 fname_nmatrix = 'test_nmatrix.h5'
-nGenerations = 10
+nGenerations = 15
 createMatrix(fname_config=fname_config, n_prof_initial=n_prof_initial, z_profile=zprof_0,
              fname_nmatrix=fname_nmatrix, nGenerations = nGenerations)
 #=========================================================================================
