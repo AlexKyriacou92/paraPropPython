@@ -91,12 +91,12 @@ while jj + 1 < nGenerations:
         n_profile_matrix = nmatrix_hdf['n_profile_matrix']
 
         n_profile_initial = n_profile_matrix[0]
-        n_profile_parents = n_profile_matrix[j - 1]
-        S_list = S_arr[j - 1]
-        print(j - 1)
+        n_profile_parents = n_profile_matrix[jj - 1]
+        S_list = S_arr[jj - 1]
+        print(jj - 1)
 
         n_profile_children = roulette(n_profile_parents, S_list, n_profile_initial)
-        n_profile_matrix[j] = n_profile_children
+        n_profile_matrix[jj] = n_profile_children
         nmatrix_hdf.close()
 
         nIndividuals = len(n_profile_children)
