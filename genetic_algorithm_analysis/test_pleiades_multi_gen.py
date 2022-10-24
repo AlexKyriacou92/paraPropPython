@@ -90,7 +90,7 @@ minutes_s = 60.0
 t_sleep = nMinutes * minutes_s
 while jj + 1 < nGenerations:
     nJobs = int(subprocess.check_output(cmd, shell=True))
-    if nJobs > 0:
+    if nJobs == 0:
         nmatrix_hdf = h5py.File(fname_nmatrix, 'r+')
         S_arr = nmatrix_hdf['S_arr']
         n_profile_matrix = nmatrix_hdf['n_profile_matrix']
@@ -101,7 +101,7 @@ while jj + 1 < nGenerations:
         print(jj - 1)
 
         n_profile_children = roulette(n_profile_parents, S_list, n_profile_initial)
-        n_profile_matrix[jj] = n_profile_children[:nIndividuals]
+        n_profile_matrix[jj][:nIndividuals] = n_profile_children[:nIndividuals]
         nmatrix_hdf.close()
 
         nIndividuals = len(n_profile_children)
