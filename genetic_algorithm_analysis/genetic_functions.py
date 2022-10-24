@@ -156,6 +156,7 @@ def roulette(pop_list, S_list, nprof_initial, clone_fraction = 0.1, parent_fract
     ii_clone = int(clone_fraction * float(N))
     ii_parent = int(parent_fraction * float(N))
 
+
     clone_list = Z[:ii_clone]
     parent_list = Z[ii_clone:ii_parent]
 
@@ -203,8 +204,10 @@ def roulette(pop_list, S_list, nprof_initial, clone_fraction = 0.1, parent_fract
 
     for l in range(nChildren):
         new_population.append(children_list[l])
-
-    nImmigrants = N - nChildren - 1
+    #print(N, 'old population')
+    #print('children and clones',nChildren + nClones)
+    nImmigrants = N - nChildren - nClones
+    #print('immigrants:', nImmigrants)
     jj_ints = np.random.randint(0, len(nprof_initial), nImmigrants)
     for m in range(nImmigrants):
         r = random.uniform(0, 1)
@@ -214,5 +217,6 @@ def roulette(pop_list, S_list, nprof_initial, clone_fraction = 0.1, parent_fract
         else:
             new_population.append(nprof_initial[jj_ints[m]])
 
-    print('new population length:',len(new_population))
+    #print('new population length:',len(new_population))
+    #print('old population:', N)
     return new_population

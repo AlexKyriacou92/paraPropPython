@@ -76,6 +76,7 @@ createMatrix(fname_config=fname_config, n_prof_initial=n_prof_initial, z_profile
 #=========================================================================================
 
 #Create Pseudo_Data
+
 fname_output_pseudo = 'psuedo_data.h5'
 os.system('python runSim_pseudo_data.py ' + fname_config + ' ' + fname_nprof_pseudo + ' ' + fname_output_pseudo)
 
@@ -91,6 +92,26 @@ def countjobs():
     except:
         output = 0
     return output
+
+
+'''
+#Fixing errors
+nmatrix_hdf = h5py.File(fname_nmatrix, 'r+')
+S_arr = nmatrix_hdf['S_arr']
+n_profile_matrix = nmatrix_hdf['n_profile_matrix']
+n_profile_initial = n_profile_matrix[0]
+n_profile_parents = n_profile_matrix[0]
+S_list = S_arr[0]
+
+
+n_profile_children = roulette(n_profile_parents, S_list, n_profile_initial)
+print(n_profile_matrix.shape)
+
+n_profile_matrix[0] = n_profile_children
+print(len(n_profile_matrix[0]), len(n_profile_children))
+nmatrix_hdf.close()
+'''
+
 jj = 1
 nMinutes = 1
 minutes_s = 60.0
@@ -108,7 +129,7 @@ while jj + 1 < nGenerations:
         print(jj - 1)
 
         n_profile_children = roulette(n_profile_parents, S_list, n_profile_initial)
-        n_profile_matrix[jj][:nIndividuals] = n_profile_children[:nIndividuals]
+        n_profile_matrix[jj] = n_profile_children
         nmatrix_hdf.close()
 
         nIndividuals = len(n_profile_children)
@@ -121,27 +142,3 @@ while jj + 1 < nGenerations:
         print('generation: ', jj-1, ',', nJobs, 'remaining, wait ', t_sleep, ' seconds')
         print(datetime.datetime.now())
         time.sleep(t_sleep)
-#print('your mum')
-
-'''
-for j in range(1, nGenerations):
-    nmatrix_hdf = h5py.File(fname_nmatrix, 'r+')
-    S_arr = nmatrix_hdf['S_arr']
-    n_profile_matrix = nmatrix_hdf['n_profile_matrix']
-
-    n_profile_initial = n_profile_matrix[0]
-    n_profile_parents = n_profile_matrix[j-1]
-    S_list = S_arr[j-1]
-    print(j-1)
-
-    n_profile_children = roulette(n_profile_parents, S_list, n_profile_initial)
-    n_profile_matrix[j] = n_profile_children
-    nmatrix_hdf.close()
-
-    nIndividuals = len(n_profile_children)
-    for i in range(nIndividuals):
-        fname_shell = test_job(prefix='test', config_file=fname_config, bscan_data_file=fname_output_pseudo,
-                               nprof_matrix_file=fname_nmatrix, gene=j, individual=i)
-        submit_job(fname_shell)
-'''
-
