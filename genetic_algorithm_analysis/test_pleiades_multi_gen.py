@@ -1,3 +1,4 @@
+import datetime
 import os
 import random
 import sys
@@ -85,7 +86,7 @@ for i in range(nIndividuals):
 cmd = 'squeue | grep "kyriacou" | wc -l'
 
 jj = 1
-nMinutes = 10
+nMinutes = 1
 minutes_s = 60.0
 t_sleep = nMinutes * minutes_s
 while jj + 1 < nGenerations:
@@ -111,9 +112,9 @@ while jj + 1 < nGenerations:
             submit_job(fname_shell)
         jj += 1
     else:
-        print(jj, 'wait')
+        print('generation: ', jj-1, 'wait')
+        print(datetime.datetime.now())
         time.sleep(t_sleep)
-
 #print('your mum')
 
 '''
