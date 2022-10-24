@@ -76,7 +76,7 @@ createMatrix(fname_config=fname_config, n_prof_initial=n_prof_initial, z_profile
 
 #Create Pseudo_Data
 fname_output_pseudo = 'psuedo_data.h5'
-#os.system('python runSim_pseudo_data.py ' + fname_config + ' ' + fname_nprof_pseudo + ' ' + fname_output_pseudo)
+os.system('python runSim_pseudo_data.py ' + fname_config + ' ' + fname_nprof_pseudo + ' ' + fname_output_pseudo)
 
 for i in range(nIndividuals):
     fname_shell = test_job(prefix='test', config_file=fname_config, bscan_data_file=fname_output_pseudo,
