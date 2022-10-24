@@ -32,12 +32,13 @@ print(np.array(n_matrix_hdf['source_depths']))
 
 n_matrix_hdf.close()
 
+'''
 if jj_select >= len(n_profile_matrix):
     print('error! jj_select must be greater than zero and less than the number of randomized profiles in ', fname_n_matrix)
     print(0, ' < jj_select < ', len(n_profile_matrix))
     sys.exit(-1)
 #fname_out = sys.argv[4]
-
+'''
 tx_signal = create_tx_signal(fname_config)
 tx_signal.get_gausspulse()
 
