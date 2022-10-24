@@ -37,7 +37,8 @@ def create_tx_signal(fname_config):
     signal_config = config['TX_SIGNAL']
     sig_tx = tx_signal(amplitude=float(signal_config['amplitude']), frequency=float(signal_config['freq_centre']),
                        bandwidth=float(signal_config['bandwidth']), t_centre=float(signal_config['t_centre']),
-                       tmax=float(signal_config['t_max']), dt=float(signal_config['dt']))
+                       tmax=float(signal_config['t_max']), dt=float(signal_config['dt']),
+                       freqMin=float(signal_config['freqMin']), freqMax=float(signal_config['freqMax']))
     return sig_tx
 
 def create_receiver_array(fname_config):
