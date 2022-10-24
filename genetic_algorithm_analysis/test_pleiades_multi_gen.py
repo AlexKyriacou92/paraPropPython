@@ -83,14 +83,19 @@ for i in range(nIndividuals):
     fname_shell = test_job(prefix='test', config_file=fname_config, bscan_data_file=fname_output_pseudo,
              nprof_matrix_file=fname_nmatrix, gene=0, individual=i)
     submit_job(fname_shell)
-cmd = 'squeue | grep "kyriacou" | wc -l'
-
+    cmd = 'squeue | grep "kyriacou" | wc -l'
+    try:
+        output = int(subprocess.check_output(cmd, shell=True))
+    except:
+        output = 0
+    return output
 jj = 1
 nMinutes = 1
 minutes_s = 60.0
 t_sleep = nMinutes * minutes_s
 while jj + 1 < nGenerations:
-    nJobs = int(subprocess.check_output(cmd, shell=True))
+
+    nJobs = countjobs()
     if nJobs == 0:
         nmatrix_hdf = h5py.File(fname_nmatrix, 'r+')
         S_arr = nmatrix_hdf['S_arr']
