@@ -96,7 +96,7 @@ while jj + 1 < nGenerations:
         print(jj - 1)
 
         n_profile_children = roulette(n_profile_parents, S_list, n_profile_initial)
-        n_profile_matrix[jj] = np.transverse(n_profile_children[:nIndividuals])
+        n_profile_matrix[jj] = n_profile_children[:nIndividuals]
         nmatrix_hdf.close()
 
         nIndividuals = len(n_profile_children)
