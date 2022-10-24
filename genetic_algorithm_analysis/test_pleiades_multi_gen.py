@@ -112,7 +112,7 @@ while jj + 1 < nGenerations:
             submit_job(fname_shell)
         jj += 1
     else:
-        print('generation: ', jj-1, 'wait')
+        print('generation: ', jj-1, ',', nJobs, 'remaining, wait ', t_sleep, ' seconds')
         print(datetime.datetime.now())
         time.sleep(t_sleep)
 #print('your mum')
