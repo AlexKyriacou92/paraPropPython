@@ -49,7 +49,11 @@ save_profile(fname_nprof_pseudo, zprof_0, nprof_0)
 n_prof_start = n_prof_start[1:]
 
 random.shuffle(n_prof_start)
-n_prof_initial = n_prof_start[:nIndividuals]
+#n_prof_initial = n_prof_start[:nIndividuals]
+n_prof_initial = np.ones((nIndividuals, len(n_prof_psuedo_data)))
+for i in range(nIndividuals):
+    n_prof_initial[i] = n_prof_start[i]
+
 print(len(n_prof_initial))
 for j in range(nIndividuals):
     n_prof_j = n_prof_initial[j]
@@ -61,6 +65,7 @@ for j in range(nIndividuals):
 
 #=======================================================================================
 
+
 #Create n-matrix
 fname_config = 'config_aletsch.txt'
 fname_nmatrix = 'test_nmatrix.h5'
@@ -71,7 +76,7 @@ createMatrix(fname_config=fname_config, n_prof_initial=n_prof_initial, z_profile
 
 #Create Pseudo_Data
 fname_output_pseudo = 'psuedo_data.h5'
-os.system('python runSim_pseudo_data.py ' + fname_config + ' ' + fname_nprof_pseudo + ' ' + fname_output_pseudo)
+#os.system('python runSim_pseudo_data.py ' + fname_config + ' ' + fname_nprof_pseudo + ' ' + fname_output_pseudo)
 
 for i in range(nIndividuals):
     fname_shell = test_job(prefix='test', config_file=fname_config, bscan_data_file=fname_output_pseudo,
@@ -106,8 +111,10 @@ while jj + 1 < nGenerations:
             submit_job(fname_shell)
         jj += 1
     else:
-        print(jj)
+        print(jj, 'wait')
         time.sleep(t_sleep)
+
+#print('your mum')
 
 '''
 for j in range(1, nGenerations):
