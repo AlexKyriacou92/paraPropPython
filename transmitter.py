@@ -32,7 +32,7 @@ class tx_signal:
         if freqMax == None:
             self.freqMax = self.freq_nyq
         else:
-            freqMax = freqMax
+            self.freqMax = freqMax
 
         '''
         if freqMax == None:
