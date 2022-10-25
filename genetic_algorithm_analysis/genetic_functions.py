@@ -134,18 +134,118 @@ def tournament(pop_list, S_list, nprof_initial, clone_fraction = 0.1, parent_fra
                 new_population.append(nprof_initial[jj_ints[m]])
     return new_population
 
-def roulette(pop_list, S_list, nprof_initial, clone_fraction = 0.1, parent_fraction = 0.8, immigrant_fraction = 0.1, mutation_thres = 0.95, mutation_prob = 0.5):
-    '''
-    pop_list : list of n_profiles from generation
-    S_list : the fitness function from generation
-    nprof_initial : the initial distribution of n_profiles
+def roulette(nprof_list, S_list, nprof_pool, clone_fraction = 0.1, children_fraction = 0.8, immigrant_fraction = 0.1, mutation_thres = 0.95, mutation_prob = 0.5):
+    new_population = []
 
-    '''
+    inds = np.array(S_list).argsort()
+    inds = np.flip(inds)
+
+    nprof_list = np.array(nprof_list)
+
+    S_list_sorted = S_list[inds]
+    nprof_list = nprof_list[inds]
+
+    nIndividuals = len(inds)
+
+    nHalf = int(float(nIndividuals)/2.)
+    nOtherHalf = nIndividuals - nHalf
+
+    nprof_list_cut = nprof_list[:nHalf]
+    Norm = clone_fraction + children_fraction + immigrant_fraction
+    if Norm != 1.0:
+        clone_fraction /= Norm
+        children_fraction /= Norm
+        immigrant_fraction /= Norm
+
+    nClones = int(clone_fraction * nIndividuals) #Number of 'cloned profiles' -> the proportion is the same before and afte
+    nChildren = int(children_fraction * nIndividuals)
+    nParents = int(float(nChildren)/2)
+    nCouples = int(float(nParents)/2)
+
+    print('clones:', nClones)
+    print('couples:', nCouples)
+    print('parents:', nParents)
+    print('children:', nChildren)
+
+    nImmigrants = nIndividuals - nClones - nChildren
+    print(nImmigrants)
+    print('sum of clones, children and migrants:', nImmigrants + nClones + nChildren, ' should equal: ', nIndividuals)
+
+    #Step 1 -> Select the top fraction (by default the top 10% of S scores) and clone them!
+    #Divide this into two subgroups -> the Elite will not be mutated, the
+    clone_list0 = nprof_list_cut[:nClones]
+    parent_list = nprof_list_cut[nClones:]
+    print(len(parent_list))
+
+    nElite = int(float(nClones)/2.)
+    clone_list = []
+    for i in range(nElite):
+        clone_list.append(clone(clone_list0[i]))
+    for j in range(nElite, nClones):
+        nprof_clone = clone(clone_list0[j])
+        r = random.uniform(0,1)
+        if r > mutation_prob:
+            nprof_mutant = flat_mutation(nprof_clone,mutation_thres=mutation_thres)
+        else:
+            nprof_mutant = nprof_clone
+        clone_list.append(nprof_mutant)
+
+    for l in range(nClones):
+        new_population.append(clone_list[l])
+
+    #Step 2 -> the Middle Group (by defult the group with: top 10 % > S > bottom 10% or the middle 80% from the surviving half) -> breed them
+    children_list = []
+    print(len(parent_list), 2*nCouples)
+    for k in range(4):
+        for i in range(nCouples):
+            j = 2*i
+            nprof_p = parent_list[j]
+            nprof_m = parent_list[j+1]
+            n_prof_c = cross_breed(nprof_p, nprof_m)
+            children_list.append(n_prof_c)
+        random.shuffle(parent_list)
+
+    for l in range(nChildren):
+        r = random.uniform(0,1)
+        nprof_c = children_list[l]
+        if r > mutation_prob:
+            nprof_m = flat_mutation(nprof_c, mutation_thres=mutation_thres)
+        else:
+            nprof_m = nprof_c
+        new_population.append(nprof_m)
+
+    nprof_pool_in = nprof_pool
+    random.shuffle(nprof_pool_in)
+
+    for i in range(nImmigrants):
+        nprof_i = nprof_pool_in[i]
+        r = random.uniform(0,1)
+        if r > mutation_prob:
+            nprof_m = flat_mutation(nprof_i, mutation_thres=mutation_thres)
+        else:
+            nprof_m = nprof_i
+        new_population.append(nprof_m)
+
+    return new_population
+
+
+
+'''     
+def roulette(pop_list, S_list, nprof_initial, clone_fraction = 0.1, parent_fraction = 0.8, immigrant_fraction = 0.1, mutation_thres = 0.95, mutation_prob = 0.5):
+
+    #pop_list : list of n_profiles from generation
+    #S_list : the fitness function from generation
+    #nprof_initial : the initial distribution of n_profiles
+    #print('input:', S_list)
+
     X = np.array(pop_list)
     Y = np.array(S_list)
     #Z = [x for _, x in sorted(Y,X)]
     inds = Y.argsort()
-    Z = X[inds]
+    inds = np.flip(inds)
+    Z = X[inds]    
+    
+    #print('sorted:',Y[inds], '\n', X[inds])
     N = len(Z)
 
     Norm = clone_fraction + parent_fraction + immigrant_fraction
@@ -212,7 +312,7 @@ def roulette(pop_list, S_list, nprof_initial, clone_fraction = 0.1, parent_fract
     for m in range(nImmigrants):
         r = random.uniform(0, 1)
         if r > mutation_prob:
-            print(nprof_initial[jj_ints[m]])
+            #print(nprof_initial[jj_ints[m]])
             new_population.append(flat_mutation(nprof_initial[jj_ints[m]],mutation_thres=mutation_thres))
         else:
             new_population.append(nprof_initial[jj_ints[m]])
@@ -220,3 +320,4 @@ def roulette(pop_list, S_list, nprof_initial, clone_fraction = 0.1, parent_fract
     #print('new population length:',len(new_population))
     #print('old population:', N)
     return new_population
+'''
