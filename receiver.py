@@ -49,10 +49,11 @@ class receiver:
             time step (ns)
         """
         self.freq = freq
-        self.spectrum = np.zeros(len(freq), dtype='complex')
-        self.spectrum_plus = np.zeros(len(freq), dtype='complex')
-        self.spectrum_minus = np.zeros(len(freq), dtype='complex')
-        self.time = np.arange(0, dt * len(freq), dt)
+        self.nFreq = len(freq)
+        self.spectrum = np.zeros(self.nFreq, dtype='complex')
+        self.spectrum_plus = np.zeros(self.nFreq, dtype='complex')
+        self.spectrum_minus = np.zeros(self.nFreq, dtype='complex')
+        self.time = np.arange(0, dt * self.nFreq, dt)
 
     def add_spectrum_component(self, f, A):
         """
@@ -155,5 +156,18 @@ class receiver:
         1-d float array
         """
         return self.time
+
+    def do_impulse_response(self, h = np.ones(self.nFreq, dtype='complex')):
+        '''
+        Applies Convolution of received amplitude and antenna's impulse response function
+        -> Simply applies
+        '''
+        self.impulse_response = h
+        self.spectrum *= self.impulse_response
+        self.spectrum_plus *= self.impulse_response
+        self.spectrum_minus *= self.impulse_response
+
+    def get_impulse_respone(self):
+        return self.impulse_response
 
 #TODO: Add antenna pattern to this module
