@@ -157,7 +157,7 @@ class receiver:
         """
         return self.time
 
-    def do_impulse_response(self, h = np.ones(self.nFreq, dtype='complex')):
+    def do_impulse_response(self, h):
         '''
         Applies Convolution of received amplitude and antenna's impulse response function
         -> Simply applies
@@ -167,7 +167,7 @@ class receiver:
         self.spectrum_plus *= self.impulse_response
         self.spectrum_minus *= self.impulse_response
 
-    def get_impulse_respone(self):
+    def get_impulse_response(self):
         return self.impulse_response
 
 #TODO: Add antenna pattern to this module
