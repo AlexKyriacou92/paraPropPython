@@ -1,7 +1,6 @@
 import datetime
 import os
 import random
-import sys
 
 import h5py
 import numpy as np
@@ -25,8 +24,9 @@ def save_profile(fname_profile, z_profile, n_profile):
 
 
 nStart = 1000
-nIndividuals = 100
-data_nprof0 = np.genfromtxt('start_profiles/aletsch_glacier_2.txt')
+nIndividuals = 200
+fname_start = 'start_profiles/aletsch_glacier_2.txt'
+data_nprof0 = np.genfromtxt(fname_start)
 zprof_0 = data_nprof0[:,0]
 nprof_0 = data_nprof0[:,1]
 nDepths = len(zprof_0)
@@ -70,7 +70,7 @@ for j in range(nIndividuals):
 #Create n-matrix
 fname_config = 'config_aletsch.txt'
 fname_nmatrix = 'test_nmatrix.h5'
-nGenerations = 15
+nGenerations = 60
 createMatrix(fname_config=fname_config, n_prof_initial=n_prof_initial, z_profile=zprof_0,
              fname_nmatrix=fname_nmatrix, nGenerations = nGenerations)
 #=========================================================================================
@@ -92,25 +92,6 @@ def countjobs():
     except:
         output = 0
     return output
-
-
-'''
-#Fixing errors
-nmatrix_hdf = h5py.File(fname_nmatrix, 'r+')
-S_arr = nmatrix_hdf['S_arr']
-n_profile_matrix = nmatrix_hdf['n_profile_matrix']
-n_profile_initial = n_profile_matrix[0]
-n_profile_parents = n_profile_matrix[0]
-S_list = S_arr[0]
-
-
-n_profile_children = roulette(n_profile_parents, S_list, n_profile_initial)
-print(n_profile_matrix.shape)
-
-n_profile_matrix[0] = n_profile_children
-print(len(n_profile_matrix[0]), len(n_profile_children))
-nmatrix_hdf.close()
-'''
 
 jj = 1
 nMinutes = 1
@@ -142,3 +123,13 @@ while jj + 1 < nGenerations:
         print('generation: ', jj-1, ',', nJobs, 'remaining, wait ', t_sleep, ' seconds')
         print(datetime.datetime.now())
         time.sleep(t_sleep)
+
+
+fname_list = [fname_config, fname_start, fname_nprof_pseudo, fname_output_pseudo, fname_nmatrix]
+destination_dir = '/common/home/akyriacou/paraPropPython/paraPropPython_multisim/genetic_algorithm_analysis/paraPropData/GA_test/'
+account = 'akyriacou@astro22.physik.uni-wuppertal.de'
+cmd = 'scp '
+for i in range(len(fname_list)):
+    cmd += fname_list[i] + ' '
+cmd += account + ':' + destination_dir
+os.system(cmd)
