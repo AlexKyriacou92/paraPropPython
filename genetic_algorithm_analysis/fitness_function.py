@@ -11,7 +11,7 @@ from genetic_operators import flat_mutation, gaussian_mutation, clone, cross_bre
 import sys
 #TODO: Test This
 
-
+'''
 def fitness_correlation(sig_sim, sig_data, mode='abs'):
     if mode == 'abs':
         if sig_sim.any() < 0:
@@ -48,3 +48,22 @@ def fitness_correlation(sig_sim, sig_data, mode='abs'):
         sig_correl = sig_sim * sig_data
         S = sum(sig_correl)
     return S
+'''
+
+def inverse_signal_offset(sig_sim, sig_data, mode='abs'):
+    s_ij = 0
+    if mode == 'abs':
+        sig_delta = abs(abs(sig_data) - abs(sig_sim))
+        sig_delta = sig_delta**2
+    elif mode == 'real':
+        sig_delta = abs(sig_data.real - sig_sim.real)
+        sig_delta = sig_delta**2
+    else:
+        sig_delta = abs(abs(sig_data) - abs(sig_sim))
+        sig_delta = sig_delta ** 2
+    inverse_s_ij = sum(sig_delta)
+    s_ij = 1/inverse_s_ij
+    return s_ij
+
+def fitness_correlation(sig_sim, sig_data, mode='abs'):
+    return inverse_signal_offset(sig_sim, sig_data, mode)
