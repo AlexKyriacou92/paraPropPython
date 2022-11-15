@@ -28,6 +28,8 @@ nprof_0 = data_nprof0[:,1]
 nDepths = len(zprof_0)
 
 #Initialize Profiles
+
+
 n_prof_pool = initialize_from_analytical(nprof_0, 0.04*np.ones(len(nprof_0)), nStart)
 n_prof_initial = n_prof_pool[:nIndividuals]
 n_prof_test = nprof_0
