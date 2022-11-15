@@ -5,7 +5,15 @@ import time
 import datetime
 import h5py
 from fitness_function import fitness_correlation
-sys.path.append('../')
+import os
+from unipath import Path
+cwd = os.getcwd()
+#path2 = cwd[:]
+#sys.path.append('../')
+p = Path(cwd)
+parent = p.parent
+print(parent)
+sys.path.append(parent)
 import paraPropPython as ppp
 from receiver import receiver as rx
 from transmitter import tx_signal
@@ -26,7 +34,8 @@ jj_select = int(sys.argv[5])
 
 n_matrix_hdf = h5py.File(fname_n_matrix,'r')
 n_profile_matrix = np.array(n_matrix_hdf.get('n_profile_matrix'))
-n_profile_ij = n_profile_matrix[ii_gene,jj_select]
+print(ii_gene, jj_select)
+n_profile_ij = n_profile_matrix[ii_gene][jj_select]
 z_profile_ij = np.array(n_matrix_hdf.get('z_profile'))
 print(np.array(n_matrix_hdf['source_depths']))
 
