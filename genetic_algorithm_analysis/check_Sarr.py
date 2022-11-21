@@ -24,3 +24,5 @@ S_arr = n_matrix_hdf['S_arr']
 #n_profile_matrix = np.array(n_matrix_hdf.get('n_profile_matrix'))
 
 print(S_arr[ii_gen][jj_ind])
+
+n_matrix_hdf.close()
