@@ -32,6 +32,7 @@ nDepths = len(zprof_0)
 
 n_prof_pool = initialize_from_analytical(nprof_0, 0.04*np.ones(len(nprof_0)), nStart)
 n_prof_initial = n_prof_pool[:nIndividuals]
+
 n_prof_test = nprof_0
 
 S_arr = np.zeros((nGens, nIndividuals))
@@ -96,7 +97,20 @@ ax3.legend()
 ax3.set_ylabel('Ref Index n')
 ax3.grid()
 
-ax4.plot(zprof_0, (n_prof_best - n_prof_test) / n_prof_test * 100, c='b', label='Best Distribution')
+def n2rho(n): # kg / m^3
+    return (n-1)/0.835 * 1e3
+
+n_residuals = n_prof_best - n_prof_test
+n_residuals_rel = n_residuals/n_prof_test
+
+rho_best = n2rho(n_prof_best)
+rho_test = n2rho(n_prof_test)
+rho_residuals = rho_best - rho_test
+
+ax5 = ax4.twinx()
+ax4.plot(zprof_0, n_residuals, c='b', label='Best Distribution (residuals)')
+ax5.plot(zprof_0, rho_residuals, c='r',label='Density residuals')
+ax5.set_ylabel(r'$\Delta \rho $ [$\mathrm{kg/m^{3}}$]')
 #ax4.plot(zprof_0, (nprof_rand_first - n_prof_test) / n_prof_test * 100,c='g', label='From inital sample')
 #ax4.plot(zprof_0, (nprof_rand_last - n_prof_test) / n_prof_test *100, c='r', label='From last generation (random)')
 ax4.grid()

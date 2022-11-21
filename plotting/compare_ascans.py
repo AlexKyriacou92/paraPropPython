@@ -44,7 +44,7 @@ ax.set_ylabel('Amplitude [V]')
 ax.legend()
 ax.set_xlim(0,300)
 
-fig.savefig('plots/compare_plots_pulse.png')
+fig.savefig('compare_plots_pulse.png')
 pl.close(fig)
 
 #==============================================================================================
@@ -66,7 +66,7 @@ ax.set_ylabel('Amplitude [u]')
 ax.legend()
 ax.set_xlim(0,300)
 
-fig.savefig('plots/compare_plots_abs.png')
+fig.savefig('compare_plots_abs.png')
 pl.close(fig)
 
 #==============================================================================================
@@ -88,5 +88,5 @@ ax.set_ylabel('Power [dBu]')
 ax.legend()
 ax.set_xlim(0,300)
 
-fig.savefig('plots/compare_plots_dB.png')
+fig.savefig('compare_plots_dB.png')
 pl.close(fig)

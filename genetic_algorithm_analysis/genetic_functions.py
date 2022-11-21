@@ -12,6 +12,10 @@ import sys
 sys.path.append('../')
 import util
 
+import sys
+sys.path.append('../')
+import util
+import configparser
 #TODO: Test This
 B = 1.0
 C = 0.01
@@ -52,6 +56,20 @@ def initalize_from_fluctuations(n_profile_mean, rand_vec, N):
     return n_prof_list
 
 #TODO: Save these to h5 file matrix
+
+
+B = 1.0
+C = 0.01
+D = 0.5
+E = 1.0
+low_cut = 0.5
+
+def makeRandomDensityVector(z, a=0.6, b=B, c=C, d=D, e=E, low_cut=low_cut):
+    """make a vector of random density fluctuations. This is currently used with the Taylor Dome n(z) profile.
+    the density fluctuations are on the order of a few percent of the density."""
+    dz = abs(z[1] - z[0])
+    ranVec = util.lowpassFilter(dz, low_cut, (a / (b + (z * c))) * (e*np.random.random_sample(len(z)) - d))
+    return ranVec
 
 #Genetic Opeators -> work as if the population is 100
 
