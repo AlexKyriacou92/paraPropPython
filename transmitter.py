@@ -47,7 +47,15 @@ class tx_signal:
 
     def get_gausspulse(self, suppression = -60):
         frac_bandwidth = self.bandwidth / self.frequency
-        pulse_r, pulse_i = self.amplitude * signal.gausspulse(self.tspace - self.t_centre, fc=self.frequency, bw=frac_bandwidth, bwr=suppression, retquad=True)
+        #print(signal.gausspulse(self.tspace - self.t_centre, fc=self.frequency, bw=frac_bandwidth, bwr=suppression, retquad=True)[0])
+        #pulse_r, pulse_i = self.amplitude * signal.gausspulse(self.tspace - self.t_centre, fc=self.frequency, bw=frac_bandwidth, bwr=suppression, retquad=True)
+        #pulse_c = signal.gausspulse(self.tspace - self.t_centre, fc=self.frequency, bw=frac_bandwidth, bwr=suppression, retquad=True)
+
+        pulse_r = self.amplitude * signal.gausspulse(self.tspace - self.t_centre, fc=self.frequency, bw=frac_bandwidth, bwr=suppression)
+        #pulse_2 = signal.gausspulse(self.tspace - self.t_centre, fc=self.frequency, bw=frac_bandwidth, bwr=suppression, retquad=True)
+        #print(type(pulse_2[0]))
+
+        pulse_i = self.amplitude * np.array(signal.gausspulse(self.tspace - self.t_centre, fc=self.frequency, bw=frac_bandwidth, bwr=suppression, retquad=True))[1]
         self.pulse = pulse_r + 1j*pulse_i
         self.spectrum = np.fft.fft(self.pulse)
         return self.pulse
