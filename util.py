@@ -419,7 +419,7 @@ def gaussian(x, mu, sig, norm, base):  # gaussian distribution + nooise
     return norm * np.exp(a) + base
 
 
-def gaussian_simple(x, mu, sig, norm, base):  # gaussian distribution + nooise
+def gaussian_simple(x, mu, sig, norm):  # gaussian distribution + nooise
     a = -1. * pow(x - mu, 2.) / (2 * pow(sig, 2.))
     return norm * np.exp(a)
 
@@ -443,9 +443,6 @@ def median_power(spectrum, dt, f1, f2):
     print(np.median(spectrum_cut))
     return np.median(spectrum_cut)
 
-fitfunc = lambda p, x: gaussian(x, p[0], p[1], p[2], p[3])  # fit function for SciPy optimize
-errfunc = lambda p, x, y: fitfunc(p, x) - y  # residual function -> minimized by SciPy optimize\
-
 def padd_wvf(arr, index):
     nArr = len(arr)
     hArr = int(float(len(arr)) / 2)
@@ -468,6 +465,9 @@ def padded_frequency(index, dt):
 
 fitfunc = lambda p, x: gaussian(x, p[0], p[1], p[2], p[3])  # fit function for SciPy optimize
 errfunc = lambda p, x, y: fitfunc(p, x) - y  # residual function -> minimized by SciPy optimize
+
+fitfunc_simple = lambda p, x: gaussian_simple(x, p[0], p[1], p[2])  # fit function for SciPy optimize
+errfunc_simple = lambda p, x, y: fitfunc_simple(p, x) - y  # residual function -> minimized by SciPy optimize
 
 def get_fft_data(fname_hdf, t_cut0 = 0, t_cut1 = 600e-9):
     hdf_input = h5py.File(fname_hdf, 'r')
