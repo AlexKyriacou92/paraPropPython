@@ -235,7 +235,7 @@ Chi_arr = np.array(Chi_list)
 
 fig = pl.figure(figsize=(8,5),dpi=100)
 ax1 = fig.add_subplot(111)
-ax1.plot(t_arr, S_arr/sum(S_arr))
+ax1.plot(t_arr, S_arr - np.mean(S_arr))
 ax1.grid()
 pl.savefig('S_fitness.png')
 pl.show()
