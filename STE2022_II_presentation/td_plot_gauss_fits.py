@@ -5,6 +5,7 @@ import numpy as np
 import sys
 
 import scipy.optimize
+from scipy.interpolate import interp1d
 
 sys.path.append('../')
 
@@ -189,5 +190,59 @@ ax2.plot(tspace_data*1e9, rx_FFT_multi_fit,c='g')
 
 ax.grid()
 pl.savefig('compare-fft-rx-pulse.png')
+pl.close()
+
+def get_max_peak(tspace, rx_power):
+    ii_max = np.argmax(rx_power)
+    return tspace[ii_max]
+
+#print(len(rx_FFT_power), len(rx_pulse_power))
+nSamples_data = len(rx_FFT_power)
+
+rx_FFT_power /= sum(rx_FFT_power)
+rx_pulse_power /= sum(rx_pulse_power)
+
+f_interp = interp1d(tspace, rx_pulse_power)
+rx_pulse_interp = np.zeros(nSamples_data)
+
+rx_pulse_interp[0] = rx_FFT_power[0]
+rx_pulse_interp[-1] = rx_FFT_power[-1]
+rx_pulse_interp[1:-1] = f_interp(tspace_data[1:-1])
+
+S_list = []
+t_list = []
+Chi_list = []
+t_pk0 = get_max_peak(tspace_data, rx_pulse_interp)
+rx_pulse_interp2 = np.roll(rx_pulse_interp, int(t_pk0/(tspace_data[1]-tspace_data[0])))
+for j in range(nSamples_data):
+    rx_pulse_shift = np.roll(rx_pulse_interp2, j)
+
+    t_pk_sim = get_max_peak(tspace_data, rx_pulse_shift)
+    t_pk_data = get_max_peak(tspace_data, rx_FFT_power)
+
+    Chi_sq = sum((rx_pulse_shift-rx_FFT_power)**2)
+    Chi_list.append(Chi_sq)
+    S_fitness = 1/Chi_sq
+    delta_t = t_pk_sim- t_pk_data
+    print(delta_t, S_fitness, Chi_sq)
+
+    S_list.append(S_fitness)
+    t_list.append(delta_t)
+
+t_arr = np.array(t_list)
+S_arr = np.array(S_list)
+Chi_arr = np.array(Chi_list)
+
+fig = pl.figure(figsize=(8,5),dpi=100)
+ax1 = fig.add_subplot(111)
+ax1.plot(t_arr, S_arr/sum(S_arr))
+ax1.grid()
+pl.savefig('S_fitness.png')
 pl.show()
 
+fig = pl.figure(figsize=(8,5),dpi=100)
+ax1 = fig.add_subplot(111)
+ax1.plot(t_arr, Chi_arr)
+ax1.grid()
+pl.savefig('Chi_fitness.png')
+pl.close()
