@@ -60,6 +60,13 @@ class tx_signal:
         self.spectrum = np.fft.fft(self.pulse)
         return self.pulse
 
+    def get_gausspulse_real(self, suppression = -60):
+        frac_bandwidth = self.bandwidth / self.frequency
+        pulse_r = self.amplitude * signal.gausspulse(self.tspace - self.t_centre, fc=self.frequency, bw=frac_bandwidth, bwr=suppression)
+        self.pulse = pulse_r
+        self.spectrum = np.fft.fft(self.pulse)
+        return self.pulse
+
     def get_spectrum(self): #NOTE: pulse must be defined before
         return self.spectrum
 
