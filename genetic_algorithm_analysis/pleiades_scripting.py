@@ -68,6 +68,11 @@ def make_command(config_file, bscan_data_file, nprof_matrix_file, ii, jj):
     command = 'python runSim_nprofile.py ' + config_file + ' ' + bscan_data_file + ' ' + nprof_matrix_file + ' ' + str(ii) + ' ' + str(jj)
     return command
 
+def make_command_data(config_file, bscan_data_file, nprof_matrix_file, ii, jj):
+    command = 'python runSim_FT_data.py ' + config_file + ' ' + bscan_data_file + ' ' + nprof_matrix_file + ' ' + str(
+        ii) + ' ' + str(jj)
+    return command
+
 def submit_job(fname_sh):
     sbatch = "sbatch"
     command = sbatch + " " + fname_sh
@@ -87,6 +92,29 @@ def test_job(prefix, config_file, bscan_data_file, nprof_matrix_file, gene, indi
         prefix + '\t' + config_file + '\t' + bscan_data_file + '\t' + nprof_matrix_file + '\t' + str(gene) + '\n')
     fout_joblist.write('shell_file' + '\t' + 'output_file' + '\t' + 'prof_number' + '\n \n')
     command = make_command(config_file, bscan_data_file, nprof_matrix_file, gene, individual)
+    jobname = 'job-' + str(individual)
+    fname_shell = prefix + jobname + '.sh'
+    fname_out = prefix + jobname + '.out'
+    line = fname_shell + '\t' + fname_out + '\t' + str(individual) + '\n'
+    fout_joblist.write(line)
+    make_job(fname_shell, fname_out, jobname, command)
+    return fname_shell
+
+
+def test_job_data(prefix, config_file, bscan_data_file, nprof_matrix_file, gene, individual):
+    nprof_h5 = h5py.File(nprof_matrix_file, 'r')
+    nprof_matrix = np.array(nprof_h5.get('n_profile_matrix'))
+    nprof_list = nprof_matrix[gene]
+    nProf = len(nprof_list)
+    nprof_h5.close()
+
+    fname_joblist = prefix + '-joblist.txt'
+    fout_joblist = open(fname_joblist, 'w')
+    fout_joblist.write('Joblist ' + prefix + '\n')
+    fout_joblist.write(
+        prefix + '\t' + config_file + '\t' + bscan_data_file + '\t' + nprof_matrix_file + '\t' + str(gene) + '\n')
+    fout_joblist.write('shell_file' + '\t' + 'output_file' + '\t' + 'prof_number' + '\n \n')
+    command = make_command_data(config_file, bscan_data_file, nprof_matrix_file, gene, individual)
     jobname = 'job-' + str(individual)
     fname_shell = prefix + jobname + '.sh'
     fname_out = prefix + jobname + '.out'
