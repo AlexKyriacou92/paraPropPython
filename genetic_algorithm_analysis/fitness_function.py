@@ -67,3 +67,9 @@ def inverse_signal_offset(sig_sim, sig_data, mode='abs'):
 
 def fitness_correlation(sig_sim, sig_data, mode='abs'):
     return inverse_signal_offset(sig_sim, sig_data, mode)
+
+def fitness_pulse_FT_data(sig_sim, sig_data):
+    sig_multi = abs(sig_sim * sig_data)
+    sig_multi_sq = sig_multi**2
+    S = sum(sig_multi_sq)
+    return S
