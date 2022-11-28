@@ -13,7 +13,8 @@ import subprocess
 import time
 
 nStart = 10000
-nIndividuals = 600
+#To start with -> just run 15 individuals
+nIndividuals = 15
 nGens = 90
 
 fname_start = 'start_profiles/aletsch_glacier_2.txt'
@@ -83,9 +84,8 @@ n_prof_array = np.ones((nGens, nIndividuals, nDepths))
 fname_config = 'config_aletsch.txt'
 fname_nmatrix = 'test_nmatrix_data.h5'
 fname_data = 'Field-Test-data.h5'
-nGenerations = 90
 createMatrix(fname_config=fname_config, n_prof_initial=n_prof_initial, z_profile=zprof_0,
-             fname_nmatrix=fname_nmatrix, nGenerations = nGenerations)
+             fname_nmatrix=fname_nmatrix, nGenerations = nGens)
 #=========================================================================================
 
 def countjobs():
@@ -100,7 +100,7 @@ jj = 1
 nMinutes = 1
 minutes_s = 60.0
 t_sleep = nMinutes * minutes_s
-while jj < nGenerations:
+while jj < nGens:
     nJobs = countjobs()
     if nJobs == 0:
         nmatrix_hdf = h5py.File(fname_nmatrix, 'r+')

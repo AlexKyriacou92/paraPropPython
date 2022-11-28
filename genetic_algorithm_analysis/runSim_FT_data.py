@@ -4,10 +4,10 @@ from matplotlib import pyplot as pl
 import time
 import datetime
 import h5py
+sys.path.append('../')
 
 import util
 from fitness_function import fitness_correlation, fitness_pulse_FT_data
-sys.path.append('../')
 
 import paraPropPython as ppp
 from receiver import receiver as rx
