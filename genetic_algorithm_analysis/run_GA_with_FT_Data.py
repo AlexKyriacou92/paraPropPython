@@ -32,7 +32,7 @@ nDepths0 = len(zprof_0)
 f_prof_interp = interp1d(zprof_0, nprof_0)
 
 dz_start = zprof_0[1] - zprof_0[0]
-dz_small = 0.2
+dz_small = 0.5
 
 if dz_small != dz_start:
     factor = int(dz_start/dz_small)
