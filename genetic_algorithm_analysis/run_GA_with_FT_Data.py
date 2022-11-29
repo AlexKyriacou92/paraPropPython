@@ -14,8 +14,8 @@ import time
 
 nStart = 10000
 #To start with -> just run 15 individuals
-nIndividuals = 15
-nGens = 90
+nIndividuals = 100
+nGens = 10
 
 fname_start = 'start_profiles/aletsch_glacier_2.txt'
 #fname_test = 'start_profiles/parallel-profile-0605_2nd-pk.txt'
