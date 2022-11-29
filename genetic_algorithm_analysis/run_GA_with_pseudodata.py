@@ -8,10 +8,22 @@ from scipy.interpolate import interp1d
 
 from makeSim import createMatrix
 from genetic_functions import initialize_from_analytical, roulette, initalize_from_fluctuations
-from pleiades_scripting import make_command, test_job, submit_job, test_job_data
+from pleiades_scripting import make_command, test_job, submit_job, test_job_data, make_command_data, make_job
 from selection_functions import selection
+
 import subprocess
 import time
+
+def save_profile(fname_profile, z_profile, n_profile):
+    nDepths = len(z_profile)
+    fout = open(fname_profile, 'w')
+    for i in range(nDepths):
+        z_i = z_profile[i]
+        n_i = n_profile[i]
+        line = str(round(z_i, 3)) + '\t' + str(round(n_i, 3)) + '\n'
+        fout.write(line)
+    fout.close()
+    return -1
 
 nStart = 10000
 #To start with -> just run 15 individuals
@@ -80,13 +92,33 @@ n_prof_initial = n_prof_pool[:nIndividuals]
 S_arr = np.zeros((nGens, nIndividuals))
 n_prof_array = np.ones((nGens, nIndividuals, nDepths))
 
+
+n_prof_psuedo_data = nprof_1
+n_min = 1.1
+n_max = 1.8
+
+for i in range(nDepths):
+    if n_prof_psuedo_data[i] < n_min:
+        n_prof_psuedo_data[i] = n_min
+    elif n_prof_psuedo_data[i] > n_max:
+        n_prof_psuedo_data[i] = n_max
+
+fname_nprof_pseudo = 'test_nprof_start.txt'
+save_profile(fname_nprof_pseudo, zprof_1, nprof_1)
+
 #=======================================================================================
 #Create n-matrix
 fname_config = 'config_aletsch.txt'
 fname_nmatrix = 'test_nmatrix_data.h5'
-fname_data = 'Field-Test-data.h5'
+
 createMatrix(fname_config=fname_config, n_prof_initial=n_prof_initial, z_profile=zprof_1,
              fname_nmatrix=fname_nmatrix, nGenerations = nGens)
+
+#Create Pseudo_Data
+
+fname_output_pseudo = 'psuedo_data.h5'
+os.system('python runSim_pseudo_data.py ' + fname_config + ' ' + fname_nprof_pseudo + ' ' + fname_output_pseudo)
+
 #=========================================================================================
 
 def countjobs():
@@ -97,11 +129,37 @@ def countjobs():
         output = 0
     return output
 
+def make_command_pseudodata(config_file, bscan_data_file, nprof_matrix_file, ii, jj):
+    command = 'python runSim_nprofile_psuedoFT_test.py ' + config_file + ' ' + bscan_data_file + ' ' + nprof_matrix_file + ' ' + str(ii) + ' ' + str(jj)
+    return command
+
+def test_job_pseudodata(prefix, config_file, bscan_data_file, nprof_matrix_file, gene, individual):
+    nprof_h5 = h5py.File(nprof_matrix_file, 'r')
+    nprof_matrix = np.array(nprof_h5.get('n_profile_matrix'))
+    nprof_list = nprof_matrix[gene]
+    nProf = len(nprof_list)
+    nprof_h5.close()
+
+    fname_joblist = prefix + '-joblist.txt'
+    fout_joblist = open(fname_joblist, 'w')
+    fout_joblist.write('Joblist ' + prefix + '\n')
+    fout_joblist.write(
+        prefix + '\t' + config_file + '\t' + bscan_data_file + '\t' + nprof_matrix_file + '\t' + str(gene) + '\n')
+    fout_joblist.write('shell_file' + '\t' + 'output_file' + '\t' + 'prof_number' + '\n \n')
+    command = make_command_pseudodata(config_file, bscan_data_file, nprof_matrix_file, gene, individual)
+    jobname = 'job-' + str(individual)
+    fname_shell = prefix + jobname + '.sh'
+    fname_out = prefix + jobname + '.out'
+    line = fname_shell + '\t' + fname_out + '\t' + str(individual) + '\n'
+    fout_joblist.write(line)
+    make_job(fname_shell, fname_out, jobname, command)
+    return fname_shell
+
 jj = 1
 nMinutes = 1
 minutes_s = 60.0
 t_sleep = nMinutes * minutes_s
-while jj < nGens:
+while jj + 1 < nGens:
     nJobs = countjobs()
     if nJobs == 0:
         nmatrix_hdf = h5py.File(fname_nmatrix, 'r+')
@@ -120,7 +178,7 @@ while jj < nGens:
 
         nIndividuals = len(n_profile_children)
         for ii in range(nIndividuals):
-            fname_shell = test_job_data(prefix='test', config_file=fname_config, bscan_data_file=fname_data,
+            fname_shell = test_job_pseudodata(prefix='test', config_file=fname_config, bscan_data_file=fname_output_pseudo,
                                    nprof_matrix_file=fname_nmatrix, gene=jj, individual=ii)
             submit_job(fname_shell)
         jj += 1
@@ -129,8 +187,7 @@ while jj < nGens:
         print(datetime.datetime.now())
         time.sleep(t_sleep)
 
-
-fname_list = [fname_config, fname_start, fname_data, fname_data, fname_nmatrix]
+fname_list = [fname_config, fname_start, fname_nprof_pseudo, fname_output_pseudo, fname_nmatrix]
 destination_dir = '/common/home/akyriacou/paraPropPython/paraPropPython_multisim/genetic_algorithm_analysis/paraPropData/GA_test/'
 account = 'akyriacou@astro22.physik.uni-wuppertal.de'
 cmd = 'scp '

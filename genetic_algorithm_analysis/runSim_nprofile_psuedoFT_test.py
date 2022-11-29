@@ -4,28 +4,24 @@ from matplotlib import pyplot as pl
 import time
 import datetime
 import h5py
-sys.path.append('../')
 
 import util
-from fitness_function import fitness_correlation, fitness_pulse_FT_data
-
+from fitness_function import fitness_correlation,fitness_pulse_FT_data
+sys.path.append('../')
 import paraPropPython as ppp
 from receiver import receiver as rx
 from transmitter import tx_signal
 from data import create_sim, create_rx_ranges, create_hdf_bscan, create_tx_signal
 from data import create_transmitter_array, bscan, create_rxList
-
+'''
+I need this function to run a Bscan from a n_profile_list
+'''
 
 if len(sys.argv) != 6:
     print('error! you must enter argument: \npython ' + sys.argv[0] + ' <config.txt> <fname_data.h5> <fname_nprofile_matrix.h5 i_gene j_individual')
 
 fname_config = sys.argv[1]
-#==================================================
-#FT DATA
-#==================================================
 fname_data = sys.argv[2] # This must contain the date or the psuedo-data -> bscan
-#=====================================================
-
 fname_n_matrix = sys.argv[3] # I use this to store the results AND the simulation parameters
 ii_gene = int(sys.argv[4])
 jj_select = int(sys.argv[5])
@@ -38,16 +34,16 @@ print(np.array(n_matrix_hdf['source_depths']))
 
 n_matrix_hdf.close()
 
-print(len(n_profile_ij), len(z_profile_ij))
+'''
+if jj_select >= len(n_profile_matrix):
+    print('error! jj_select must be greater than zero and less than the number of randomized profiles in ', fname_n_matrix)
+    print(0, ' < jj_select < ', len(n_profile_matrix))
+    sys.exit(-1)
+#fname_out = sys.argv[4]
+'''
 
-hdf_data = h5py.File(fname_data, 'r')
-rxRanges_data = np.array(hdf_data['rxRanges'])
-rxDepths_data = np.array(hdf_data['rxDepths'])
-fftArray_data = np.array(hdf_data['fftArray'])
-txDepths_data = np.array(hdf_data['txDepths'])
-tspace_data = np.array(hdf_data['tspace'])
-nData = len(fftArray_data)
-
+bscan_data = bscan()
+bscan_data.load_sim(fname_data)
 
 tx_signal = create_tx_signal(fname_config)
 tx_signal.get_gausspulse()
@@ -96,29 +92,18 @@ for i in range(nDepths):
     print('')
 
 Corr = 0
-for i in range(nData):
-    x_rx_data = rxRanges_data[i]
-    z_rx_data = rxDepths_data[i]
-    z_tx_data = txDepths_data[i]
-    sigFFT = fftArray_data[i]
+jj = util.findNearest(rx_ranges, 25)
 
-    ii_ztx = util.findNearest(tx_depths, z_tx_data)
-    ii_xrx = util.findNearest(rx_ranges, x_rx_data)
-    ii_zrx = util.findNearest(rx_depths, z_rx_data)
-    signal_sim = bscan_npy[ii_ztx, ii_xrx, ii_zrx]
-
-    nSamples_sim = len(signal_sim)
-    nSamples_data = len(sigFFT)
-    dN = nSamples_data - nSamples_sim
-    if dN > 0:
-        sigFFT = sigFFT[:-dN]
-        #tspace_data = tspace_data[:-dN]
-    elif dN < 0:
-        signal_sim = signal_sim[:-dN]
-        #tspace = tspace[:-dN]
-
-    S_corr = fitness_pulse_FT_data(sig_data=sigFFT, sig_sim=signal_sim)
-    Corr += S_corr
+for i in range(tx_depths):
+    Corr += fitness_pulse_FT_data(sig_data=bscan_data.bscan_sig[i,jj,i], sig_sim=bscan_npy[i,jj,i])
+'''
+Corr = 0
+for i in range(nDepths):
+    for j in range(nRX_x):
+        for k in range(nRX_z):
+            Corr += fitness_correlation(abs(bscan_data.bscan_sig[i,j,k]), abs(bscan_npy[i,j,k]))
+'''
+S_corr = Corr
 print(Corr, S_corr)
 n_matrix_hdf = h5py.File(fname_n_matrix,'r+')
 S_arr = n_matrix_hdf['S_arr']
