@@ -84,7 +84,7 @@ n_prof_array = np.ones((nGens, nIndividuals, nDepths))
 fname_config = 'config_aletsch.txt'
 fname_nmatrix = 'test_nmatrix_data.h5'
 fname_data = 'Field-Test-data.h5'
-createMatrix(fname_config=fname_config, n_prof_initial=n_prof_initial, z_profile=zprof_0,
+createMatrix(fname_config=fname_config, n_prof_initial=n_prof_initial, z_profile=zprof_1,
              fname_nmatrix=fname_nmatrix, nGenerations = nGens)
 #=========================================================================================
 
