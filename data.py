@@ -87,6 +87,23 @@ def create_rxList(rx_x, rx_z):
             rxList.append(rx_ij)
     return rxList
 
+def create_rxList_from_file(fname_config):
+    config = configparser.ConfigParser()
+    config.read(fname_config)
+    receiver_config = config['RECEIVER']
+    fname_rx_ranges = str(receiver_config['fname_recivers'])
+    rxList = []
+
+    f_recievers = open(fname_rx_ranges, 'r')
+    next(f_recievers)
+    for line in f_recievers:
+        cols = line.split()
+        rx_x = cols[0]
+        rx_z = cols[1]
+        rx_i = rx(x=rx_x, z=rx_z)
+        rxList.append(rx_i)
+    return rxList
+
 def create_transmitter_array(fname_config):
     config = configparser.ConfigParser()
     config.read(fname_config)
@@ -152,9 +169,98 @@ def create_hdf_bscan(fname, sim, tx_signal, tx_depths, rx_ranges, rx_depths, com
     output_hdf.attrs["comment"] = comment
     return output_hdf
 
+def create_hdf_FT(fname, sim, tx_signal, tx_depths, rxList, comment=""):
+    '''
+    Creates a HDF (fname.h5) file that saves the simulation data -> dimensions, pulse data, receiver configuration
+    receiver data
+
+    Inputs:
+        - fname: file name (should include path/to/file.h5
+        - sim : paraProp object -> includes simulation dimensions
+        - tx_signal : tx_signal object -> includes the transmitter pulse
+        - tx_depths : includes the depths of the transmitter
+        - rx_depths :
+    '''
+    output_hdf = h5py.File(fname, 'w')
+    output_hdf.attrs["iceDepth"] = sim.iceDepth
+    output_hdf.attrs["iceLength"] = sim.iceLength
+    output_hdf.attrs["airHeight"] = sim.airHeight
+    output_hdf.attrs["dx"] = sim.dx
+    output_hdf.attrs["dz"] = sim.dz
+    output_hdf.create_dataset('n_matrix', data=sim.get_n())
+
+    output_hdf.attrs["Amplitude"] = tx_signal.amplitude
+    output_hdf.attrs["freqCentral"] = tx_signal.frequency
+    output_hdf.attrs["Bandwidth"] = tx_signal.bandwidth
+    output_hdf.attrs["freqMax"] = tx_signal.freqMax
+    output_hdf.attrs["freqMin"] = tx_signal.freqMin
+    output_hdf.attrs["freqSample"] = tx_signal.fsample
+    output_hdf.attrs["freqNyquist"] = tx_signal.freq_nyq
+    output_hdf.attrs["tCentral"] = tx_signal.t_centre
+    output_hdf.attrs["tSample"] = tx_signal.tmax
+    output_hdf.attrs["dt"] = tx_signal.dt
+    output_hdf.attrs["nSamples"] = tx_signal.nSamples
+
+    n_profile_data = np.zeros((2, len(sim.get_n(x=0))), dtype='complex')
+    n_profile_data[0] = sim.z
+    n_profile_data[1] = sim.get_n(x=0)
+
+    output_hdf.create_dataset('n_profile', data=n_profile_data)
+    output_hdf.create_dataset("source_depths", data=tx_depths)
+    output_hdf.create_dataset('tspace', data=tx_signal.tspace)
+    output_hdf.create_dataset('signalPulse', data=tx_signal.pulse)
+    output_hdf.create_dataset('signalSpectrum', data=tx_signal.spectrum)
+    output_hdf.create_dataset("rxList", data=rxList)
+    output_hdf.attrs["comment"] = comment
+
 def create_memmap(file, dimensions, data_type ='complex'):
     A = open_memmap(file, shape = dimensions, mode='w+', dtype = data_type)
     return A
+
+class bscan_rxList: #This one is a nTx x nRx dimension bscan
+    def load_sim(self, fname):
+        input_hdf = h5py.File(fname, 'r')
+        self.fname = fname
+        self.iceDepth = float(input_hdf.attrs["iceDepth"])
+        self.iceLength = float(input_hdf.attrs["iceLength"])
+        self.airHeight = float(input_hdf.attrs["airHeight"])
+        self.dx = float(input_hdf.attrs["dx"])
+        self.dz = float(input_hdf.attrs["dz"])
+
+        Amplitude = float(input_hdf.attrs["Amplitude"])
+        freqCentral = float(input_hdf.attrs["freqCentral"])
+        freqMin = float(input_hdf.attrs["freqMin"])
+        Bandwidth = float(input_hdf.attrs['Bandwidth'])
+        freqMax = float(input_hdf.attrs["freqMax"])
+        tCentral = float(input_hdf.attrs["tCentral"])
+        tSample = float(input_hdf.attrs["tSample"])
+        dt = float(input_hdf.attrs["dt"])
+
+        self.tx_signal = tx_signal(amplitude=Amplitude, frequency=freqCentral, bandwidth=Bandwidth, freqMin=freqMin,
+                                   freqMax=freqMax, t_centre=tCentral, dt=dt, tmax=tSample)
+        self.tx_signal.pulse = np.array(input_hdf.get('signalPulse'))
+        self.tx_depths = np.array(input_hdf.get('source_depths'))
+        self.rxList = np.array(input_hdf.get('rxList'))
+        self.tspace = self.tx_signal.tspace
+        self.nSamples = self.tx_signal.nSamples
+        self.dt = self.tx_signal.dt
+
+        self.nRX = len(self.rxList)
+        self.nTX = len(self.tx_depths)
+
+        self.n = np.array(input_hdf.get('n_matrix'))
+        n_data = np.array(input_hdf.get('n_profile'))
+        self.z_profile = n_data[0, :]
+        self.n_profile = n_data[1, :]
+
+        self.comment = input_hdf.attrs["comment"]
+        self.bscan_sig = np.array(input_hdf.get('bscan_sig'))
+        input_hdf.close()
+
+    def get_ascan(self, txNum, rxNum):
+        ascan = self.bscan_sig[txNum, rxNum]
+        return ascan
+
 
 class bscan:
     def load_sim(self, fname):
