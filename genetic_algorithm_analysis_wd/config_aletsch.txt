@@ -28,13 +28,3 @@ minDepth = -1.5
 maxDepth = 15.0
 dRX_z = 0.5
 fname_rx_ranges = receiver_ranges.txt
-
-[GA]
-nGenerations = 10
-nIndividuals = 10
-fRoulette = 0.7
-fTournament = 0.3
-fMutation = 0.3
-fImmigration = 0.1
-nElite = 0.05
-nGenes = 72
