@@ -1,3 +1,7 @@
+[OUTPUT]
+fname = starting_simulation_pseudo.h5
+
+
 [GEOMETRY]
 iceDepth = 15.0
 iceLength = 50.0
@@ -25,3 +29,13 @@ minDepth = -1.5
 maxDepth = 15.0
 dRX_z = 0.5
 fname_rx_ranges = receiver_ranges.txt
+
+[GA]
+nGenerations = 10
+nIndividuals = 10
+nGenes = 60
+fRoulette = 0.7
+fTournament = 0.3
+fMutation = 0.3
+fImmigration = 0.1
+fElite = 0.05
