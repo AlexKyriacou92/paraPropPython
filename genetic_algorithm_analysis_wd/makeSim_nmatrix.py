@@ -4,7 +4,7 @@ from matplotlib import pyplot as pl
 import time
 import datetime
 import h5py
-from fitness_function import fitness_correlation
+#from fitness_function import fitness_correlation
 sys.path.append('../')
 import paraPropPython as ppp
 from receiver import receiver as rx
@@ -56,5 +56,13 @@ def createMatrix(fname_config, n_prof_initial, z_profile, fname_nmatrix, nGenera
     tx_signal.get_gausspulse()
     nmatrix_hdf.create_dataset('signalPulse', data=tx_signal.pulse)
     nmatrix_hdf.create_dataset('signalSpectrum', data=tx_signal.spectrum)
-    nmatrix_hdf.create_dataset('rxList', data=rxList)
+
+    rxList_positions = np.ones((len(rxList),2))
+    for i in range(len(rxList)):
+        rx_i = rxList[i]
+        rxList_positions[i,0] = rx_i.x
+        rxList_positions[i,1] = rx_i.z
+
+
+    nmatrix_hdf.create_dataset('rxList', data=rxList_positions)
     nmatrix_hdf.close()

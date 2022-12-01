@@ -20,15 +20,12 @@ freqMin = 1.5
 freqMax = 2.1
 
 [TRANSMITTER]
-minSource = -1.5
+minSource = 1.0
 maxSource = 15.0
 dTX = 0.5
 
 [RECEIVER]
-minDepth = -1.5
-maxDepth = 15.0
-dRX_z = 0.5
-fname_rx_ranges = receiver_ranges.txt
+fname_recivers = rx_list_limited.txt
 
 [GA]
 nGenerations = 10

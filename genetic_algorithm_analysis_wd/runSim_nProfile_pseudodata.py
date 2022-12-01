@@ -1,3 +1,4 @@
+import os.path
 import sys
 import numpy as np
 import time
@@ -25,6 +26,7 @@ ii_generation = int(sys.argv[4]) #The Generation Number of the n_profile sys.arg
 jj_select = int(sys.argv[5]) #The individual number from that Generation sys.argv[5]
 #==============================================
 
+print(fname_pseudo_data, os.path.isfile(fname_pseudo_data))
 n_matrix_hdf = h5py.File(fname_n_matrix,'r') #The matrix holding n_profiles
 n_profile_matrix = np.array(n_matrix_hdf.get('n_profile_matrix'))
 n_profile_ij = n_profile_matrix[ii_generation,jj_select] #The Individual (n profile) contains genes (n values per z)
@@ -36,7 +38,7 @@ nGenes = len(n_profile_ij)
 #==============================================
 # Pseudo Data
 bscan_pseudo_data = bscan_rxList()
-bscan.load_sim(fname_pseudo_data)
+bscan_pseudo_data.load_sim(fname_pseudo_data)
 #==============================================
 
 #==============================================
@@ -88,7 +90,7 @@ for i in range(nDepths):
     z_tx_sim = tx_depths[i]
     for j in range(nReceivers):
         rx_j = rxList0[j]
-        sig_pseudodata = bscan_rxList.get_ascan(i,j)
+        sig_pseudodata = bscan_pseudo_data.get_ascan(i,j)
         sig_sim = bscan_npy[i,j]
         S_corr_ijk = fitness_pulse_FT_data(sig_sim=sig_sim, sig_data=sig_pseudodata)
         S_corr += S_corr_ijk
