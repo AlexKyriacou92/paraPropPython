@@ -37,7 +37,7 @@ freq = freq_2
 band = 0.2
 f_nyq = 2.0
 f_sample = 2*f_nyq
-dt = 1/f_sample
+
 
 R_bh = 25
 sourceDepth = 6.5
@@ -52,6 +52,12 @@ fftArray = np.array(hdf_data['fftArray'])
 jj_data = util.findNearest(rxDepths, sourceDepth)
 tspace_data = np.array(hdf_data['tspace'])
 print(jj_data)
+
+hdf_data.close()
+
+dt_data = abs(tspace_data[1]-tspace_data[0])
+f_sample = 1/dt_data
+dt = 1/(f_sample/1e9)
 #===========================================
 
 sim0 = ppp.paraProp(iceLength=iceLength, iceDepth=iceDepth, dx=dx0, dz=dz, airHeight=airHeight)
@@ -83,7 +89,8 @@ z = sim0.get_z()
 absu = abs(np.transpose(sim0.get_field()))
 
 #PULSE
-tmax = iceLength * max(n_profile) / util.c_light
+#tmax = iceLength * max(n_profile) / util.c_light
+tmax = 600
 t_centre = 10
 tx_signal0 = tx_signal(frequency=freq, bandwidth=band, t_centre=t_centre, dt=dt, tmax=tmax)
 tspace = tx_signal0.tspace
@@ -110,6 +117,7 @@ rx_spectrum_w = np.zeros(tx_signal0.nSamples, dtype='complex')
 weights = np.blackman(nCalc)
 rx_spectrum_w[ii_min:ii_max] = weights * rx_spectrum[ii_min:ii_max]
 rx_pulse = np.flip(util.doIFFT(rx_spectrum_w))
+rx_pulse2 = np.flip(util.doIFFT(rx_spectrum_w))
 #rx_pulse = np.flip(util.doIFFT(rx_spectrum))
 #rx_pulse = rx_out.get_signal()
 
@@ -117,11 +125,51 @@ k_shift = int(t_centre/dt)
 rx_pulse = np.roll(rx_pulse, -k_shift)
 rx_pulse_mag = abs(rx_pulse)
 rx_pulse_power = rx_pulse_mag**2
+rx_pulse_power2 = abs(rx_pulse2)**2
 
 indices = pku.indexes(rx_pulse_power, thres=0.1)
 nPeaks = len(indices)
 
 
+rx_FFT_data = fftArray[jj_data]
+rx_FFT_power2 = abs(rx_FFT_data)**2
+rx_FFT_power = abs(rx_FFT_data)**2
+
+rx_FFT_norm = rx_FFT_data/sum(abs(rx_FFT_data))
+rx_pulse_norm = rx_pulse/sum(abs(rx_pulse))
+
+dN = len(rx_FFT_power) - len(rx_pulse_norm)
+if dN > 0:
+    rx_FFT_norm = rx_FFT_data[:-dN]
+elif dN < 0:
+    rx_pulse_norm = rx_pulse_norm[:-dN]
+
+print(len(rx_FFT_norm), len(rx_pulse_norm))
+
+pl.figure(figsize=(8,5),dpi=100)
+pl.plot(tspace_data*1e9, rx_FFT_power,label='FFT')
+pl.plot(tspace, rx_pulse_power,label='sim')
+pl.legend()
+pl.grid()
+pl.savefig('rx_pulse_FFT_power.png')
+pl.close()
+
+pl.figure(figsize=(8,5),dpi=100)
+pl.plot(tspace_data*1e9, rx_FFT_power/sum(rx_FFT_power),label='FFT')
+pl.plot(tspace, rx_pulse_power/sum(rx_pulse_power),label='sim')
+pl.legend()
+pl.grid()
+pl.savefig('rx_pulse_FFT_power_normalized.png')
+
+pl.close()
+
+pl.figure(figsize=(8,5),dpi=100)
+pl.plot(tspace_data*1e9, rx_FFT_data/sum(abs(rx_FFT_data)),label='FFT')
+pl.plot(tspace, rx_pulse/sum(rx_pulse_mag),label='sim')
+pl.legend()
+pl.grid()
+pl.savefig('rx_pulse_FFT_complex_norm.png')
+pl.close()
 
 fig = pl.figure(figsize=(12,12),dpi=120)
 ax = fig.add_subplot(111)
@@ -130,7 +178,6 @@ ax = fig.add_subplot(111)
 ax.plot(tspace, rx_pulse_power)
 
 t_res = 1/band
-rx_pulse_power2 = rx_pulse_power
 nSamples = len(rx_pulse_power)
 print(t_res)
 rx_pulse_multi_fit = np.zeros(nSamples)
@@ -155,8 +202,6 @@ for i in range(nPeaks):
     t_res_fit = p1.x[1]
 ax.plot(tspace, rx_pulse_multi_fit,c='k')
 
-rx_FFT_data = fftArray[jj_data]
-rx_FFT_power = abs(rx_FFT_data)**2
 
 pks_fft = pku.indexes(rx_FFT_power, thres=0.1)
 nPeaks_fft = len(pks_fft)
@@ -165,7 +210,6 @@ print(nPeaks_fft)
 ax2 = ax.twinx()
 ax2.plot(tspace_data*1e9, rx_FFT_power,c='r')
 rx_FFT_multi_fit = np.zeros(len(rx_FFT_power))
-rx_FFT_power2 = rx_FFT_power
 
 for i in range(nPeaks):
     ii = pks_fft[i]
@@ -205,44 +249,48 @@ rx_pulse_power /= sum(rx_pulse_power)
 f_interp = interp1d(tspace, rx_pulse_power)
 rx_pulse_interp = np.zeros(nSamples_data)
 
-rx_pulse_interp[0] = rx_FFT_power[0]
-rx_pulse_interp[-1] = rx_FFT_power[-1]
+rx_pulse_interp[0] = rx_pulse_power[0]
+rx_pulse_interp[-1] = rx_pulse_power[-1]
 rx_pulse_interp[1:-1] = f_interp(tspace_data[1:-1])
 
 S_list = []
 t_list = []
-Chi_list = []
 t_pk0 = get_max_peak(tspace_data, rx_pulse_interp)
-rx_pulse_interp2 = np.roll(rx_pulse_interp, int(t_pk0/(tspace_data[1]-tspace_data[0])))
-for j in range(nSamples_data):
-    rx_pulse_shift = np.roll(rx_pulse_interp2, j)
 
-    t_pk_sim = get_max_peak(tspace_data, rx_pulse_shift)
-    t_pk_data = get_max_peak(tspace_data, rx_FFT_power)
+def signal_correlation(sig1,sig2):
+    sig_multi = abs(sig1 * sig2)
+    sig_multi_sq = sig_multi**2
+    S = sum(sig_multi_sq)
+    return S
 
-    Chi_sq = sum((rx_pulse_shift-rx_FFT_power)**2)
-    Chi_list.append(Chi_sq)
-    S_fitness = 1/Chi_sq
-    delta_t = t_pk_sim- t_pk_data
-    print(delta_t, S_fitness, Chi_sq)
+t_pk_fft = get_max_peak(tspace_data, rx_FFT_power)
+delta_t_sim_fft = t_pk_fft - t_pk0
+S_sig_fft = signal_correlation(rx_FFT_norm, rx_pulse_norm)
+print(t_pk_fft, t_pk0)
+print(delta_t_sim_fft*1e9, S_sig_fft)
+
+rx_pulse_interp2 = rx_pulse_interp
+rx_pulse_norm2 = rx_pulse_norm
+for j in range(nSamples_data//2):
+    rx_power_shift = np.roll(rx_pulse_interp2, j)
+
+    rx_pulse_norm_shift = np.roll(rx_pulse_norm2, j)
+    S_fitness = signal_correlation(rx_pulse_norm_shift, rx_FFT_norm)
+    delta_t = delta_t_sim_fft + dt_data*j
+    #print(delta_t*1e9, S_fitness, Chi_sq)
 
     S_list.append(S_fitness)
     t_list.append(delta_t)
 
 t_arr = np.array(t_list)
 S_arr = np.array(S_list)
-Chi_arr = np.array(Chi_list)
 
 fig = pl.figure(figsize=(8,5),dpi=100)
 ax1 = fig.add_subplot(111)
-ax1.plot(t_arr, S_arr - np.mean(S_arr))
+ax1.plot(t_arr*1e9, S_arr)
+ax1.scatter(delta_t_sim_fft, S_sig_fft)
 ax1.grid()
 pl.savefig('S_fitness.png')
 pl.show()
+#pl.close()
 
-fig = pl.figure(figsize=(8,5),dpi=100)
-ax1 = fig.add_subplot(111)
-ax1.plot(t_arr, Chi_arr)
-ax1.grid()
-pl.savefig('Chi_fitness.png')
-pl.close()
