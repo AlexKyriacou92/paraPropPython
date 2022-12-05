@@ -81,11 +81,22 @@ S_1st = S_arr[0]
 n_1st = n_matrix[0]
 
 print(S_1st)
+import matplotlib as mpl
+import matplotlib.cm as cm
 
+S_log = np.log10(S_1st)
+norm = mpl.colors.Normalize(vmin=-8, vmax=-2)
+cmap = cm.viridis
+x = 0.3
+
+m = cm.ScalarMappable(norm=norm, cmap=cmap)
 #Create next generation
 pl.figure(figsize=(8,5),dpi=120)
+
+
 for i in range(len(n_1st)):
-    pl.plot(zprofile_sampling_mean, n_1st[i])
+    pl.plot(zprofile_sampling_mean, n_1st[i], label=S_log[i], c=m.to_rgba(S_log[i]))
+pl.legend()
 pl.show()
 
 n_second = selection(n_1st, S_1st, n_initial)
