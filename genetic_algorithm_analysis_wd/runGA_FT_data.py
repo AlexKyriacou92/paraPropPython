@@ -91,7 +91,7 @@ fname_data = 'Field-Test-data.h5'
 
 #Create n_matrix
 
-fname_nmatrix = 'test_nmatrix_data.h5'
+fname_nmatrix = 'test_nmatrix_data.h5' #Results will be saved here
 createMatrix(fname_config=fname_config, n_prof_initial=GA_1.first_generation, z_profile=zprofile_sampling_mean,
              fname_nmatrix=fname_nmatrix, nGenerations = GA_1.nGenerations)
 #First Population Set
@@ -107,7 +107,7 @@ cmd_prefix = 'python runSim_nProfile_FT.py '
 
 for j in range(GA_1.nIndividuals):
     cmd_j =  cmd_prefix + ' ' + fname_config + ' ' + fname_data + ' ' + fname_nmatrix + ' ' + str(ii_gen) + ' ' + str(j)
-    jobname = 'paraProp-job-' + str(i)
+    jobname = 'paraProp-job-' + str(j)
     sh_file = jobname + '.sh'
     out_file = jobname + '.out'
     make_job(sh_file, out_file, jobname, cmd_j)
@@ -131,15 +131,14 @@ while ii_gen < GA_1.nGenerations:
     if nJobs == 0:
         print('Submitted jnobs')
         for j in range(GA_1.nGenerations):
-            cmd_j = cmd_prefix + ' ' + fname_config + ' ' + fname_data + ' ' + fname_nmatrix + ' ' + str(
-                ii_gen) + ' ' + str(j)
-            jobname = 'paraProp-job-' + str(i)
+            cmd_j = cmd_prefix + ' ' + fname_config + ' ' + fname_data + ' ' + fname_nmatrix + ' ' + str(ii_gen) + ' ' + str(j)
+            jobname = 'paraProp-job-' + str(j)
             sh_file = jobname + '.sh'
             out_file = jobname + '.out'
             make_job(sh_file, out_file, jobname, cmd_j)
             submit_job(sh_file)
         ii_gen += 1
-        print('Jobs running -> Generation: ' + ii_gen)
+        print('Jobs running -> Generation: ', ii_gen)
     else:
         print('Queue of jobs: ', nJobs)
         print('Wait:', tsleep, ' seconds')
