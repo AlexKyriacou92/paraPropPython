@@ -67,7 +67,6 @@ for i in range(nQuarter):
     n_prof_pool.append(nprof_analytical[i])
 for i in range(nQuarter):
     n_prof_pool.append(nprof_flucations[i])
-
 for i in range(nQuarter):
     n_const = random.uniform(0,0.78)
     n_prof_flat = np.ones(GA_1.nGenes) + n_const
@@ -122,6 +121,7 @@ while proceed_bool == False:
     else:
         proceed_bool = True
 
+ii_gen += 1
 #Wait for jobs to be submitted
 
 while ii_gen < GA_1.nGenerations:
@@ -129,14 +129,40 @@ while ii_gen < GA_1.nGenerations:
     tsleep = 30.
     print('Check jobs')
     if nJobs == 0:
-        print('Submitted jnobs')
-        for j in range(GA_1.nGenerations):
+        print('Submitted jobs')
+        # APPLY GA selection
+        nmatrix_hdf = h5py.File(fname_nmatrix, 'r+')
+        S_arr = nmatrix_hdf['S_arr']
+        n_profile_matrix = nmatrix_hdf['n_profile_matrix']
+        n_profile_initial = n_profile_matrix[0]
+        n_profile_parents = n_profile_matrix[ii_gen - 1]
+        S_list = S_arr[ii_gen - 1]
+        print(ii_gen - 1)
+
+        # n_profile_children = roulette(n_profile_parents, S_list, n_profile_initial)
+        n_profile_children = selection(prof_list=n_profile_parents, S_list=S_list, prof_list_initial=n_prof_pool)
+        n_profile_matrix[ii_gen] = n_profile_children
+        nmatrix_hdf.close()
+        for j in range(GA_1.nIndividuals):
+            #Create Command
+            dir_outfiles0 = 'outfiles'
+            dir_shfiles0 = 'shfiles'
+
+            dir_outfiles = dir_outfiles0 + '/' + 'gen' + str(ii_gen)
+            dir_shfiles = dir_shfiles0 + '/' + 'gen' + str(ii_gen)
+            if os.path.isdir(dir_outfiles) == False:
+                os.system('mkdir ' + dir_outfiles)
+            if os.path.isdir(dir_outfiles) == False:
+                os.system('mkdir ' + dir_shfiles)
+
             cmd_j = cmd_prefix + ' ' + fname_config + ' ' + fname_data + ' ' + fname_nmatrix + ' ' + str(ii_gen) + ' ' + str(j)
-            jobname = 'paraProp-job-' + str(j)
+            jobname = 'paraProp-job-' + ii_gen + '-' + str(j)
             sh_file = jobname + '.sh'
-            out_file = jobname + '.out'
+            out_file = dir_outfiles + '/' + jobname + '.out'
             make_job(sh_file, out_file, jobname, cmd_j)
             submit_job(sh_file)
+            #After Jobs are submitted
+            os.system('mv ' + sh_file + ' ' + dir_outfiles)
         ii_gen += 1
         print('Jobs running -> Generation: ', ii_gen)
     else:
