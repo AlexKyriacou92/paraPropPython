@@ -83,6 +83,7 @@ for i in range(nQuarter):
 random.shuffle(n_prof_pool)
 GA_1.initialize_from_sample(n_prof_pool)
 print(len(GA_1.first_generation))
+print(type(GA_1.first_generation), GA_1.first_generation.shape)
 fname_data = 'Field-Test-data.h5'
 
 #Create nMatirx
@@ -101,8 +102,17 @@ ii_gen = 0 #Zeroth Generation
 
 cmd_prefix = 'python runSim_nProfile_FT.py '
 
+'''
+nmatrix_hdf = h5py.File(fname_nmatrix, 'r+')
+S_arr = np.array(nmatrix_hdf['S_arr'])
+n_profile_matrix = np.array(nmatrix_hdf['n_profile_matrix'])
+nmatrix_hdf.close()
+print(n_profile_matrix[0])
+'''
+
 #Next -> Calculate list of S parameters
 #Submit jobs to cluster and wait
+
 
 for j in range(GA_1.nIndividuals):
     cmd_j =  cmd_prefix + ' ' + fname_config + ' ' + fname_data + ' ' + fname_nmatrix + ' ' + str(ii_gen) + ' ' + str(j)
@@ -132,8 +142,8 @@ while ii_gen < GA_1.nGenerations:
         print('Submitted jobs')
         # APPLY GA selection
         nmatrix_hdf = h5py.File(fname_nmatrix, 'r+')
-        S_arr = nmatrix_hdf['S_arr']
-        n_profile_matrix = nmatrix_hdf['n_profile_matrix']
+        S_arr = np.array(nmatrix_hdf['S_arr'])
+        n_profile_matrix = np.array(nmatrix_hdf['n_profile_matrix'])
         n_profile_initial = n_profile_matrix[0]
         n_profile_parents = n_profile_matrix[ii_gen - 1]
         S_list = S_arr[ii_gen - 1]
