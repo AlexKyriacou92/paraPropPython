@@ -154,14 +154,15 @@ while ii_gen < GA_1.nGenerations:
         # APPLY GA selection
         nmatrix_hdf = h5py.File(fname_nmatrix, 'r+')
         S_arr = np.array(nmatrix_hdf['S_arr'])
-        n_profile_matrix = np.array(nmatrix_hdf['n_profile_matrix'])
-        n_profile_initial = np.array(n_profile_matrix[0])
-        n_profile_parents = np.array(n_profile_matrix[ii_gen - 1])
+        n_profile_matrix = nmatrix_hdf['n_profile_matrix']
+        n_profile_initial = n_profile_matrix[0]
+        n_profile_parents = n_profile_matrix[ii_gen - 1]
         S_list = np.array(S_arr[ii_gen - 1])
         print(ii_gen - 1)
 
         # n_profile_children = roulette(n_profile_parents, S_list, n_profile_initial)
         n_profile_children = selection(prof_list=n_profile_parents, S_list=S_list, prof_list_initial=n_prof_pool)
+        print(n_profile_children)
         n_profile_matrix[ii_gen] = n_profile_children
         nmatrix_hdf.close()
         for j in range(GA_1.nIndividuals):
@@ -173,7 +174,7 @@ while ii_gen < GA_1.nGenerations:
             dir_shfiles = dir_shfiles0 + '/' + 'gen' + str(ii_gen)
             if os.path.isdir(dir_outfiles) == False:
                 os.system('mkdir ' + dir_outfiles)
-            if os.path.isdir(dir_outfiles) == False:
+            if os.path.isdir(dir_shfiles) == False:
                 os.system('mkdir ' + dir_shfiles)
 
             cmd_j = cmd_prefix + ' ' + fname_config + ' ' + fname_data + ' ' + fname_nmatrix + ' ' + str(ii_gen) + ' ' + str(j)
