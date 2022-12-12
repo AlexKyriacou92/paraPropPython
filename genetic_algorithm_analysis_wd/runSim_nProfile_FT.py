@@ -65,6 +65,7 @@ for i in range(nDepths):
     sim.set_dipole_source_profile(tx_signal.frequency, sourceDepth)  # Set Source Profile
     sim.set_td_source_signal(tx_signal.pulse, tx_signal.dt) #Set transmitted signal
 
+    rx_0 = rxList[0]
     sim.do_solver(rxList, freqMin=tx_signal.freqMin, freqMax=tx_signal.freqMax)
     tend = time.time()
     for j in range(nReceivers):

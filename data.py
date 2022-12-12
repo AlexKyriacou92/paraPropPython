@@ -98,8 +98,8 @@ def create_rxList_from_file(fname_config):
     next(f_recievers)
     for line in f_recievers:
         cols = line.split()
-        rx_x = cols[0]
-        rx_z = cols[1]
+        rx_x = float(cols[0])
+        rx_z = float(cols[1])
         rx_i = rx(x=rx_x, z=rx_z)
         rxList.append(rx_i)
     return rxList
