@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "runSim_nProfile_FT.py", line 68, in <module>
+    sim.do_solver(rxList, freqMin=tx_signal.freqMin, freqMax=tx_signal.freqMax)
+  File "../paraPropPython.py", line 583, in do_solver
+    rx.add_spectrum_component(self.freq[j], self.get_field(x0=rx.x, z0=rx.z))
+  File "../paraPropPython.py", line 655, in get_field
+    return self.field[util.findNearest(self.x, x0), util.findNearest(self.z, z0)]
+  File "../util.py", line 95, in findNearest
+    idx = (np.abs(array - value)).argmin()
+numpy.core._exceptions.UFuncTypeError: ufunc 'subtract' did not contain a loop with signature matching types (dtype('<U64'), dtype('<U64')) -> dtype('<U64')
