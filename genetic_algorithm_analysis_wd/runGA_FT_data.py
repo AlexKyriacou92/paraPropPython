@@ -126,7 +126,7 @@ for j in range(GA_1.nIndividuals):
         os.system('mkdir ' + dir_shfiles)
 
     cmd_j =  cmd_prefix + ' ' + fname_config + ' ' + fname_data + ' ' + fname_nmatrix + ' ' + str(ii_gen) + ' ' + str(j)
-    jobname = 'paraProp-job-' + str(j)
+    jobname = 'paraProp-job-' + str(ii_gen) + ' ' + str(j)
     sh_file = jobname + '.sh'
     out_file = dir_outfiles + '/' + jobname + '.out'
     make_job(sh_file, out_file, jobname, cmd_j)
@@ -155,9 +155,9 @@ while ii_gen < GA_1.nGenerations:
         nmatrix_hdf = h5py.File(fname_nmatrix, 'r+')
         S_arr = np.array(nmatrix_hdf['S_arr'])
         n_profile_matrix = np.array(nmatrix_hdf['n_profile_matrix'])
-        n_profile_initial = n_profile_matrix[0]
-        n_profile_parents = n_profile_matrix[ii_gen - 1]
-        S_list = S_arr[ii_gen - 1]
+        n_profile_initial = np.array(n_profile_matrix[0])
+        n_profile_parents = np.array(n_profile_matrix[ii_gen - 1])
+        S_list = np.array(S_arr[ii_gen - 1])
         print(ii_gen - 1)
 
         # n_profile_children = roulette(n_profile_parents, S_list, n_profile_initial)
@@ -177,7 +177,7 @@ while ii_gen < GA_1.nGenerations:
                 os.system('mkdir ' + dir_shfiles)
 
             cmd_j = cmd_prefix + ' ' + fname_config + ' ' + fname_data + ' ' + fname_nmatrix + ' ' + str(ii_gen) + ' ' + str(j)
-            jobname = 'paraProp-job-' + ii_gen + '-' + str(j)
+            jobname = 'paraProp-job-' + str(ii_gen) + '-' + str(j)
             sh_file = jobname + '.sh'
             out_file = dir_outfiles + '/' + jobname + '.out'
             make_job(sh_file, out_file, jobname, cmd_j)
