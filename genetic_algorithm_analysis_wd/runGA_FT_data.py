@@ -126,7 +126,7 @@ for j in range(GA_1.nIndividuals):
         os.system('mkdir ' + dir_shfiles)
 
     cmd_j =  cmd_prefix + ' ' + fname_config + ' ' + fname_data + ' ' + fname_nmatrix + ' ' + str(ii_gen) + ' ' + str(j)
-    jobname = 'paraProp-job-' + str(ii_gen) + ' ' + str(j)
+    jobname = 'paraProp-job-' + str(ii_gen) + '-' + str(j)
     sh_file = jobname + '.sh'
     out_file = dir_outfiles + '/' + jobname + '.out'
     make_job(sh_file, out_file, jobname, cmd_j)
