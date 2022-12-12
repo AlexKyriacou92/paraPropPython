@@ -115,12 +115,23 @@ print(n_profile_matrix[0])
 
 
 for j in range(GA_1.nIndividuals):
+    dir_outfiles0 = 'outfiles'
+    dir_shfiles0 = 'shfiles'
+
+    dir_outfiles = dir_outfiles0 + '/' + 'gen' + str(ii_gen)
+    dir_shfiles = dir_shfiles0 + '/' + 'gen' + str(ii_gen)
+    if os.path.isdir(dir_outfiles) == False:
+        os.system('mkdir ' + dir_outfiles)
+    if os.path.isdir(dir_outfiles) == False:
+        os.system('mkdir ' + dir_shfiles)
+
     cmd_j =  cmd_prefix + ' ' + fname_config + ' ' + fname_data + ' ' + fname_nmatrix + ' ' + str(ii_gen) + ' ' + str(j)
     jobname = 'paraProp-job-' + str(j)
     sh_file = jobname + '.sh'
-    out_file = jobname + '.out'
+    out_file = dir_outfiles + '/' + jobname + '.out'
     make_job(sh_file, out_file, jobname, cmd_j)
     submit_job(sh_file)
+    os.system('mv ' + sh_file + ' ' + dir_shfiles + '/')
 
 proceed_bool = False
 while proceed_bool == False:
@@ -172,7 +183,7 @@ while ii_gen < GA_1.nGenerations:
             make_job(sh_file, out_file, jobname, cmd_j)
             submit_job(sh_file)
             #After Jobs are submitted
-            os.system('mv ' + sh_file + ' ' + dir_outfiles)
+            os.system('mv ' + sh_file + ' ' + dir_shfiles + '/')
         ii_gen += 1
         print('Jobs running -> Generation: ', ii_gen)
     else:
