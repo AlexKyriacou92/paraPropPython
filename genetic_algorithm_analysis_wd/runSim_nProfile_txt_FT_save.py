@@ -15,35 +15,23 @@ from data import create_tx_signal, bscan
 sys.path.append('../genetic_algorithm_analysis/')
 from fitness_function import fitness_correlation, fitness_pulse_FT_data
 
-if len(sys.argv) < 6:
-    print('Wrong argument number:', len(sys.argv), ' should be: 6 or 7')
-    print('you must enter argument: \npython ' + sys.argv[0] + ' <config.txt> <fname_data.h5> <fname_nprofile_matrix.h5 i_gene j_individual <fname_out?>')
-    sys.exit()
-elif len(sys.argv) == 6:
-    fname_config = sys.argv[1] #The Config File -> sys.argv[1]
-    fname_data = sys.argv[2] # This must contain the date or the psuedo-data -> bscan, sys.argv[2]
-    fname_n_matrix = sys.argv[3] # I use this to store the results AND the simulation parameters sys.argv[3]
-    ii_generation = int(sys.argv[4]) #The Generation Number of the n_profile sys.argv[4]
-    jj_select = int(sys.argv[5]) #The individual number from that Generation sys.argv[5]
-    fname_out = None
-elif len(sys.argv) == 7:
-    fname_config = sys.argv[1]  # The Config File -> sys.argv[1]
-    fname_data = sys.argv[2]  # This must contain the date or the psuedo-data -> bscan, sys.argv[2]
-    fname_n_matrix = sys.argv[3]  # I use this to store the results AND the simulation parameters sys.argv[3]
-    ii_generation = int(sys.argv[4])  # The Generation Number of the n_profile sys.argv[4]
-    jj_select = int(sys.argv[5])  # The individual number from that Generation sys.argv[5]
-    fname_out = sys.argv[6]
-elif len(sys.argv) > 7:
-    print('Wrong argument number:', len(sys.argv), ' should be: 6 or 7')
-    print('you must enter argument: \npython ' + sys.argv[0] + ' <config.txt> <fname_data.h5> <fname_nprofile_matrix.h5 i_gene j_individual <fname_out?>')
-    sys.exit()
-#==============================================
 
-n_matrix_hdf = h5py.File(fname_n_matrix,'r') #The matrix holding n_profiles
-n_profile_matrix = np.array(n_matrix_hdf.get('n_profile_matrix'))
-n_profile_ij = np.array(n_profile_matrix[ii_generation,jj_select]) #The Individual (n profile) contains genes (n values per z)
-z_profile_ij = np.array(n_matrix_hdf.get('z_profile'))
-n_matrix_hdf.close()
+if len(sys.argv) != 7:
+    print('Wrong argument number:', len(sys.argv), ' should be: 6 or 7')
+    print('you must enter argument: \npython ' + sys.argv[0] + ' <config.txt> <fname_data.h5> <fname_nprofile_matrix.h5 i_gene j_individual <fname_out?>')
+    sys.exit()
+
+fname_config = sys.argv[1]  # The Config File -> sys.argv[1]
+fname_data = sys.argv[2]  # This must contain the date or the psuedo-data -> bscan, sys.argv[2]
+fname_nprofile = sys.argv[3]  # I use this to store the results AND the simulation parameters sys.argv[3]
+ii_generation = int(sys.argv[4])  # The Generation Number of the n_profile sys.argv[4]
+jj_select = int(sys.argv[5])  # The individual number from that Generation sys.argv[5]
+fname_out = sys.argv[6]
+
+#==============================================
+nprofile_data = np.genfromtxt(fname_nprofile)
+n_profile_ij = nprofile_data[:,1] #The Individual (n profile) contains genes (n values per z)
+z_profile_ij = nprofile_data[:,0]
 
 nGenes = len(n_profile_ij)
 #==============================================
@@ -134,8 +122,3 @@ for i in range(nDepths):
 print(S_corr)
 hdf_output.attrs['S_corr'] = S_corr
 hdf_output.close()
-
-n_matrix_hdf = h5py.File(fname_n_matrix,'r+')
-S_arr = n_matrix_hdf['S_arr']
-S_arr[ii_generation,jj_select] = S_corr
-n_matrix_hdf.close()
