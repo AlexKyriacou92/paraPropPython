@@ -257,7 +257,7 @@ class bscan_rxList: #This one is a nTx x nRx dimension bscan
         for i in range(len(rxList_positions)):
             rx_i = rx(x=rxList_positions[i,0], z= rxList_positions[i,1])
             rxList.append(rx_i)
-        self.rxList = np.array(input_hdf.get('rxList'))
+        self.rxList = rxList
         self.tspace = self.tx_signal.tspace
         self.nSamples = self.tx_signal.nSamples
         self.dt = self.tx_signal.dt
