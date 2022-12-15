@@ -115,26 +115,19 @@ cmd_prefix = 'python runSim_nProfile_pseudodata.py '
 print('calculate S for individuals in 1st generation')
 for j in range(GA_1.nIndividuals):
     dir_outfiles0 = 'outfiles'
-    #dir_shfiles0 = 'shfiles'
-
     dir_outfiles = dir_outfiles0 + '/' + 'gen' + str(ii_gen)
-    #dir_shfiles = dir_shfiles0 + '/' + 'gen' + str(ii_gen)
     if os.path.isdir(dir_outfiles) == False:
         os.system('mkdir ' + dir_outfiles)
-    '''
-    if os.path.isdir(dir_outfiles) == False:
-        os.system('mkdir ' + dir_shfiles)
-    '''
-
     cmd_j =  cmd_prefix + ' ' + fname_config + ' ' + fname_nprof_psuedodata + ' ' + fname_nmatrix + ' ' + str(ii_gen) + ' ' + str(j)
     jobname = 'paraProp-job-' + str(ii_gen) + '-' + str(j)
     sh_file = jobname + '.sh'
     out_file = dir_outfiles + '/' + jobname + '.out'
+    print(out_file)
     make_job(sh_file, out_file, jobname, cmd_j)
     submit_job(sh_file)
     os.system('rm -f ' + sh_file)
 
-print('crimes submitted')
+print('jobs submitted')
 proceed_bool = False
 while proceed_bool == False:
     tsleep = 10.
@@ -166,7 +159,9 @@ while ii_gen < GA_1.nGenerations:
         print(ii_gen - 1)
 
         # n_profile_children = roulette(n_profile_parents, S_list, n_profile_initial)
+        print('starting selection')
         n_profile_children = selection(prof_list=n_profile_parents, S_list=S_list, prof_list_initial=n_prof_pool)
+        print('selection finished')
         print(n_profile_children)
         n_profile_matrix[ii_gen] = n_profile_children
         nmatrix_hdf.close()
