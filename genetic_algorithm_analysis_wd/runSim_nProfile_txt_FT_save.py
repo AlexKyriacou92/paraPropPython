@@ -16,17 +16,15 @@ sys.path.append('../genetic_algorithm_analysis/')
 from fitness_function import fitness_correlation, fitness_pulse_FT_data
 
 
-if len(sys.argv) != 7:
+if len(sys.argv) != 5:
     print('Wrong argument number:', len(sys.argv), ' should be: 6 or 7')
-    print('you must enter argument: \npython ' + sys.argv[0] + ' <config.txt> <fname_data.h5> <fname_nprofile_matrix.h5 i_gene j_individual <fname_out?>')
+    print('you must enter argument: \npython ' + sys.argv[0] + ' <config.txt> <fname_data.h5> <fname_nprofile.txt <fname_out?>')
     sys.exit()
 
 fname_config = sys.argv[1]  # The Config File -> sys.argv[1]
 fname_data = sys.argv[2]  # This must contain the date or the psuedo-data -> bscan, sys.argv[2]
 fname_nprofile = sys.argv[3]  # I use this to store the results AND the simulation parameters sys.argv[3]
-ii_generation = int(sys.argv[4])  # The Generation Number of the n_profile sys.argv[4]
-jj_select = int(sys.argv[5])  # The individual number from that Generation sys.argv[5]
-fname_out = sys.argv[6]
+fname_out = sys.argv[4]
 
 #==============================================
 nprofile_data = np.genfromtxt(fname_nprofile)
