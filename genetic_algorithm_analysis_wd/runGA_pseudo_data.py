@@ -90,6 +90,8 @@ print(len(GA_1.first_generation))
 #Create Pseudo_Data
 print('create pseudo data')
 fname_output_pseudo = 'FT_pseudo_data.h5'
+if os.path.isfile(fname_output_pseudo) == True:
+    os.system('rm -f ' + fname_output_pseudo)
 cmd = 'python runSim_pseudo_data.py ' + fname_config + ' ' + fname_nprof_psuedodata + ' ' + fname_output_pseudo
 os.system(cmd)
 #Calculate the first generation
@@ -97,7 +99,8 @@ os.system(cmd)
 #Create n_matrix
 print('create nmatrix')
 fname_nmatrix = 'test_nmatrix_pseudo.h5'
-
+if os.path.isfile(fname_nmatrix) == True:
+    os.system('rm -f ' + fname_nmatrix)
 createMatrix(fname_config=fname_config, n_prof_initial=GA_1.first_generation, z_profile=zprofile_sampling_mean,
              fname_nmatrix=fname_nmatrix, nGenerations = GA_1.nGenerations)
 #First Population Set
