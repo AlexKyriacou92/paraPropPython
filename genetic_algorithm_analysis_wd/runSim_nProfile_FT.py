@@ -15,19 +15,33 @@ from data import create_tx_signal, bscan
 sys.path.append('../genetic_algorithm_analysis/')
 from fitness_function import fitness_correlation, fitness_pulse_FT_data
 
-if len(sys.argv) != 6:
-    print('error! you must enter argument: \npython ' + sys.argv[0] + ' <config.txt> <fname_data.h5> <fname_nprofile_matrix.h5 i_gene j_individual')
-
-fname_config = sys.argv[1] #The Config File -> sys.argv[1]
-fname_data = sys.argv[2] # This must contain the date or the psuedo-data -> bscan, sys.argv[2]
-fname_n_matrix = sys.argv[3] # I use this to store the results AND the simulation parameters sys.argv[3]
-ii_generation = int(sys.argv[4]) #The Generation Number of the n_profile sys.argv[4]
-jj_select = int(sys.argv[5]) #The individual number from that Generation sys.argv[5]
+if len(sys.argv) < 6:
+    print('Wrong argument number:', len(sys.argv), ' should be: 6 or 7')
+    print('you must enter argument: \npython ' + sys.argv[0] + ' <config.txt> <fname_data.h5> <fname_nprofile_matrix.h5 i_gene j_individual <fname_out?>')
+    sys.exit()
+elif len(sys.argv) == 6:
+    fname_config = sys.argv[1] #The Config File -> sys.argv[1]
+    fname_data = sys.argv[2] # This must contain the date or the psuedo-data -> bscan, sys.argv[2]
+    fname_n_matrix = sys.argv[3] # I use this to store the results AND the simulation parameters sys.argv[3]
+    ii_generation = int(sys.argv[4]) #The Generation Number of the n_profile sys.argv[4]
+    jj_select = int(sys.argv[5]) #The individual number from that Generation sys.argv[5]
+    fname_out = None
+elif len(sys.argv) == 7:
+    fname_config = sys.argv[1]  # The Config File -> sys.argv[1]
+    fname_data = sys.argv[2]  # This must contain the date or the psuedo-data -> bscan, sys.argv[2]
+    fname_n_matrix = sys.argv[3]  # I use this to store the results AND the simulation parameters sys.argv[3]
+    ii_generation = int(sys.argv[4])  # The Generation Number of the n_profile sys.argv[4]
+    jj_select = int(sys.argv[5])  # The individual number from that Generation sys.argv[5]
+    fname_out = sys.argv[6]
+elif len(sys.argv) > 7:
+    print('Wrong argument number:', len(sys.argv), ' should be: 6 or 7')
+    print('you must enter argument: \npython ' + sys.argv[0] + ' <config.txt> <fname_data.h5> <fname_nprofile_matrix.h5 i_gene j_individual <fname_out?>')
+    sys.exit()
 #==============================================
 
 n_matrix_hdf = h5py.File(fname_n_matrix,'r') #The matrix holding n_profiles
 n_profile_matrix = np.array(n_matrix_hdf.get('n_profile_matrix'))
-n_profile_ij = n_profile_matrix[ii_generation,jj_select] #The Individual (n profile) contains genes (n values per z)
+n_profile_ij = np.array(n_profile_matrix[ii_generation,jj_select]) #The Individual (n profile) contains genes (n values per z)
 z_profile_ij = np.array(n_matrix_hdf.get('z_profile'))
 n_matrix_hdf.close()
 
@@ -54,6 +68,7 @@ nReceivers = len(rxList0)
 
 bscan_npy = np.zeros((nDepths, nReceivers, tx_signal.nSamples),dtype='complex')
 
+print(n_profile_ij)
 for i in range(nDepths):
     tstart = time.time()
 
@@ -65,6 +80,12 @@ for i in range(nDepths):
     sim.set_dipole_source_profile(tx_signal.frequency, sourceDepth)  # Set Source Profile
     sim.set_td_source_signal(tx_signal.pulse, tx_signal.dt) #Set transmitted signal
 
+    if i == 0:
+        if fname_out != None:
+            hdf_output = create_hdf_FT(fname=fname_out, sim=sim,
+                                       tx_signal=tx_signal, tx_depths=tx_depths, rxList=rxList)
+
+    rx_0 = rxList[0]
     sim.do_solver(rxList, freqMin=tx_signal.freqMin, freqMax=tx_signal.freqMax)
     tend = time.time()
     for j in range(nReceivers):
@@ -87,6 +108,8 @@ for i in range(nDepths):
 
 
 S_corr = 0
+if fname_out != None:
+    hdf_output.create_dataset('bscan_sig', data=bscan_npy)
 
 for i in range(nDepths):
     z_tx_sim = tx_depths[i]
@@ -109,6 +132,9 @@ for i in range(nDepths):
                 S_corr += S_corr_ijk
 
 print(S_corr)
+hdf_output.attrs['S_corr'] = S_corr
+hdf_output.close()
+
 n_matrix_hdf = h5py.File(fname_n_matrix,'r+')
 S_arr = n_matrix_hdf['S_arr']
 S_arr[ii_generation,jj_select] = S_corr

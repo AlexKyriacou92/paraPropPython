@@ -1,0 +1,253 @@
+Traceback (most recent call last):
+  File "runSim_nProfile_FT.py", line 38, in <module>
+    hdf_data = h5py.File(fname_data, 'r')
+  File "/beegfs/kyriacou/miniconda3/envs/myenv/lib/python3.6/site-packages/h5py/_hl/files.py", line 408, in __init__
+    swmr=swmr)
+  File "/beegfs/kyriacou/miniconda3/envs/myenv/lib/python3.6/site-packages/h5py/_hl/files.py", line 173, in make_fid
+    fid = h5f.open(name, flags, fapl=fapl)
+  File "h5py/_objects.pyx", line 54, in h5py._objects.with_phil.wrapper
+  File "h5py/_objects.pyx", line 55, in h5py._objects.with_phil.wrapper
+  File "h5py/h5f.pyx", line 88, in h5py.h5f.open
+OSError: Unable to open file (unable to open file: name = 'Field-Test-data.h5', errno = 2, error message = 'No such file or directory', flags = 0, o_flags = 0)
+Traceback (most recent call last):
+  File "runSim_nProfile_FT.py", line 38, in <module>
+    hdf_data = h5py.File(fname_data, 'r')
+  File "/beegfs/kyriacou/miniconda3/envs/myenv/lib/python3.6/site-packages/h5py/_hl/files.py", line 408, in __init__
+    swmr=swmr)
+  File "/beegfs/kyriacou/miniconda3/envs/myenv/lib/python3.6/site-packages/h5py/_hl/files.py", line 173, in make_fid
+    fid = h5f.open(name, flags, fapl=fapl)
+  File "h5py/_objects.pyx", line 54, in h5py._objects.with_phil.wrapper
+  File "h5py/_objects.pyx", line 55, in h5py._objects.with_phil.wrapper
+  File "h5py/h5f.pyx", line 88, in h5py.h5f.open
+OSError: Unable to open file (unable to open file: name = 'Field-Test-data.h5', errno = 2, error message = 'No such file or directory', flags = 0, o_flags = 0)
+Traceback (most recent call last):
+  File "runSim_nProfile_FT.py", line 38, in <module>
+    hdf_data = h5py.File(fname_data, 'r')
+  File "/beegfs/kyriacou/miniconda3/envs/myenv/lib/python3.6/site-packages/h5py/_hl/files.py", line 408, in __init__
+    swmr=swmr)
+  File "/beegfs/kyriacou/miniconda3/envs/myenv/lib/python3.6/site-packages/h5py/_hl/files.py", line 173, in make_fid
+    fid = h5f.open(name, flags, fapl=fapl)
+  File "h5py/_objects.pyx", line 54, in h5py._objects.with_phil.wrapper
+  File "h5py/_objects.pyx", line 55, in h5py._objects.with_phil.wrapper
+  File "h5py/h5f.pyx", line 88, in h5py.h5f.open
+OSError: Unable to open file (unable to open file: name = 'Field-Test-data.h5', errno = 2, error message = 'No such file or directory', flags = 0, o_flags = 0)
+Traceback (most recent call last):
+  File "runSim_nProfile_FT.py", line 38, in <module>
+    hdf_data = h5py.File(fname_data, 'r')
+  File "/beegfs/kyriacou/miniconda3/envs/myenv/lib/python3.6/site-packages/h5py/_hl/files.py", line 408, in __init__
+    swmr=swmr)
+  File "/beegfs/kyriacou/miniconda3/envs/myenv/lib/python3.6/site-packages/h5py/_hl/files.py", line 173, in make_fid
+    fid = h5f.open(name, flags, fapl=fapl)
+  File "h5py/_objects.pyx", line 54, in h5py._objects.with_phil.wrapper
+  File "h5py/_objects.pyx", line 55, in h5py._objects.with_phil.wrapper
+  File "h5py/h5f.pyx", line 88, in h5py.h5f.open
+OSError: Unable to open file (unable to open file: name = 'Field-Test-data.h5', errno = 2, error message = 'No such file or directory', flags = 0, o_flags = 0)
+Traceback (most recent call last):
+  File "runSim_nProfile_FT.py", line 38, in <module>
+    hdf_data = h5py.File(fname_data, 'r')
+  File "/beegfs/kyriacou/miniconda3/envs/myenv/lib/python3.6/site-packages/h5py/_hl/files.py", line 408, in __init__
+    swmr=swmr)
+  File "/beegfs/kyriacou/miniconda3/envs/myenv/lib/python3.6/site-packages/h5py/_hl/files.py", line 173, in make_fid
+    fid = h5f.open(name, flags, fapl=fapl)
+  File "h5py/_objects.pyx", line 54, in h5py._objects.with_phil.wrapper
+  File "h5py/_objects.pyx", line 55, in h5py._objects.with_phil.wrapper
+  File "h5py/h5f.pyx", line 88, in h5py.h5f.open
+OSError: Unable to open file (unable to open file: name = 'Field-Test-data.h5', errno = 2, error message = 'No such file or directory', flags = 0, o_flags = 0)
+Traceback (most recent call last):
+  File "runSim_nProfile_FT.py", line 38, in <module>
+    hdf_data = h5py.File(fname_data, 'r')
+  File "/beegfs/kyriacou/miniconda3/envs/myenv/lib/python3.6/site-packages/h5py/_hl/files.py", line 408, in __init__
+    swmr=swmr)
+  File "/beegfs/kyriacou/miniconda3/envs/myenv/lib/python3.6/site-packages/h5py/_hl/files.py", line 173, in make_fid
+    fid = h5f.open(name, flags, fapl=fapl)
+  File "h5py/_objects.pyx", line 54, in h5py._objects.with_phil.wrapper
+  File "h5py/_objects.pyx", line 55, in h5py._objects.with_phil.wrapper
+  File "h5py/h5f.pyx", line 88, in h5py.h5f.open
+OSError: Unable to open file (unable to open file: name = 'Field-Test-data.h5', errno = 2, error message = 'No such file or directory', flags = 0, o_flags = 0)
+Traceback (most recent call last):
+  File "runSim_nProfile_FT.py", line 38, in <module>
+    hdf_data = h5py.File(fname_data, 'r')
+  File "/beegfs/kyriacou/miniconda3/envs/myenv/lib/python3.6/site-packages/h5py/_hl/files.py", line 408, in __init__
+    swmr=swmr)
+  File "/beegfs/kyriacou/miniconda3/envs/myenv/lib/python3.6/site-packages/h5py/_hl/files.py", line 173, in make_fid
+    fid = h5f.open(name, flags, fapl=fapl)
+  File "h5py/_objects.pyx", line 54, in h5py._objects.with_phil.wrapper
+  File "h5py/_objects.pyx", line 55, in h5py._objects.with_phil.wrapper
+  File "h5py/h5f.pyx", line 88, in h5py.h5f.open
+OSError: Unable to open file (unable to open file: name = 'Field-Test-data.h5', errno = 2, error message = 'No such file or directory', flags = 0, o_flags = 0)
+Traceback (most recent call last):
+  File "runSim_nProfile_FT.py", line 38, in <module>
+    hdf_data = h5py.File(fname_data, 'r')
+  File "/beegfs/kyriacou/miniconda3/envs/myenv/lib/python3.6/site-packages/h5py/_hl/files.py", line 408, in __init__
+    swmr=swmr)
+  File "/beegfs/kyriacou/miniconda3/envs/myenv/lib/python3.6/site-packages/h5py/_hl/files.py", line 173, in make_fid
+    fid = h5f.open(name, flags, fapl=fapl)
+  File "h5py/_objects.pyx", line 54, in h5py._objects.with_phil.wrapper
+  File "h5py/_objects.pyx", line 55, in h5py._objects.with_phil.wrapper
+  File "h5py/h5f.pyx", line 88, in h5py.h5f.open
+OSError: Unable to open file (unable to open file: name = 'Field-Test-data.h5', errno = 2, error message = 'No such file or directory', flags = 0, o_flags = 0)
+Traceback (most recent call last):
+  File "runSim_nProfile_FT.py", line 38, in <module>
+    hdf_data = h5py.File(fname_data, 'r')
+  File "/beegfs/kyriacou/miniconda3/envs/myenv/lib/python3.6/site-packages/h5py/_hl/files.py", line 408, in __init__
+    swmr=swmr)
+  File "/beegfs/kyriacou/miniconda3/envs/myenv/lib/python3.6/site-packages/h5py/_hl/files.py", line 173, in make_fid
+    fid = h5f.open(name, flags, fapl=fapl)
+  File "h5py/_objects.pyx", line 54, in h5py._objects.with_phil.wrapper
+  File "h5py/_objects.pyx", line 55, in h5py._objects.with_phil.wrapper
+  File "h5py/h5f.pyx", line 88, in h5py.h5f.open
+OSError: Unable to open file (unable to open file: name = 'Field-Test-data.h5', errno = 2, error message = 'No such file or directory', flags = 0, o_flags = 0)
+Traceback (most recent call last):
+  File "runSim_nProfile_FT.py", line 38, in <module>
+    hdf_data = h5py.File(fname_data, 'r')
+  File "/beegfs/kyriacou/miniconda3/envs/myenv/lib/python3.6/site-packages/h5py/_hl/files.py", line 408, in __init__
+    swmr=swmr)
+  File "/beegfs/kyriacou/miniconda3/envs/myenv/lib/python3.6/site-packages/h5py/_hl/files.py", line 173, in make_fid
+    fid = h5f.open(name, flags, fapl=fapl)
+  File "h5py/_objects.pyx", line 54, in h5py._objects.with_phil.wrapper
+  File "h5py/_objects.pyx", line 55, in h5py._objects.with_phil.wrapper
+  File "h5py/h5f.pyx", line 88, in h5py.h5f.open
+OSError: Unable to open file (unable to open file: name = 'Field-Test-data.h5', errno = 2, error message = 'No such file or directory', flags = 0, o_flags = 0)
+Traceback (most recent call last):
+  File "runSim_nProfile_FT.py", line 38, in <module>
+    hdf_data = h5py.File(fname_data, 'r')
+  File "/beegfs/kyriacou/miniconda3/envs/myenv/lib/python3.6/site-packages/h5py/_hl/files.py", line 408, in __init__
+    swmr=swmr)
+  File "/beegfs/kyriacou/miniconda3/envs/myenv/lib/python3.6/site-packages/h5py/_hl/files.py", line 173, in make_fid
+    fid = h5f.open(name, flags, fapl=fapl)
+  File "h5py/_objects.pyx", line 54, in h5py._objects.with_phil.wrapper
+  File "h5py/_objects.pyx", line 55, in h5py._objects.with_phil.wrapper
+  File "h5py/h5f.pyx", line 88, in h5py.h5f.open
+OSError: Unable to open file (unable to open file: name = 'Field-Test-data.h5', errno = 2, error message = 'No such file or directory', flags = 0, o_flags = 0)
+Traceback (most recent call last):
+  File "runSim_nProfile_FT.py", line 38, in <module>
+    hdf_data = h5py.File(fname_data, 'r')
+  File "/beegfs/kyriacou/miniconda3/envs/myenv/lib/python3.6/site-packages/h5py/_hl/files.py", line 408, in __init__
+    swmr=swmr)
+  File "/beegfs/kyriacou/miniconda3/envs/myenv/lib/python3.6/site-packages/h5py/_hl/files.py", line 173, in make_fid
+    fid = h5f.open(name, flags, fapl=fapl)
+  File "h5py/_objects.pyx", line 54, in h5py._objects.with_phil.wrapper
+  File "h5py/_objects.pyx", line 55, in h5py._objects.with_phil.wrapper
+  File "h5py/h5f.pyx", line 88, in h5py.h5f.open
+OSError: Unable to open file (unable to open file: name = 'Field-Test-data.h5', errno = 2, error message = 'No such file or directory', flags = 0, o_flags = 0)
+Traceback (most recent call last):
+  File "runSim_nProfile_FT.py", line 38, in <module>
+    hdf_data = h5py.File(fname_data, 'r')
+  File "/beegfs/kyriacou/miniconda3/envs/myenv/lib/python3.6/site-packages/h5py/_hl/files.py", line 408, in __init__
+    swmr=swmr)
+  File "/beegfs/kyriacou/miniconda3/envs/myenv/lib/python3.6/site-packages/h5py/_hl/files.py", line 173, in make_fid
+    fid = h5f.open(name, flags, fapl=fapl)
+  File "h5py/_objects.pyx", line 54, in h5py._objects.with_phil.wrapper
+  File "h5py/_objects.pyx", line 55, in h5py._objects.with_phil.wrapper
+  File "h5py/h5f.pyx", line 88, in h5py.h5f.open
+OSError: Unable to open file (unable to open file: name = 'Field-Test-data.h5', errno = 2, error message = 'No such file or directory', flags = 0, o_flags = 0)
+Traceback (most recent call last):
+  File "runSim_nProfile_FT.py", line 38, in <module>
+    hdf_data = h5py.File(fname_data, 'r')
+  File "/beegfs/kyriacou/miniconda3/envs/myenv/lib/python3.6/site-packages/h5py/_hl/files.py", line 408, in __init__
+    swmr=swmr)
+  File "/beegfs/kyriacou/miniconda3/envs/myenv/lib/python3.6/site-packages/h5py/_hl/files.py", line 173, in make_fid
+    fid = h5f.open(name, flags, fapl=fapl)
+  File "h5py/_objects.pyx", line 54, in h5py._objects.with_phil.wrapper
+  File "h5py/_objects.pyx", line 55, in h5py._objects.with_phil.wrapper
+  File "h5py/h5f.pyx", line 88, in h5py.h5f.open
+OSError: Unable to open file (unable to open file: name = 'Field-Test-data.h5', errno = 2, error message = 'No such file or directory', flags = 0, o_flags = 0)
+Traceback (most recent call last):
+  File "runSim_nProfile_FT.py", line 38, in <module>
+    hdf_data = h5py.File(fname_data, 'r')
+  File "/beegfs/kyriacou/miniconda3/envs/myenv/lib/python3.6/site-packages/h5py/_hl/files.py", line 408, in __init__
+    swmr=swmr)
+  File "/beegfs/kyriacou/miniconda3/envs/myenv/lib/python3.6/site-packages/h5py/_hl/files.py", line 173, in make_fid
+    fid = h5f.open(name, flags, fapl=fapl)
+  File "h5py/_objects.pyx", line 54, in h5py._objects.with_phil.wrapper
+  File "h5py/_objects.pyx", line 55, in h5py._objects.with_phil.wrapper
+  File "h5py/h5f.pyx", line 88, in h5py.h5f.open
+OSError: Unable to open file (unable to open file: name = 'Field-Test-data.h5', errno = 2, error message = 'No such file or directory', flags = 0, o_flags = 0)
+Traceback (most recent call last):
+  File "runSim_nProfile_FT.py", line 38, in <module>
+    hdf_data = h5py.File(fname_data, 'r')
+  File "/beegfs/kyriacou/miniconda3/envs/myenv/lib/python3.6/site-packages/h5py/_hl/files.py", line 408, in __init__
+    swmr=swmr)
+  File "/beegfs/kyriacou/miniconda3/envs/myenv/lib/python3.6/site-packages/h5py/_hl/files.py", line 173, in make_fid
+    fid = h5f.open(name, flags, fapl=fapl)
+  File "h5py/_objects.pyx", line 54, in h5py._objects.with_phil.wrapper
+  File "h5py/_objects.pyx", line 55, in h5py._objects.with_phil.wrapper
+  File "h5py/h5f.pyx", line 88, in h5py.h5f.open
+OSError: Unable to open file (unable to open file: name = 'Field-Test-data.h5', errno = 2, error message = 'No such file or directory', flags = 0, o_flags = 0)
+Traceback (most recent call last):
+  File "runSim_nProfile_FT.py", line 38, in <module>
+    hdf_data = h5py.File(fname_data, 'r')
+  File "/beegfs/kyriacou/miniconda3/envs/myenv/lib/python3.6/site-packages/h5py/_hl/files.py", line 408, in __init__
+    swmr=swmr)
+  File "/beegfs/kyriacou/miniconda3/envs/myenv/lib/python3.6/site-packages/h5py/_hl/files.py", line 173, in make_fid
+    fid = h5f.open(name, flags, fapl=fapl)
+  File "h5py/_objects.pyx", line 54, in h5py._objects.with_phil.wrapper
+  File "h5py/_objects.pyx", line 55, in h5py._objects.with_phil.wrapper
+  File "h5py/h5f.pyx", line 88, in h5py.h5f.open
+OSError: Unable to open file (unable to open file: name = 'Field-Test-data.h5', errno = 2, error message = 'No such file or directory', flags = 0, o_flags = 0)
+Traceback (most recent call last):
+  File "runSim_nProfile_FT.py", line 38, in <module>
+    hdf_data = h5py.File(fname_data, 'r')
+  File "/beegfs/kyriacou/miniconda3/envs/myenv/lib/python3.6/site-packages/h5py/_hl/files.py", line 408, in __init__
+    swmr=swmr)
+  File "/beegfs/kyriacou/miniconda3/envs/myenv/lib/python3.6/site-packages/h5py/_hl/files.py", line 173, in make_fid
+    fid = h5f.open(name, flags, fapl=fapl)
+  File "h5py/_objects.pyx", line 54, in h5py._objects.with_phil.wrapper
+  File "h5py/_objects.pyx", line 55, in h5py._objects.with_phil.wrapper
+  File "h5py/h5f.pyx", line 88, in h5py.h5f.open
+OSError: Unable to open file (unable to open file: name = 'Field-Test-data.h5', errno = 2, error message = 'No such file or directory', flags = 0, o_flags = 0)
+Traceback (most recent call last):
+  File "runSim_nProfile_FT.py", line 38, in <module>
+    hdf_data = h5py.File(fname_data, 'r')
+  File "/beegfs/kyriacou/miniconda3/envs/myenv/lib/python3.6/site-packages/h5py/_hl/files.py", line 408, in __init__
+    swmr=swmr)
+  File "/beegfs/kyriacou/miniconda3/envs/myenv/lib/python3.6/site-packages/h5py/_hl/files.py", line 173, in make_fid
+    fid = h5f.open(name, flags, fapl=fapl)
+  File "h5py/_objects.pyx", line 54, in h5py._objects.with_phil.wrapper
+  File "h5py/_objects.pyx", line 55, in h5py._objects.with_phil.wrapper
+  File "h5py/h5f.pyx", line 88, in h5py.h5f.open
+OSError: Unable to open file (unable to open file: name = 'Field-Test-data.h5', errno = 2, error message = 'No such file or directory', flags = 0, o_flags = 0)
+Traceback (most recent call last):
+  File "runSim_nProfile_FT.py", line 38, in <module>
+    hdf_data = h5py.File(fname_data, 'r')
+  File "/beegfs/kyriacou/miniconda3/envs/myenv/lib/python3.6/site-packages/h5py/_hl/files.py", line 408, in __init__
+    swmr=swmr)
+  File "/beegfs/kyriacou/miniconda3/envs/myenv/lib/python3.6/site-packages/h5py/_hl/files.py", line 173, in make_fid
+    fid = h5f.open(name, flags, fapl=fapl)
+  File "h5py/_objects.pyx", line 54, in h5py._objects.with_phil.wrapper
+  File "h5py/_objects.pyx", line 55, in h5py._objects.with_phil.wrapper
+  File "h5py/h5f.pyx", line 88, in h5py.h5f.open
+OSError: Unable to open file (unable to open file: name = 'Field-Test-data.h5', errno = 2, error message = 'No such file or directory', flags = 0, o_flags = 0)
+Traceback (most recent call last):
+  File "runSim_nProfile_FT.py", line 38, in <module>
+    hdf_data = h5py.File(fname_data, 'r')
+  File "/beegfs/kyriacou/miniconda3/envs/myenv/lib/python3.6/site-packages/h5py/_hl/files.py", line 408, in __init__
+    swmr=swmr)
+  File "/beegfs/kyriacou/miniconda3/envs/myenv/lib/python3.6/site-packages/h5py/_hl/files.py", line 173, in make_fid
+    fid = h5f.open(name, flags, fapl=fapl)
+  File "h5py/_objects.pyx", line 54, in h5py._objects.with_phil.wrapper
+  File "h5py/_objects.pyx", line 55, in h5py._objects.with_phil.wrapper
+  File "h5py/h5f.pyx", line 88, in h5py.h5f.open
+OSError: Unable to open file (unable to open file: name = 'Field-Test-data.h5', errno = 2, error message = 'No such file or directory', flags = 0, o_flags = 0)
+Traceback (most recent call last):
+  File "runSim_nProfile_FT.py", line 38, in <module>
+    hdf_data = h5py.File(fname_data, 'r')
+  File "/beegfs/kyriacou/miniconda3/envs/myenv/lib/python3.6/site-packages/h5py/_hl/files.py", line 408, in __init__
+    swmr=swmr)
+  File "/beegfs/kyriacou/miniconda3/envs/myenv/lib/python3.6/site-packages/h5py/_hl/files.py", line 173, in make_fid
+    fid = h5f.open(name, flags, fapl=fapl)
+  File "h5py/_objects.pyx", line 54, in h5py._objects.with_phil.wrapper
+  File "h5py/_objects.pyx", line 55, in h5py._objects.with_phil.wrapper
+  File "h5py/h5f.pyx", line 88, in h5py.h5f.open
+OSError: Unable to open file (unable to open file: name = 'Field-Test-data.h5', errno = 2, error message = 'No such file or directory', flags = 0, o_flags = 0)
+Traceback (most recent call last):
+  File "runSim_nProfile_FT.py", line 38, in <module>
+    hdf_data = h5py.File(fname_data, 'r')
+  File "/beegfs/kyriacou/miniconda3/envs/myenv/lib/python3.6/site-packages/h5py/_hl/files.py", line 408, in __init__
+    swmr=swmr)
+  File "/beegfs/kyriacou/miniconda3/envs/myenv/lib/python3.6/site-packages/h5py/_hl/files.py", line 173, in make_fid
+    fid = h5f.open(name, flags, fapl=fapl)
+  File "h5py/_objects.pyx", line 54, in h5py._objects.with_phil.wrapper
+  File "h5py/_objects.pyx", line 55, in h5py._objects.with_phil.wrapper
+  File "h5py/h5f.pyx", line 88, in h5py.h5f.open
+OSError: Unable to open file (unable to open file: name = 'Field-Test-data.h5', errno = 2, error message = 'No such file or directory', flags = 0, o_flags = 0)
