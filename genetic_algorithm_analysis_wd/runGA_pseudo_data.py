@@ -87,12 +87,6 @@ print(len(GA_1.first_generation))
 
 #Next -> Calculate list of S parameters
 
-#Create n_matrix
-
-
-createMatrix(fname_config=fname_config, n_prof_initial=GA_1.first_generation, z_profile=zprofile_sampling_mean,
-             fname_nmatrix=fname_nmatrix, nGenerations = GA_1.nGenerations)
-
 #Create Pseudo_Data
 fname_output_pseudo = 'pseudo_data.h5'
 cmd = 'python runSim_pseudo_data.py ' + fname_config + ' ' + fname_nprof_psuedodata + ' ' + fname_output_pseudo
