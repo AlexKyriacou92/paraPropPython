@@ -91,7 +91,7 @@ print(len(GA_1.first_generation))
 print('create pseudo data')
 fname_output_pseudo = 'FT_pseudo_data.h5'
 cmd = 'python runSim_pseudo_data.py ' + fname_config + ' ' + fname_nprof_psuedodata + ' ' + fname_output_pseudo
-
+os.system(cmd)
 #Calculate the first generation
 
 #Create n_matrix
