@@ -89,7 +89,7 @@ print(len(GA_1.first_generation))
 
 #Create Pseudo_Data
 print('create pseudo data')
-fname_output_pseudo = 'pseudo_data.h5'
+fname_output_pseudo = 'FT_pseudo_data.h5'
 cmd = 'python runSim_pseudo_data.py ' + fname_config + ' ' + fname_nprof_psuedodata + ' ' + fname_output_pseudo
 
 #Calculate the first generation
@@ -118,7 +118,7 @@ for j in range(GA_1.nIndividuals):
     dir_outfiles = dir_outfiles0 + '/' + 'gen' + str(ii_gen)
     if os.path.isdir(dir_outfiles) == False:
         os.system('mkdir ' + dir_outfiles)
-    cmd_j =  cmd_prefix + ' ' + fname_config + ' ' + fname_nprof_psuedodata + ' ' + fname_nmatrix + ' ' + str(ii_gen) + ' ' + str(j)
+    cmd_j =  cmd_prefix + ' ' + fname_config + ' ' + fname_output_pseudo + ' ' + fname_nmatrix + ' ' + str(ii_gen) + ' ' + str(j)
     jobname = 'paraProp-job-' + str(ii_gen) + '-' + str(j)
     sh_file = jobname + '.sh'
     out_file = dir_outfiles + '/' + jobname + '.out'
@@ -178,7 +178,7 @@ while ii_gen < GA_1.nGenerations:
             if os.path.isdir(dir_shfiles) == False:
                 os.system('mkdir ' + dir_shfiles)
             '''
-            cmd_j = cmd_prefix + ' ' + fname_config + ' ' + fname_nprof_psuedodata + ' ' + fname_nmatrix + ' ' + str(ii_gen) + ' ' + str(j)
+            cmd_j = cmd_prefix + ' ' + fname_config + ' ' + fname_output_pseudo + ' ' + fname_nmatrix + ' ' + str(ii_gen) + ' ' + str(j)
             jobname = 'paraProp-job-' + str(ii_gen) + '-' + str(j)
             sh_file = jobname + '.sh'
             out_file = dir_outfiles + '/' + jobname + '.out'
