@@ -88,12 +88,14 @@ print(len(GA_1.first_generation))
 #Next -> Calculate list of S parameters
 
 #Create Pseudo_Data
+print('create pseudo data')
 fname_output_pseudo = 'pseudo_data.h5'
 cmd = 'python runSim_pseudo_data.py ' + fname_config + ' ' + fname_nprof_psuedodata + ' ' + fname_output_pseudo
 
 #Calculate the first generation
 
 #Create n_matrix
+print('create nmatrix')
 fname_nmatrix = 'test_nmatrix_pseudo.h5'
 
 createMatrix(fname_config=fname_config, n_prof_initial=GA_1.first_generation, z_profile=zprofile_sampling_mean,
@@ -110,7 +112,7 @@ cmd_prefix = 'python runSim_nProfile_pseudodata.py '
 #Next -> Calculate list of S parameters
 #Submit jobs to cluster and wait
 
-
+print('calculate S for individuals in 1st generation')
 for j in range(GA_1.nIndividuals):
     dir_outfiles0 = 'outfiles'
     #dir_shfiles0 = 'shfiles'
@@ -132,10 +134,12 @@ for j in range(GA_1.nIndividuals):
     submit_job(sh_file)
     os.system('rm -f ' + sh_file)
 
+print('crimes submitted')
 proceed_bool = False
 while proceed_bool == False:
     tsleep = 10.
     nJobs = countjobs()
+    print(nJobs, 'jobs left, wait:', tsleep)
     if nJobs > 0:
         time.sleep(tsleep)
     else:
@@ -144,7 +148,8 @@ while proceed_bool == False:
 
 ii_gen += 1
 #Wait for jobs to be submitted
-
+print('1st generation finished')
+print('next generation:')
 while ii_gen < GA_1.nGenerations:
     nJobs = countjobs()
     tsleep = 30.
