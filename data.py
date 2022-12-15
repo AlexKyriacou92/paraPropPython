@@ -11,6 +11,8 @@ from matplotlib import pyplot as pl
 import configparser
 import argparse
 
+
+
 def create_sim(fname_config): #Creates Simulation from config file using parser
     '''
     Creates paraProp simulation object (see paraPropPython.py) object from config file
@@ -98,8 +100,8 @@ def create_rxList_from_file(fname_config):
     next(f_recievers)
     for line in f_recievers:
         cols = line.split()
-        rx_x = cols[0]
-        rx_z = cols[1]
+        rx_x = float(cols[0])
+        rx_z = float(cols[1])
         rx_i = rx(x=rx_x, z=rx_z)
         rxList.append(rx_i)
     return rxList
@@ -210,8 +212,17 @@ def create_hdf_FT(fname, sim, tx_signal, tx_depths, rxList, comment=""):
     output_hdf.create_dataset('tspace', data=tx_signal.tspace)
     output_hdf.create_dataset('signalPulse', data=tx_signal.pulse)
     output_hdf.create_dataset('signalSpectrum', data=tx_signal.spectrum)
-    output_hdf.create_dataset("rxList", data=rxList)
+
+    rxList_positions = np.ones((len(rxList), 2))
+    for i in range(len(rxList)):
+        rx_i = rxList[i]
+        rxList_positions[i, 0] = rx_i.x
+        rxList_positions[i, 1] = rx_i.z
+
+    output_hdf.create_dataset("rxList", data=rxList_positions)
     output_hdf.attrs["comment"] = comment
+
+    return output_hdf
 
 def create_memmap(file, dimensions, data_type ='complex'):
     A = open_memmap(file, shape = dimensions, mode='w+', dtype = data_type)
@@ -240,6 +251,12 @@ class bscan_rxList: #This one is a nTx x nRx dimension bscan
                                    freqMax=freqMax, t_centre=tCentral, dt=dt, tmax=tSample)
         self.tx_signal.pulse = np.array(input_hdf.get('signalPulse'))
         self.tx_depths = np.array(input_hdf.get('source_depths'))
+
+        rxList_positions = np.array(input_hdf.get('rxList'))
+        rxList = []
+        for i in range(len(rxList_positions)):
+            rx_i = rx(x=rxList_positions[i,0], z= rxList_positions[i,1])
+            rxList.append(rx_i)
         self.rxList = np.array(input_hdf.get('rxList'))
         self.tspace = self.tx_signal.tspace
         self.nSamples = self.tx_signal.nSamples
