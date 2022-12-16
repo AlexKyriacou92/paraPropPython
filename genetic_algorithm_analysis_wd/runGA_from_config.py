@@ -59,8 +59,8 @@ def main(fname_config):
     config.read(fname_config)
 
     sim_mode = config['INPUT']['sim_mode']
-    fname_output = config['OUTPUT']['fname_output']
-
+    fname_pseudo_output = config['OUTPUT']['fname_pseudo_output']
+    fname_nmatrix_output = config['OUTPUT']['fname_nmatrix_output']
     GA_1 = read_from_config(fname_config=fname_config)
     print('nIndividuals:', GA_1.nIndividuals)
 
@@ -102,7 +102,7 @@ def main(fname_config):
 
     # Create n_matrix
     print('create nmatrix')
-    fname_nmatrix = fname_output
+    fname_nmatrix = fname_nmatrix_output
     if os.path.isfile(fname_nmatrix) == True:
         os.system('rm -f ' + fname_nmatrix)
     createMatrix(fname_config=fname_config, n_prof_initial=GA_1.first_generation, z_profile=zprofile_sampling_mean,
@@ -113,10 +113,9 @@ def main(fname_config):
         fname_pseudodata = config['INPUT']['fname_pseudodata']
         # Create Pseudo_Data
         print('create pseudo data')
-        fname_output_pseudo = fname_output
-        if os.path.isfile(fname_output_pseudo) == True:
-            os.system('rm -f ' + fname_output_pseudo)
-        cmd = 'python runSim_pseudo_data.py ' + fname_config + ' ' + fname_pseudodata + ' ' + fname_output_pseudo
+        if os.path.isfile(fname_pseudo_output) == True:
+            os.system('rm -f ' + fname_pseudo_output)
+        cmd = 'python runSim_pseudo_data.py ' + fname_config + ' ' + fname_pseudodata + ' ' + fname_pseudo_output
         os.system(cmd)
         # Next -> Calculate list of S parameters
 
@@ -133,7 +132,7 @@ def main(fname_config):
             dir_outfiles = dir_outfiles0 + '/' + 'gen' + str(ii_gen)
             if os.path.isdir(dir_outfiles) == False:
                 os.system('mkdir ' + dir_outfiles)
-            cmd_j = cmd_prefix + ' ' + fname_config + ' ' + fname_output_pseudo + ' ' + fname_nmatrix + ' ' + str(
+            cmd_j = cmd_prefix + ' ' + fname_config + ' ' + fname_pseudo_output + ' ' + fname_nmatrix + ' ' + str(
                 ii_gen) + ' ' + str(j)
             jobname = 'paraProp-job-' + str(ii_gen) + '-' + str(j)
             sh_file = jobname + '.sh'
@@ -191,7 +190,7 @@ def main(fname_config):
                     if os.path.isdir(dir_outfiles) == False:
                         os.system('mkdir ' + dir_outfiles)
 
-                    cmd_j = cmd_prefix + ' ' + fname_config + ' ' + fname_output_pseudo + ' ' + fname_nmatrix + ' ' + str(
+                    cmd_j = cmd_prefix + ' ' + fname_config + ' ' + fname_pseudo_output + ' ' + fname_nmatrix + ' ' + str(
                         ii_gen) + ' ' + str(j)
                     jobname = 'paraProp-job-' + str(ii_gen) + '-' + str(j)
                     sh_file = jobname + '.sh'
