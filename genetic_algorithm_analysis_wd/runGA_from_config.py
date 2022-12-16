@@ -284,7 +284,7 @@ def main(fname_config):
         print('error, incorrect sim_mode, enter: pseudo or data')
         sys.exit()
 
-if __name__ = '__main__':
+if __name__ == '__main__':
     print('Begin Genetic Algorithm Analysis')
     main(fname_config0)
     print('GA Completed')
