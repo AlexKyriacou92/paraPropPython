@@ -98,6 +98,7 @@ def main(fname_config):
         n_prof_flat = np.ones(GA_1.nGenes) + n_const
         n_prof_pool.append(n_prof_flat)
     random.shuffle(n_prof_pool)
+    GA_1.initialize_from_sample(n_prof_pool)
 
     # Create n_matrix
     print('create nmatrix')
