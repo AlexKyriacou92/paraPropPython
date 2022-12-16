@@ -160,7 +160,7 @@ def main(fname_config):
         while ii_gen < GA_1.nGenerations:
             nJobs = countjobs()
             tsleep = 30.
-            print('Check jobs')
+            print('Generation', ii_gen, 'Check jobs')
             if nJobs == 0:
                 print('Submitted jobs')
                 # APPLY GA selection
@@ -242,7 +242,7 @@ def main(fname_config):
         while ii_gen < GA_1.nGenerations:
             nJobs = countjobs()
             tsleep = 30.
-            print('Check jobs')
+            print('Generation', ii_gen, 'Check jobs')
             if nJobs == 0:
                 print('Submitted jobs')
                 # APPLY GA selection
