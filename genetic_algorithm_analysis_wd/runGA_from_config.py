@@ -128,6 +128,8 @@ def main(fname_config):
         # Submit jobs to cluster and wait
 
         print('calculate S for individuals in 1st generation')
+
+        outfile_list = []
         for j in range(GA_1.nIndividuals):
             dir_outfiles0 = 'outfiles'
             dir_outfiles = dir_outfiles0 + '/' + 'gen' + str(ii_gen)
@@ -138,6 +140,7 @@ def main(fname_config):
             jobname = job_prefix + str(ii_gen) + '-' + str(j)
             sh_file = jobname + '.sh'
             out_file = dir_outfiles + '/' + jobname + '.out'
+            outfile_list.append(out_file)
             print(out_file)
             make_job(sh_file, out_file, jobname, cmd_j)
             submit_job(sh_file)
@@ -196,6 +199,7 @@ def main(fname_config):
                     jobname = job_prefix + str(ii_gen) + '-' + str(j)
                     sh_file = jobname + '.sh'
                     out_file = dir_outfiles + '/' + jobname + '.out'
+                    outfile_list.append(out_file)
                     make_job(sh_file, out_file, jobname, cmd_j)
                     submit_job(sh_file)
                     # After Jobs are submitted
@@ -207,6 +211,10 @@ def main(fname_config):
                 print('Wait:', tsleep, ' seconds')
                 time.sleep(tsleep)
 
+        for k in range(len(outfile_list)):
+            out_file_k = outfile_list[k]
+            os.system('rm -f ' + out_file_k)
+
     elif sim_mode == 'data':
         fname_data = config['INPUT']['fname_data']
         ii_gen = 0  # Zeroth Generation
@@ -214,7 +222,7 @@ def main(fname_config):
 
         # Next -> Calculate list of S parameters
         # Submit jobs to cluster and wait
-
+        outfile_list = []
         for j in range(GA_1.nIndividuals):
             dir_outfiles0 = 'outfiles'
             dir_outfiles = dir_outfiles0 + '/' + 'gen' + str(ii_gen)
@@ -225,6 +233,7 @@ def main(fname_config):
             jobname = job_prefix + str(ii_gen) + '-' + str(j)
             sh_file = jobname + '.sh'
             out_file = dir_outfiles + '/' + jobname + '.out'
+            outfile_list.append(out_file)
             make_job(sh_file, out_file, jobname, cmd_j)
             submit_job(sh_file)
             os.system('rm -f ' + sh_file)
@@ -271,6 +280,7 @@ def main(fname_config):
                     jobname = job_prefix + str(ii_gen) + '-' + str(j)
                     sh_file = jobname + '.sh'
                     out_file = dir_outfiles + '/' + jobname + '.out'
+                    outfile_list.append(out_file)
                     make_job(sh_file, out_file, jobname, cmd_j)
                     submit_job(sh_file)
                     # After Jobs are submitted
@@ -281,6 +291,10 @@ def main(fname_config):
                 print('Queue of jobs: ', nJobs)
                 print('Wait:', tsleep, ' seconds')
                 time.sleep(tsleep)
+
+        for k in range(len(outfile_list)):
+            out_file_k = outfile_list[k]
+            os.system('rm -f ' + out_file_k)
     else:
         print('error, incorrect sim_mode, enter: pseudo or data')
         sys.exit()
