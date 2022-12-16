@@ -5,7 +5,7 @@ fname_data = Field-Test-data.h5
 fname_sample = start_profiles/aletsch_glacier_1.txt
 
 [OUTPUT]
-fname_output = starting_simulation_pseudo.h5
+fname_output = guliyra_pseudo.h5
 
 [GEOMETRY]
 iceDepth = 15.0
