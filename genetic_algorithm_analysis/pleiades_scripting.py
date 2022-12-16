@@ -16,9 +16,10 @@ import sys
 #Cluster Settings
 NODES_MIN = 1
 NODES_MAX = 1
-PARTITION = 'normal'
-DAYS = 3
-HOURS = 0
+#PARTITION = 'normal'
+PARTITION = 'short'
+DAYS = 0
+HOURS = 1
 MEMORY = 500 # in MB
 
 def make_job(fname_shell, fname_outfile, jobname, command, nNodes_min=NODES_MIN, nNodes_max=NODES_MAX, partition=PARTITION, days=DAYS, hours=HOURS, nodeMemory=MEMORY):
