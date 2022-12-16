@@ -59,6 +59,7 @@ def main(fname_config):
     config.read(fname_config)
 
     sim_mode = config['INPUT']['sim_mode']
+    job_prefix = config['INPUT']['prefix']
     fname_pseudo_output = config['OUTPUT']['fname_pseudo_output']
     fname_nmatrix_output = config['OUTPUT']['fname_nmatrix_output']
     GA_1 = read_from_config(fname_config=fname_config)
@@ -134,7 +135,7 @@ def main(fname_config):
                 os.system('mkdir ' + dir_outfiles)
             cmd_j = cmd_prefix + ' ' + fname_config + ' ' + fname_pseudo_output + ' ' + fname_nmatrix + ' ' + str(
                 ii_gen) + ' ' + str(j)
-            jobname = 'paraProp-job-' + str(ii_gen) + '-' + str(j)
+            jobname = job_prefix + str(ii_gen) + '-' + str(j)
             sh_file = jobname + '.sh'
             out_file = dir_outfiles + '/' + jobname + '.out'
             print(out_file)
@@ -192,7 +193,7 @@ def main(fname_config):
 
                     cmd_j = cmd_prefix + ' ' + fname_config + ' ' + fname_pseudo_output + ' ' + fname_nmatrix + ' ' + str(
                         ii_gen) + ' ' + str(j)
-                    jobname = 'paraProp-job-' + str(ii_gen) + '-' + str(j)
+                    jobname = job_prefix + str(ii_gen) + '-' + str(j)
                     sh_file = jobname + '.sh'
                     out_file = dir_outfiles + '/' + jobname + '.out'
                     make_job(sh_file, out_file, jobname, cmd_j)
@@ -221,7 +222,7 @@ def main(fname_config):
                 os.system('mkdir ' + dir_outfiles)
             cmd_j = cmd_prefix + ' ' + fname_config + ' ' + fname_data + ' ' + fname_nmatrix + ' ' + str(
                 ii_gen) + ' ' + str(j)
-            jobname = 'paraProp-job-' + str(ii_gen) + '-' + str(j)
+            jobname = job_prefix + str(ii_gen) + '-' + str(j)
             sh_file = jobname + '.sh'
             out_file = dir_outfiles + '/' + jobname + '.out'
             make_job(sh_file, out_file, jobname, cmd_j)
@@ -267,7 +268,7 @@ def main(fname_config):
                         os.system('mkdir ' + dir_outfiles)
                     cmd_j = cmd_prefix + ' ' + fname_config + ' ' + fname_data + ' ' + fname_nmatrix + ' ' + str(
                         ii_gen) + ' ' + str(j)
-                    jobname = 'paraProp-job-' + str(ii_gen) + '-' + str(j)
+                    jobname = job_prefix + str(ii_gen) + '-' + str(j)
                     sh_file = jobname + '.sh'
                     out_file = dir_outfiles + '/' + jobname + '.out'
                     make_job(sh_file, out_file, jobname, cmd_j)
