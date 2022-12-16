@@ -47,7 +47,7 @@ def do_interpolation(zprof_in, nprof_in, N):
     return nprof_out, zprof_out
 
 nArgs = len(sys.argv)
-if len(nArgs) != 2:
+if nArgs != 2:
     print('error, incorrect number of arguments, nArgs = ', nArgs)
     print('enter: python ', sys.argv[0], ' <fname_config>')
     sys.exit()
