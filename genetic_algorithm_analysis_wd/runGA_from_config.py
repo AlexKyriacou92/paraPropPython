@@ -11,7 +11,7 @@ from scipy.interpolate import interp1d
 from genetic_algorithm import GA, read_from_config
 from makeSim_nmatrix import createMatrix
 import sys
-sys.path.append('../genetic_algorithm_analysis/')
+
 from genetic_functions import initialize_from_analytical, roulette, initalize_from_fluctuations
 from pleiades_scripting import make_command, test_job, submit_job, test_job_data, make_command_data, make_job
 from selection_functions import selection
@@ -171,7 +171,7 @@ def main(fname_config):
                 nmatrix_hdf = h5py.File(fname_nmatrix, 'r+')
                 S_arr = np.array(nmatrix_hdf['S_arr'])
                 n_profile_matrix = nmatrix_hdf['n_profile_matrix']
-                n_profile_initial = n_profile_matrix[0]
+                #n_profile_initial = n_profile_matrix[0]
                 n_profile_parents = n_profile_matrix[ii_gen - 1]
                 S_list = np.array(S_arr[ii_gen - 1])
                 print(ii_gen - 1)
@@ -259,7 +259,7 @@ def main(fname_config):
                 nmatrix_hdf = h5py.File(fname_nmatrix, 'r+')
                 S_arr = np.array(nmatrix_hdf['S_arr'])
                 n_profile_matrix = nmatrix_hdf['n_profile_matrix']
-                n_profile_initial = n_profile_matrix[0]
+                #n_profile_initial = n_profile_matrix[0]
                 n_profile_parents = n_profile_matrix[ii_gen - 1]
                 S_list = np.array(S_arr[ii_gen - 1])
                 print(ii_gen - 1)

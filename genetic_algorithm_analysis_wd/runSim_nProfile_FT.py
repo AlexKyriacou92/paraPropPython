@@ -12,7 +12,6 @@ from transmitter import tx_signal
 from data import create_sim, create_rxList_from_file, create_transmitter_array, create_hdf_FT
 from data import create_tx_signal, bscan
 
-sys.path.append('../genetic_algorithm_analysis/')
 from fitness_function import fitness_correlation, fitness_pulse_FT_data
 
 if len(sys.argv) < 6:

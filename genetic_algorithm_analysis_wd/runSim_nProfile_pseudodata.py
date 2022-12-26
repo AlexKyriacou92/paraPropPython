@@ -11,19 +11,27 @@ import paraPropPython as ppp
 from receiver import receiver as rx
 from transmitter import tx_signal
 from data import create_sim, create_rxList_from_file, create_transmitter_array, create_hdf_FT
-from data import create_tx_signal, bscan, bscan_rxList
+from data import create_tx_signal, bscan, bscan_rxList, create_hdf_bscan
 
-sys.path.append('../genetic_algorithm_analysis/')
 from fitness_function import fitness_correlation, fitness_pulse_FT_data
 
+'''
 if len(sys.argv) != 6:
     print('error! you must enter argument: \npython ' + sys.argv[0] + ' <config.txt> <fname_data.h5> <fname_nprofile_matrix.h5 i_gene j_individual')
-
-fname_config = sys.argv[1] #The Config File -> sys.argv[1]
-fname_pseudo_data = sys.argv[2] # This must contain the date or the psuedo-data -> bscan, sys.argv[2]
-fname_n_matrix = sys.argv[3] # I use this to store the results AND the simulation parameters sys.argv[3]
-ii_generation = int(sys.argv[4]) #The Generation Number of the n_profile sys.argv[4]
-jj_select = int(sys.argv[5]) #The individual number from that Generation sys.argv[5]
+'''
+if len(sys.argv) == 6:
+    fname_config = sys.argv[1] #The Config File -> sys.argv[1]
+    fname_pseudo_data = sys.argv[2] # This must contain the date or the psuedo-data -> bscan, sys.argv[2]
+    fname_n_matrix = sys.argv[3] # I use this to store the results AND the simulation parameters sys.argv[3]
+    ii_generation = int(sys.argv[4]) #The Generation Number of the n_profile sys.argv[4]
+    jj_select = int(sys.argv[5]) #The individual number from that Generation sys.argv[5]
+elif len(sys.argv) == 7:
+    fname_config = sys.argv[1]  # The Config File -> sys.argv[1]
+    fname_pseudo_data = sys.argv[2]  # This must contain the date or the psuedo-data -> bscan, sys.argv[2]
+    fname_n_matrix = sys.argv[3]  # I use this to store the results AND the simulation parameters sys.argv[3]
+    ii_generation = int(sys.argv[4])  # The Generation Number of the n_profile sys.argv[4]
+    jj_select = int(sys.argv[5])  # The individual number from that Generation sys.argv[5]
+    fname_out = sys.argv[6]
 #==============================================
 
 print(fname_pseudo_data, os.path.isfile(fname_pseudo_data))
@@ -70,6 +78,11 @@ for i in range(nDepths):
         rx_j = rxList[j]
         bscan_npy[i,j] = rx_j.get_signal()
 
+    if i == 0:
+        if fname_out != None:
+            hdf_output = create_hdf_FT(fname=fname_out, sim=sim,
+                                       tx_signal=tx_signal, tx_depths=tx_depths, rxList=rxList)
+
     duration_s = (tend - tstart)
     duration = datetime.timedelta(seconds=duration_s)
     remainder_s = duration_s * (nDepths - (i + 1))
@@ -95,6 +108,7 @@ for i in range(nDepths):
         S_corr_ijk = fitness_pulse_FT_data(sig_sim=sig_sim, sig_data=sig_pseudodata)
         S_corr += S_corr_ijk
 
+hdf_output.create_dataset('bscan_sig', data=bscan_npy)
 print(S_corr)
 n_matrix_hdf = h5py.File(fname_n_matrix,'r+')
 S_arr = n_matrix_hdf['S_arr']
