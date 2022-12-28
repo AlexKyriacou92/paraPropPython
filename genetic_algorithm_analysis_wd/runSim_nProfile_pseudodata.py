@@ -139,7 +139,7 @@ if weighting_bool == True:
             pseudodata_weights[i,j] = sum(abs(sig_pseudodata[i,j]))
             W_pseudodata += pseudodata_weights[i,j]
 
-    data_inv_weights = W_pseudodata/pseudodata_weights
+    pseudodata_inv_weights = W_pseudodata/pseudodata_weights
     sim_inv_weights = W_sim/sim_weights
 
 for i in range(nDepths):
