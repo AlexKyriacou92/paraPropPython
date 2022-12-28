@@ -124,7 +124,7 @@ def main(fname_config):
         print('create pseudo data')
         if os.path.isfile(fname_pseudo_output) == True:
             os.system('rm -f ' + fname_pseudo_output)
-        cmd = 'python runSim_pseudo_data.py ' + fname_config + ' ' + fname_pseudodata + ' ' + fname_pseudo_output
+        cmd = 'python runSim_pseudodata_from_txt.py ' + fname_config + ' ' + fname_pseudodata + ' ' + fname_pseudo_output
         os.system(cmd)
         # Next -> Calculate list of S parameters
 
