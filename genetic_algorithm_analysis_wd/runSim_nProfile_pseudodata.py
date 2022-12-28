@@ -34,6 +34,9 @@ elif len(sys.argv) == 7:
     ii_generation = int(sys.argv[4])  # The Generation Number of the n_profile sys.argv[4]
     jj_select = int(sys.argv[5])  # The individual number from that Generation sys.argv[5]
     fname_out = sys.argv[6]
+else:
+    print('incorrect arg number')
+    sys.exit()
 #==============================================
 
 print(fname_pseudo_data, os.path.isfile(fname_pseudo_data))
@@ -108,6 +111,7 @@ pseudodata_inv_weights = np.ones((nDepths, nReceivers))
 sim_inv_weights = np.ones((nDepths, nReceivers))
 
 config = configparser.ConfigParser()
+config.read(fname_config)
 weighting_str = config['GA']['Weighting']
 fitness_mode = config['GA']['Fitness']
 if fitness_mode != 'Correlation' or fitness_mode != 'Difference':

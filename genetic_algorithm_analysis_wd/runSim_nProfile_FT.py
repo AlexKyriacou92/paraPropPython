@@ -116,6 +116,7 @@ data_inv_weights = np.ones(nData)
 sim_inv_weights = np.ones((nDepths, nReceivers))
 
 config = configparser.ConfigParser()
+config.read(fname_config)
 weighting_str = config['GA']['Weighting']
 fitness_mode = config['GA']['Fitness']
 if fitness_mode != 'Correlation' or fitness_mode != 'Difference':
