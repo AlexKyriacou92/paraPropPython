@@ -136,7 +136,7 @@ if weighting_bool == True:
             W_sim += sim_weights[i,j]
             #sig_pseudodata = sum(abs(bscan_pseudo_data[i,j]))
             sig_pseudodata = bscan_pseudo_data.get_ascan(i, j)
-            pseudodata_weights[i,j] = sig_pseudodata.get_ascan(i,j)
+            pseudodata_weights[i,j] = sum(abs(sig_pseudodata[i,j]))
             W_pseudodata += pseudodata_weights[i,j]
 
     data_inv_weights = W_pseudodata/pseudodata_weights
