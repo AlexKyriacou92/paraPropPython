@@ -134,7 +134,9 @@ if weighting_bool == True:
         for j in range(nReceivers):
             sim_weights[i,j] = sum(abs(bscan_npy[i,j]))
             W_sim += sim_weights[i,j]
-            sig_pseudodata = sum(abs(bscan_pseudo_data[i,j]))
+            #sig_pseudodata = sum(abs(bscan_pseudo_data[i,j]))
+            sig_pseudodata = bscan_pseudo_data.get_ascan(i, j)
+            pseudodata_weights[i,j] = sig_pseudodata.get_ascan(i,j)
             W_pseudodata += pseudodata_weights[i,j]
 
     data_inv_weights = W_pseudodata/pseudodata_weights
@@ -144,8 +146,8 @@ for i in range(nDepths):
     z_tx_sim = tx_depths[i]
     for j in range(nReceivers):
         rx_j = rxList0[j]
-        sig_pseudodata = bscan_pseudo_data.get_ascan(i,j)
-        sig_sim = bscan_npy[i,j]
+        sig_pseudodata = bscan_pseudo_data.get_ascan(i,j) * pseudodata_inv_weights[i,j]
+        sig_sim = bscan_npy[i,j] * sim_inv_weights[i,j]
         S_corr_ijk = fitness_pulse_FT_data(sig_sim=sig_sim, sig_data=sig_pseudodata, mode=fitness_mode)
         S_corr += S_corr_ijk
 
