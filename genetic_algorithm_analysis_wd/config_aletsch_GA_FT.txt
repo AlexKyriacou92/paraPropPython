@@ -41,3 +41,5 @@ fTournament = 0.3
 fMutation = 0.3
 fImmigration = 0.1
 fElite = 0.05
+Weighting = True
+Fitness = Correlation

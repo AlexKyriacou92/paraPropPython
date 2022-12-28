@@ -3,6 +3,7 @@ sim_mode = pseudo
 fname_pseudodata = share/brueggen.txt
 fname_data = Field-Test-data.h5
 fname_sample = start_profiles/aletsch_glacier_1.txt
+prefix = guliya
 
 [OUTPUT]
 fname_output = guliyra_pseudo.h5
@@ -41,3 +42,5 @@ fTournament = 0.3
 fMutation = 0.3
 fImmigration = 0.1
 fElite = 0.05
+Weighting = True
+Fitness = Correlation
