@@ -26,6 +26,7 @@ if len(sys.argv) == 6:
     fname_n_matrix = sys.argv[3] # I use this to store the results AND the simulation parameters sys.argv[3]
     ii_generation = int(sys.argv[4]) #The Generation Number of the n_profile sys.argv[4]
     jj_select = int(sys.argv[5]) #The individual number from that Generation sys.argv[5]
+    fname_out = None
 elif len(sys.argv) == 7:
     fname_config = sys.argv[1]  # The Config File -> sys.argv[1]
     fname_pseudo_data = sys.argv[2]  # This must contain the date or the psuedo-data -> bscan, sys.argv[2]
