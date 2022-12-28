@@ -10,9 +10,6 @@ from scipy.interpolate import interp1d
 from genetic_operators import flat_mutation, gaussian_mutation, clone, cross_breed
 import sys
 
-#TODO: Fix this you lazy, stupid, f**k
-#TODO: Add a test function -> test if one job works!!
-
 #Cluster Settings
 NODES_MIN = 1
 NODES_MAX = 1

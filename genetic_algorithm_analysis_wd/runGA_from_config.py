@@ -57,6 +57,10 @@ fname_config0 = sys.argv[1]
 def main(fname_config):
     config = configparser.ConfigParser()
     config.read(fname_config)
+    now = datetime.datetime.now()
+    time_str = now.strftime('%y%m%d_%H%M%S')
+    config_cp = fname_config[:-4] + '_' + time_str + '.txt'
+    os.system('cp ' + fname_config + ' ' + config_cp)
 
     sim_mode = config['INPUT']['sim_mode']
     job_prefix = config['INPUT']['prefix']
@@ -108,6 +112,10 @@ def main(fname_config):
         os.system('rm -f ' + fname_nmatrix)
     createMatrix(fname_config=fname_config, n_prof_initial=GA_1.first_generation, z_profile=zprofile_sampling_mean,
                  fname_nmatrix=fname_nmatrix, nGenerations=GA_1.nGenerations)
+    hdf_nmatrix = h5py.File(fname_nmatrix, 'w')
+    hdf_nmatrix.attrs['datetime'] = time_str
+    hdf_nmatrix.attrs['config_file'] = config_cp
+    hdf_nmatrix.close()
 
     print('Simulation Mode:',sim_mode)
     if sim_mode == 'pseudo':
