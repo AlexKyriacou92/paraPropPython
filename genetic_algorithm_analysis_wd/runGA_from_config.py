@@ -112,7 +112,7 @@ def main(fname_config):
         os.system('rm -f ' + fname_nmatrix)
     createMatrix(fname_config=fname_config, n_prof_initial=GA_1.first_generation, z_profile=zprofile_sampling_mean,
                  fname_nmatrix=fname_nmatrix, nGenerations=GA_1.nGenerations)
-    hdf_nmatrix = h5py.File(fname_nmatrix, 'w')
+    hdf_nmatrix = h5py.File(fname_nmatrix, 'r+')
     hdf_nmatrix.attrs['datetime'] = time_str
     hdf_nmatrix.attrs['config_file'] = config_cp
     hdf_nmatrix.close()
