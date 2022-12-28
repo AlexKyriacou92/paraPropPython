@@ -55,22 +55,38 @@ if nArgs != 2:
 fname_config0 = sys.argv[1]
 
 def main(fname_config):
+    #Load Simulation Config
     config = configparser.ConfigParser()
     config.read(fname_config)
+
+    #Datetime
     now = datetime.datetime.now()
     time_str = now.strftime('%y%m%d_%H%M%S')
+
+    #Save config file
     config_cp = fname_config[:-4] + '_' + time_str + '.txt'
     os.system('cp ' + fname_config + ' ' + config_cp)
 
+    #Set up Simulation Output Files
     sim_mode = config['INPUT']['sim_mode']
     job_prefix = config['INPUT']['prefix']
     fname_pseudo_output = config['OUTPUT']['fname_pseudo_output']
     fname_nmatrix_output = config['OUTPUT']['fname_nmatrix_output']
+
+    #Create directory to store results later
+    results_dir = job_prefix + '_' + time_str
+    os.system('mkdir ' + results_dir)
+    fname_pseudo_output = fname_pseudo_output[:-3] + '_' + time_str + '.h5'
+    fname_nmatrix_output = fname_nmatrix_output[:-3] + '_' + time_str + '.h5'
+
+    #Load Genetic Algorithm Properties
     GA_1 = read_from_config(fname_config=fname_config)
     print('nIndividuals:', GA_1.nIndividuals)
 
+    #Select ref-index profile to sample from
     fname_nprofile_sampling_mean = config['INPUT']['fname_sample']
 
+    #Save Profiles to numpy arrays and interpolate
     nprofile_sampling_mean_0, zprofile_sampling_mean_0 = get_profile_from_file(fname_nprofile_sampling_mean)
     nprofile_sampling_mean, zprofile_sampling_mean = do_interpolation(zprofile_sampling_mean_0,
                                                                       nprofile_sampling_mean_0, GA_1.nGenes)
@@ -81,20 +97,20 @@ def main(fname_config):
     print(dz_start, nSamples_start, zprofile_sampling_mean[0], zprofile_sampling_mean[-1])
 
     # Initialize Profiles
+    #TODO: -> Update the initialization!
     n_prof_pool = []
     nQuarter = nStart // 4
     nprof_analytical = initialize_from_analytical(nprofile_sampling_mean, 0.04 * np.ones(GA_1.nGenes), nQuarter)
     nprof_flucations = initalize_from_fluctuations(nprofile_sampling_mean, zprofile_sampling_mean, nQuarter)
-    for i in range(nQuarter):
+    for i in range(nQuarter): # Sample from ref-index sampling profile + random noise
         n_prof_pool.append(nprof_analytical[i])
-    for i in range(nQuarter):
+    for i in range(nQuarter): # Sample from ref-index + density fluctuations
         n_prof_pool.append(nprof_flucations[i])
-
-    for i in range(nQuarter):
+    for i in range(nQuarter): # Sample from Flat Profiles
         n_const = random.uniform(0, 0.78)
         n_prof_flat = np.ones(GA_1.nGenes) + n_const
         n_prof_pool.append(n_prof_flat)
-    for i in range(nQuarter):
+    for i in range(nQuarter): #Sample from Sine Waves
         amp_rand = 0.4 * random.random()
         z_period = random.uniform(0.5, 15)
         k_factor = 1 / z_period
@@ -118,6 +134,8 @@ def main(fname_config):
     hdf_nmatrix.close()
 
     print('Simulation Mode:',sim_mode)
+    dir_outfiles0 = results_dir + '/outfiles'
+    os.system('mkdir ' + dir_outfiles0)
     if sim_mode == 'pseudo':
         fname_pseudodata = config['INPUT']['fname_pseudodata']
         # Create Pseudo_Data
@@ -136,10 +154,8 @@ def main(fname_config):
         # Submit jobs to cluster and wait
 
         print('calculate S for individuals in 1st generation')
-
         outfile_list = []
         for j in range(GA_1.nIndividuals):
-            dir_outfiles0 = 'outfiles'
             dir_outfiles = dir_outfiles0 + '/' + 'gen' + str(ii_gen)
             if os.path.isdir(dir_outfiles) == False:
                 os.system('mkdir ' + dir_outfiles)
@@ -194,11 +210,7 @@ def main(fname_config):
                 nmatrix_hdf.close()
                 for j in range(GA_1.nIndividuals):
                     # Create Command
-                    dir_outfiles0 = 'outfiles'
-                    # dir_shfiles0 = 'shfiles'
-
                     dir_outfiles = dir_outfiles0 + '/' + 'gen' + str(ii_gen)
-                    # dir_shfiles = dir_shfiles0 + '/' + 'gen' + str(ii_gen)
                     if os.path.isdir(dir_outfiles) == False:
                         os.system('mkdir ' + dir_outfiles)
 
@@ -232,7 +244,6 @@ def main(fname_config):
         # Submit jobs to cluster and wait
         outfile_list = []
         for j in range(GA_1.nIndividuals):
-            dir_outfiles0 = 'outfiles'
             dir_outfiles = dir_outfiles0 + '/' + 'gen' + str(ii_gen)
             if os.path.isdir(dir_outfiles) == False:
                 os.system('mkdir ' + dir_outfiles)
@@ -306,6 +317,10 @@ def main(fname_config):
     else:
         print('error, incorrect sim_mode, enter: pseudo or data')
         sys.exit()
+
+    #Final Step -> mv
+
+    os.system('mv ' + fname_config + ' ' + fname_pseudo_output + ' ' + fname_nmatrix_output + ' ' + results_dir + '/')
 
 if __name__ == '__main__':
     print('Begin Genetic Algorithm Analysis')
