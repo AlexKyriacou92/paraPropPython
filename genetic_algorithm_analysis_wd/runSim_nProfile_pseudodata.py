@@ -114,9 +114,9 @@ config = configparser.ConfigParser()
 config.read(fname_config)
 weighting_str = config['GA']['Weighting']
 fitness_mode = config['GA']['Fitness']
-if fitness_mode != 'Correlation' or fitness_mode != 'Difference':
+if fitness_mode != 'Correlation' and fitness_mode != 'Difference':
     print('Warning, fitness mode is not set to Correlation or Difference -> code with default to Correlation or Difference')
-
+print('Fitness Mode', fitness_mode)
 weighting_bool = False
 if weighting_str == 'True':
     weighting_bool = True
