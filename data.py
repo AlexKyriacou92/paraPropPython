@@ -265,8 +265,8 @@ class bscan_rxList: #This one is a nTx x nRx dimension bscan
         self.nRX = len(self.rxList)
         self.nTX = len(self.tx_depths)
 
-        self.n = np.array(input_hdf.get('n_matrix'))
-        n_data = np.array(input_hdf.get('n_profile'))
+        self.n = np.array(input_hdf.get('n_matrix')) # 2D Ref-index matrix
+        n_data = np.array(input_hdf.get('n_profile')) # 2 x nZ array -> includes sim.z and sim.n(x=0,z)
         self.z_profile = n_data[0, :]
         self.n_profile = n_data[1, :]
 

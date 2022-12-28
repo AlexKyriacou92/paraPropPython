@@ -3,6 +3,7 @@ import numpy as np
 import time
 import datetime
 import h5py
+import configparser
 sys.path.append('../')
 
 import util
@@ -110,6 +111,43 @@ S_corr = 0
 if fname_out != None:
     hdf_output.create_dataset('bscan_sig', data=bscan_npy)
 
+#Estimate Weights
+data_inv_weights = np.ones(nData)
+sim_inv_weights = np.ones((nDepths, nReceivers))
+
+config = configparser.ConfigParser()
+weighting_str = config['GA']['Weighting']
+fitness_mode = config['GA']['Fitness']
+if fitness_mode != 'Correlation' or fitness_mode != 'Difference':
+    print('Warning, fitness mode is not set to Correlation or Difference -> code with default to Correlation or Difference')
+
+weighting_bool = False
+if weighting_str == 'True':
+    weighting_bool = True
+elif weighting_str == 'False':
+    weighting_bool = False
+
+print('Weighting set to ', weighting_bool)
+
+if weighting_bool == True:
+    data_weights = np.zeros(nData)
+    sim_weights = np.zeros((nDepths, nReceivers))
+    W_data = 0
+    W_sim = 0
+    for i in range(nDepths):
+        for j in range(nReceivers):
+            sim_weights[i,j] = sum(abs(bscan_npy[i,j]))
+            W_sim += sim_weights[i,j]
+    for k in range(nData):
+        sigFFT = fftArray_data[k]
+        data_weights[k] = sum(abs(sigFFT))
+        W_data += data_weights[k]
+
+    data_inv_weights = W_data/data_weights
+    sim_inv_weights = W_sim/sim_weights
+
+#Calculate Fitness Function
+
 for i in range(nDepths):
     z_tx_sim = tx_depths[i]
     for j in range(nReceivers):
@@ -119,15 +157,15 @@ for i in range(nDepths):
             z_rx_data = rxDepths_data[k]
             z_tx_data = txDepths_data[k]
 
-            sigFFT = fftArray_data[k]
+            sigFFT = fftArray_data[k] * data_inv_weights[k]
 
             dX_rx = abs(x_rx_data - rx_j.x)
             dZ_rx = abs(z_rx_data - rx_j.z)
             dZ_tx = abs(z_tx_data - z_tx_sim)
 
             if dX_rx < 1.0 and dZ_rx < 0.1 and dZ_tx < 0.1:
-                sig_sim = bscan_npy[i,j]
-                S_corr_ijk = fitness_pulse_FT_data(sig_sim = sig_sim, sig_data=sigFFT)
+                sig_sim = bscan_npy[i,j] * sim_inv_weights[i,j]
+                S_corr_ijk = fitness_pulse_FT_data(sig_sim = sig_sim, sig_data=sigFFT, mode=fitness_mode)
                 S_corr += S_corr_ijk
 
 print(S_corr)

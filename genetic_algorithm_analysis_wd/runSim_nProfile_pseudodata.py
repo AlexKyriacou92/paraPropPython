@@ -4,6 +4,7 @@ import numpy as np
 import time
 import datetime
 import h5py
+import configparser
 sys.path.append('../')
 
 import util
@@ -98,6 +99,41 @@ for i in range(nDepths):
     print('')
 
 S_corr = 0
+if fname_out != None:
+    hdf_output.create_dataset('bscan_sig', data=bscan_npy)
+
+#Estimate Weights
+pseudodata_inv_weights = np.ones((nDepths, nReceivers))
+sim_inv_weights = np.ones((nDepths, nReceivers))
+
+config = configparser.ConfigParser()
+weighting_str = config['GA']['Weighting']
+fitness_mode = config['GA']['Fitness']
+if fitness_mode != 'Correlation' or fitness_mode != 'Difference':
+    print('Warning, fitness mode is not set to Correlation or Difference -> code with default to Correlation or Difference')
+
+weighting_bool = False
+if weighting_str == 'True':
+    weighting_bool = True
+elif weighting_str == 'False':
+    weighting_bool = False
+
+print('Weighting set to ', weighting_bool)
+
+if weighting_bool == True:
+    pseudodata_weights = np.zeros((nDepths, nReceivers))
+    sim_weights = np.zeros((nDepths, nReceivers))
+    W_pseudodata = 0
+    W_sim = 0
+    for i in range(nDepths):
+        for j in range(nReceivers):
+            sim_weights[i,j] = sum(abs(bscan_npy[i,j]))
+            W_sim += sim_weights[i,j]
+            sig_pseudodata = sum(abs(bscan_pseudo_data[i,j]))
+            W_pseudodata += pseudodata_weights[i,j]
+
+    data_inv_weights = W_pseudodata/pseudodata_weights
+    sim_inv_weights = W_sim/sim_weights
 
 for i in range(nDepths):
     z_tx_sim = tx_depths[i]
@@ -105,10 +141,9 @@ for i in range(nDepths):
         rx_j = rxList0[j]
         sig_pseudodata = bscan_pseudo_data.get_ascan(i,j)
         sig_sim = bscan_npy[i,j]
-        S_corr_ijk = fitness_pulse_FT_data(sig_sim=sig_sim, sig_data=sig_pseudodata)
+        S_corr_ijk = fitness_pulse_FT_data(sig_sim=sig_sim, sig_data=sig_pseudodata, mode=fitness_mode)
         S_corr += S_corr_ijk
 
-hdf_output.create_dataset('bscan_sig', data=bscan_npy)
 print(S_corr)
 n_matrix_hdf = h5py.File(fname_n_matrix,'r+')
 S_arr = n_matrix_hdf['S_arr']
