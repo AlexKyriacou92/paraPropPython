@@ -6,8 +6,10 @@ import matplotlib.pyplot as pl
 from random import randint, uniform
 import random
 from scipy.interpolate import interp1d
+from math import pi
 
 from genetic_operators import flat_mutation, gaussian_mutation, clone, cross_breed
+from genetic_algorithm import GA
 import sys
 sys.path.append('../')
 import util
@@ -22,6 +24,9 @@ C = 0.01
 D = 0.5
 E = 1.0
 low_cut = 0.5
+
+def exp_profile(z, a, b, c):
+    return a + b * np.exp(c * z)
 
 def makeRandomDensityVector(z, a=0.6, b=B, c=C, d=D, e=E, low_cut=low_cut):
     """make a vector of random density fluctuations. This is currently used with the Taylor Dome n(z) profile.
@@ -71,6 +76,67 @@ def makeRandomDensityVector(z, a=0.6, b=B, c=C, d=D, e=E, low_cut=low_cut):
     ranVec = util.lowpassFilter(dz, low_cut, (a / (b + (z * c))) * (e*np.random.random_sample(len(z)) - d))
     return ranVec
 
+def initialize(nStart, nprofile_sampling_mean, zprofile_sampling_mean, GA_1, fAnalytical, fFluctuations, fFlat, fSine, fExp):
+    n_prof_pool = []
+    nFraction = nStart // 100
+    nFluctuations = fFluctuations * nFraction
+    nAnalytical = fAnalytical * nFraction
+    nFlat = fFlat * nFraction
+    nSine = fSine * nFraction
+    nExp = fExp * nFraction
+
+    nprof_analytical = initialize_from_analytical(nprofile_sampling_mean, 0.08 * np.ones(GA_1.nGenes), nAnalytical)
+    nprof_flucations = initalize_from_fluctuations(nprofile_sampling_mean, zprofile_sampling_mean, nFluctuations)
+
+    ii = 1
+    while ii < nAnalytical + 1:
+        if any(nprof_analytical[ii]) > 1.8 or any(nprof_analytical[ii]) < 1.0:
+            pass
+        else:
+            n_prof_pool.append(nprof_analytical[ii])
+            ii += 1
+    ii = 1
+    while ii < nFluctuations + 1:
+        if any(nprof_flucations[ii]) > 1.8 or any(nprof_flucations[i]) < 1.0:
+            pass
+        else:
+            n_prof_pool.append(nprof_flucations[i])
+            ii += 1
+    ii = 1
+    while ii < nFlat + 1:
+        n_const = random.uniform(0, 0.78)
+        n_prof_flat = np.ones(GA_1.nGenes) + n_const
+        if any(n_prof_flat) > 1.8 or any(n_prof_flat) < 1.0:
+            pass
+        else:
+            n_prof_pool.append(n_prof_flat)
+            ii += 1
+    ii = 1
+    while ii < nSine + 1:
+        n_const = random.uniform(1.0, 1.8)
+
+        amp_rand = 0.4 * random.random()
+        z_period = random.uniform(0.5, 15)
+        k_factor = 1 / z_period
+        phase_rand = random.uniform(0, 2 * pi)
+        n_prof_sine = amp_rand * np.sin(2 * pi * zprofile_sampling_mean * k_factor + phase_rand) + n_const
+        if any(n_prof_sine) < 1.0 or any(n_prof_sine) > 1.8:
+            pass
+        else:
+            n_prof_pool.append(n_prof_sine)
+            ii += 1
+    ii = 1
+    while ii < nExp + 1:
+        B_rand = random.uniform(-1, -0.01)
+        C_rand = random.uniform(-0.03, -0.005)
+        n_prof_exp = exp_profile(zprofile_sampling_mean, 1.78, B_rand, C_rand)
+        if any(n_prof_exp) < 1.0 or any(n_prof_exp) > 1.8:
+            pass
+        else:
+            n_prof_pool.append(n_prof_exp)
+            ii += 1
+    random.shuffle(n_prof_pool)
+    return n_prof_pool
 #Genetic Opeators -> work as if the population is 100
 
 #=======================================================

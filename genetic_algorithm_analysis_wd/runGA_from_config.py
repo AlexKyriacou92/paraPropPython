@@ -12,7 +12,7 @@ from genetic_algorithm import GA, read_from_config
 from makeSim_nmatrix import createMatrix
 import sys
 
-from genetic_functions import initialize_from_analytical, roulette, initalize_from_fluctuations
+from genetic_functions import initialize_from_analytical, roulette, initalize_from_fluctuations, initialize
 from pleiades_scripting import make_command, test_job, submit_job, test_job_data, make_command_data, make_job
 from selection_functions import selection
 
@@ -98,6 +98,13 @@ def main(fname_config):
 
     # Initialize Profiles
     #TODO: -> Update the initialization!
+    fAnalytical = float(config['GA']['fAnalytical'])
+    fFluctuations = float(config['GA']['fFluctuations'])
+    fFlat = float(config['GA']['fFlat'])
+    fSine = float(config['GA']['fSine'])
+    fExp = float(config['GA']['fExp'])
+    n_prof_pool = initialize(nStart, nprofile_sampling_mean, zprofile_sampling_mean, GA_1, fAnalytical, fFluctuations, fFlat, fSine, fExp)
+    '''
     n_prof_pool = []
     nQuarter = nStart // 4
     nprof_analytical = initialize_from_analytical(nprofile_sampling_mean, 0.04 * np.ones(GA_1.nGenes), nQuarter)
@@ -119,6 +126,8 @@ def main(fname_config):
         n_prof_flat = np.ones(GA_1.nGenes) + n_const
         n_prof_pool.append(n_prof_flat)
     random.shuffle(n_prof_pool)
+    '''
+
     GA_1.initialize_from_sample(n_prof_pool)
 
     # Create n_matrix
