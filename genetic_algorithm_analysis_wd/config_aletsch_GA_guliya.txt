@@ -3,7 +3,7 @@ sim_mode = pseudo
 fname_pseudodata = share/guliya.txt
 fname_data = Field-Test-data2.h5
 fname_sample = start_profiles/aletsch_glacier_1.txt
-prefix = guliya
+prefix = gul
 
 [OUTPUT]
 fname_pseudo_output = guliya_pseudo.h5
@@ -36,8 +36,8 @@ fname_recivers = rx_list_limited.txt
 
 [GA]
 nGenerations = 90
-nIndividuals = 200
-nGenes = 60
+nIndividuals = 400
+nGenes = 30
 fRoulette = 0.7
 fTournament = 0.3
 fMutation = 0.3

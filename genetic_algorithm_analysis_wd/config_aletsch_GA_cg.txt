@@ -36,8 +36,8 @@ fname_recivers = rx_list_limited.txt
 
 [GA]
 nGenerations = 90
-nIndividuals = 200
-nGenes = 60
+nIndividuals = 400
+nGenes = 30
 fRoulette = 0.7
 fTournament = 0.3
 fMutation = 0.3
