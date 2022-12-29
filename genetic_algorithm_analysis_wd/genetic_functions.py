@@ -78,15 +78,14 @@ def makeRandomDensityVector(z, a=0.6, b=B, c=C, d=D, e=E, low_cut=low_cut):
 
 def initialize(nStart, nprofile_sampling_mean, zprofile_sampling_mean, GA_1, fAnalytical, fFluctuations, fFlat, fSine, fExp):
     n_prof_pool = []
-    nFraction = nStart // 100
-    nFluctuations = fFluctuations * nFraction
-    nAnalytical = fAnalytical * nFraction
-    nFlat = fFlat * nFraction
-    nSine = fSine * nFraction
-    nExp = fExp * nFraction
+    nFluctuations = int(fFluctuations * nStart)
+    nAnalytical = int(fAnalytical * nStart)
+    nFlat = int(fFlat * nStart)
+    nSine = int(fSine * nStart)
+    nExp = int(fExp * nStart)
 
-    nprof_analytical = initialize_from_analytical(nprofile_sampling_mean, 0.08 * np.ones(GA_1.nGenes), nAnalytical)
-    nprof_flucations = initalize_from_fluctuations(nprofile_sampling_mean, zprofile_sampling_mean, nFluctuations)
+    nprof_analytical = initialize_from_analytical(nprofile_sampling_mean, 0.08 * np.ones(GA_1.nGenes), 2 * nAnalytical)
+    nprof_flucations = initalize_from_fluctuations(nprofile_sampling_mean, zprofile_sampling_mean, 2 * nFluctuations)
 
     ii = 1
     while ii < nAnalytical + 1:
@@ -97,10 +96,10 @@ def initialize(nStart, nprofile_sampling_mean, zprofile_sampling_mean, GA_1, fAn
             ii += 1
     ii = 1
     while ii < nFluctuations + 1:
-        if any(nprof_flucations[ii]) > 1.8 or any(nprof_flucations[i]) < 1.0:
+        if any(nprof_flucations[ii]) > 1.8 or any(nprof_flucations[ii]) < 1.0:
             pass
         else:
-            n_prof_pool.append(nprof_flucations[i])
+            n_prof_pool.append(nprof_flucations[ii])
             ii += 1
     ii = 1
     while ii < nFlat + 1:

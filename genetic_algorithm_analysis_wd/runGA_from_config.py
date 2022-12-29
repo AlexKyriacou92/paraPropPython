@@ -97,7 +97,7 @@ def main(fname_config):
     print(dz_start, nSamples_start, zprofile_sampling_mean[0], zprofile_sampling_mean[-1])
 
     # Initialize Profiles
-    #TODO: -> Update the initialization!
+    #TODO: -> Test runGA_from_config with updates
     fAnalytical = float(config['GA']['fAnalytical'])
     fFluctuations = float(config['GA']['fFluctuations'])
     fFlat = float(config['GA']['fFlat'])
