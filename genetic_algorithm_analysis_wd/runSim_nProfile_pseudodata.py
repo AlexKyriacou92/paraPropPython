@@ -152,7 +152,8 @@ for i in range(nDepths):
         S_corr += S_corr_ijk
 
 print(S_corr)
-n_matrix_hdf = h5py.File(fname_n_matrix,'r+')
-S_arr = n_matrix_hdf['S_arr']
-S_arr[ii_generation,jj_select] = S_corr
-n_matrix_hdf.close()
+if fname_out == None:
+    n_matrix_hdf = h5py.File(fname_n_matrix,'r+')
+    S_arr = n_matrix_hdf['S_arr']
+    S_arr[ii_generation,jj_select] = S_corr
+    n_matrix_hdf.close()
