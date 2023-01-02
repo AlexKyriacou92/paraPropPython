@@ -146,6 +146,11 @@ fname_report = fname_output_prefix + 'simul_report.txt'
 fout = open(fname_report, 'w')
 fout.write('pathto\tnOutput \n' + fname_output_prefix  + '\t' + str(nOutput) + '\n' + '\n')
 fout.write('gen\tind\tS\tfname_out\n')
+
+config = configparser.ConfigParser()
+config.read(fname_config)
+prefix_0 = config['INPUT']['prefix']
+
 for i in range(nOutput):
     cmd_prefix = 'python runSim_nProfile_from_nmatrix.py '
     ii_gen = inds_output[i][0]
@@ -158,7 +163,7 @@ for i in range(nOutput):
     line = str(ii_gen) + '\t' + str(jj_ind) + '\t' + str(S_list_output[i]) + '\t' + fname_output_suffix + '\n'
     fout.write(line)
     if paralell_mode == True:
-        job_prefix = 'bscan-'
+        job_prefix = 'bscan-' + prefix_0 + '-'
         jobname = job_prefix + str(ii_gen) + '-' + str(jj_ind)
         sh_file = jobname + '.sh'
         out_file = fname_output_prefix + 'outfiles' + '/' + jobname + '.out'
