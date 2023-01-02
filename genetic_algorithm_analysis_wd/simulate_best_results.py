@@ -164,7 +164,7 @@ for i in range(nOutput):
         out_file = fname_output_prefix + 'outfiles' + '/' + jobname + '.out'
         print(out_file)
         make_job(sh_file, out_file, jobname, cmd_i)
-        #submit_job(sh_file)
+        submit_job(sh_file)
         os.system('rm -f ' + sh_file)
     else:
         os.system(cmd_i)
