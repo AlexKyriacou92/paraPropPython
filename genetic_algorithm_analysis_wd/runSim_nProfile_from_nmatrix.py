@@ -15,21 +15,16 @@ from data import create_sim, create_rxList_from_file, create_transmitter_array, 
 from data import create_tx_signal, bscan, bscan_rxList, create_hdf_bscan
 
 from fitness_function import fitness_correlation, fitness_pulse_FT_data
+print('Running, ', sys.argv[0])
 
-'''
-if len(sys.argv) != 6:
-    print('error! you must enter argument: \npython ' + sys.argv[0] + ' <config.txt> <fname_data.h5> <fname_nprofile_matrix.h5 i_gene j_individual')
-'''
-
-if len(sys.argv) == 7:
+if len(sys.argv) == 6:
     fname_config = sys.argv[1]  # The Config File -> sys.argv[1]
-#    fname_pseudo_data = sys.argv[2]  # This must contain the date or the psuedo-data -> bscan, sys.argv[2]
-    fname_n_matrix = sys.argv[3]  # I use this to store the results AND the simulation parameters sys.argv[3]
-    ii_generation = int(sys.argv[4])  # The Generation Number of the n_profile sys.argv[4]
-    jj_select = int(sys.argv[5])  # The individual number from that Generation sys.argv[5]
-    fname_out = sys.argv[6]
+    fname_n_matrix = sys.argv[2]  # I use this to store the results AND the simulation parameters sys.argv[3]
+    ii_generation = int(sys.argv[3])  # The Generation Number of the n_profile sys.argv[4]
+    jj_select = int(sys.argv[4])  # The individual number from that Generation sys.argv[5]
+    fname_out = sys.argv[5]
 else:
-    print('incorrect arg number')
+    print('incorrect arg number: ', len(sys.argv), sys.argv)
     sys.exit()
 #==============================================
 
@@ -52,26 +47,28 @@ nReceivers = len(rxList0)
 
 bscan_npy = np.zeros((nDepths, nReceivers, tx_signal.nSamples),dtype='complex')
 
+print('Running tx scan')
 for i in range(nDepths):
     tstart = time.time()
-
     sourceDepth = tx_depths[i]
+    print('z = ', sourceDepth)
+
     rxList = rxList0
 
     sim = create_sim(fname_config)
     sim.set_n(nVec=n_profile_ij, zVec=z_profile_ij) #Set Refractive Index Profile
     sim.set_dipole_source_profile(tx_signal.frequency, sourceDepth)  # Set Source Profile
     sim.set_td_source_signal(tx_signal.pulse, tx_signal.dt) #Set transmitted signal
-
+    print('solving PE')
     sim.do_solver(rxList, freqMin=tx_signal.freqMin, freqMax=tx_signal.freqMax)
+    print('complete')
     tend = time.time()
     for j in range(nReceivers):
         rx_j = rxList[j]
         bscan_npy[i,j] = rx_j.get_signal()
 
     if i == 0:
-        if fname_out != None:
-            hdf_output = create_hdf_FT(fname=fname_out, sim=sim,
+        hdf_output = create_hdf_FT(fname=fname_out, sim=sim,
                                        tx_signal=tx_signal, tx_depths=tx_depths, rxList=rxList)
 
     duration_s = (tend - tstart)
@@ -89,5 +86,4 @@ for i in range(nDepths):
     print('')
 
 S_corr = 0
-if fname_out != None:
-    hdf_output.create_dataset('bscan_sig', data=bscan_npy)
+hdf_output.create_dataset('bscan_sig', data=bscan_npy)
