@@ -65,7 +65,7 @@ elif nOutput > 10:
     else:
         print('invalid response, exiting')
         sys.exit()
-if nArgs == 5:
+if nArgs == 6:
     if paralell_mode0 == 'True':
         paralell_mode = True
     elif paralell_mode0 == 'False':
@@ -76,7 +76,7 @@ if nArgs == 5:
 else:
     paralell_mode = paralell_mode0
 
-
+print('opening nmatrix results')
 hdf_results = h5py.File(fname_nmatrix, 'r')
 
 n_profile_matrix = np.array(hdf_results.get('n_profile_matrix'))
@@ -116,7 +116,7 @@ S_list_output = []
 inds_output = []
 
 for i in range(nOutput-1):
-    ii = M * nOutput
+    ii = M * i
     S_ii = S_best[ii]
     S_list_output.append(S_ii)
     inds_output.append([ii,best_individuals[ii]])
@@ -164,7 +164,7 @@ for i in range(nOutput):
         out_file = fname_output_prefix + 'outfiles' + '/' + jobname + '.out'
         print(out_file)
         make_job(sh_file, out_file, jobname, cmd_i)
-        submit_job(sh_file)
+        #submit_job(sh_file)
         os.system('rm -f ' + sh_file)
     else:
         os.system(cmd_i)
