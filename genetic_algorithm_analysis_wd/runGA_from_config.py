@@ -80,7 +80,7 @@ def main(fname_config):
     fname_nmatrix_output = fname_nmatrix_output[:-3] + '_' + time_str + '.h5'
 
     #Load Genetic Algorithm Properties
-    GA_1 = read_from_config(fname_config=fname_config)
+    GA_1 = read_from_config(fname_config=config_cp)
     print('nIndividuals:', GA_1.nIndividuals)
 
     #Select ref-index profile to sample from
@@ -135,7 +135,7 @@ def main(fname_config):
     fname_nmatrix = fname_nmatrix_output
     if os.path.isfile(fname_nmatrix) == True:
         os.system('rm -f ' + fname_nmatrix)
-    createMatrix(fname_config=fname_config, n_prof_initial=GA_1.first_generation, z_profile=zprofile_sampling_mean,
+    createMatrix(fname_config=config_cp, n_prof_initial=GA_1.first_generation, z_profile=zprofile_sampling_mean,
                  fname_nmatrix=fname_nmatrix, nGenerations=GA_1.nGenerations)
     hdf_nmatrix = h5py.File(fname_nmatrix, 'r+')
     hdf_nmatrix.attrs['datetime'] = time_str
@@ -151,8 +151,13 @@ def main(fname_config):
         print('create pseudo data')
         if os.path.isfile(fname_pseudo_output) == True:
             os.system('rm -f ' + fname_pseudo_output)
-        cmd = 'python runSim_pseudodata_from_txt.py ' + fname_config + ' ' + fname_pseudodata + ' ' + fname_pseudo_output
+        cmd = 'python runSim_pseudodata_from_txt.py ' + config_cp + ' ' + fname_pseudodata + ' ' + fname_pseudo_output
         os.system(cmd)
+
+        hdf_nmatrix = h5py.File(fname_nmatrix, 'r+')
+        profile_data = np.genfromtxt(fname_pseudodata)
+        hdf_nmatrix.create_dataset('reference_data',data=profile_data)
+        hdf_nmatrix.close()
         # Next -> Calculate list of S parameters
 
         ii_gen = 0  # Zeroth Generation
@@ -168,7 +173,7 @@ def main(fname_config):
             dir_outfiles = dir_outfiles0 + '/' + 'gen' + str(ii_gen)
             if os.path.isdir(dir_outfiles) == False:
                 os.system('mkdir ' + dir_outfiles)
-            cmd_j = cmd_prefix + ' ' + fname_config + ' ' + fname_pseudo_output + ' ' + fname_nmatrix + ' ' + str(
+            cmd_j = cmd_prefix + ' ' + config_cp + ' ' + fname_pseudo_output + ' ' + fname_nmatrix + ' ' + str(
                 ii_gen) + ' ' + str(j)
             jobname = job_prefix + str(ii_gen) + '-' + str(j)
             sh_file = jobname + '.sh'
@@ -223,7 +228,7 @@ def main(fname_config):
                     if os.path.isdir(dir_outfiles) == False:
                         os.system('mkdir ' + dir_outfiles)
 
-                    cmd_j = cmd_prefix + ' ' + fname_config + ' ' + fname_pseudo_output + ' ' + fname_nmatrix + ' ' + str(
+                    cmd_j = cmd_prefix + ' ' + config_cp + ' ' + fname_pseudo_output + ' ' + fname_nmatrix + ' ' + str(
                         ii_gen) + ' ' + str(j)
                     jobname = job_prefix + str(ii_gen) + '-' + str(j)
                     sh_file = jobname + '.sh'
@@ -256,7 +261,7 @@ def main(fname_config):
             dir_outfiles = dir_outfiles0 + '/' + 'gen' + str(ii_gen)
             if os.path.isdir(dir_outfiles) == False:
                 os.system('mkdir ' + dir_outfiles)
-            cmd_j = cmd_prefix + ' ' + fname_config + ' ' + fname_data + ' ' + fname_nmatrix + ' ' + str(
+            cmd_j = cmd_prefix + ' ' + config_cp + ' ' + fname_data + ' ' + fname_nmatrix + ' ' + str(
                 ii_gen) + ' ' + str(j)
             jobname = job_prefix + str(ii_gen) + '-' + str(j)
             sh_file = jobname + '.sh'
@@ -303,7 +308,7 @@ def main(fname_config):
                     dir_outfiles = dir_outfiles0 + '/' + 'gen' + str(ii_gen)
                     if os.path.isdir(dir_outfiles) == False:
                         os.system('mkdir ' + dir_outfiles)
-                    cmd_j = cmd_prefix + ' ' + fname_config + ' ' + fname_data + ' ' + fname_nmatrix + ' ' + str(
+                    cmd_j = cmd_prefix + ' ' + config_cp + ' ' + fname_data + ' ' + fname_nmatrix + ' ' + str(
                         ii_gen) + ' ' + str(j)
                     jobname = job_prefix + str(ii_gen) + '-' + str(j)
                     sh_file = jobname + '.sh'
@@ -329,7 +334,7 @@ def main(fname_config):
 
     #Final Step -> mv
 
-    os.system('mv ' + fname_config + ' ' + fname_pseudo_output + ' ' + fname_nmatrix_output + ' ' + results_dir + '/')
+    os.system('mv ' + config_cp + ' ' + fname_pseudo_output + ' ' + fname_nmatrix_output + ' ' + results_dir + '/')
 
 if __name__ == '__main__':
     print('Begin Genetic Algorithm Analysis')
