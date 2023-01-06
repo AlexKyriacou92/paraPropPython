@@ -73,7 +73,7 @@ def double_bscan_plot(bscan_plot_sim, bscan_plot_pseudo, tspace, tx_depths, path
 
     ax2.set_title('Pseudo-Data')
     pmesh = ax2.imshow(10 * np.log10((abs(bscan_plot_pseudo) ** 2)), aspect='auto',
-                       extent=[0, tspace[-1], tx_depths[-1], tx_depths[0]])
+                       extent=[0, tspace[-1], tx_depths[-1], tx_depths[0]], vmin=vmin0, vmax=vmax0)
     # cbar = pl.colorbar(pmesh)
     # cbar.set_label('Power P [dBu]')
     ax2.set_ylabel(r'Depth $Z_{tx}$ [m]')
