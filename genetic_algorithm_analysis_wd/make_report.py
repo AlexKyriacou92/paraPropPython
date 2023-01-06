@@ -247,6 +247,7 @@ for line in f_report:
     ii_gen = int(cols[0])
     jj_ind = int(cols[1])
     S_value = float(cols[2])
+
     fname_sim = cols[3]
     sim_dir = fname_sim[:-3]
 
@@ -276,7 +277,8 @@ for line in f_report:
     pl.close()
 
     for i in range(nDepths):
-        print(i, tx_depths[i])
+        print('gen:', ii_gen, 'ind:', jj_ind, 'S =', S_value)
+        print(i, 'tx =', tx_depths[i])
         plot_label = 'gen: ' + str(ii_gen) + ' ind: ' + str(jj_ind) + ' S = ' + str(round(S_value,3)) + '\n'
         plot_label += 'z = ' + str(tx_depths[i]) + ' m'
 
