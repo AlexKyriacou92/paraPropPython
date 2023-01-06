@@ -105,6 +105,11 @@ next(f_report)
 line_2 = f_report.readline()
 cols_2 = line_2.split()
 path2report = cols_2[0]
+
+report_dir0 = path2report + 'report'
+if os.path.isdir(report_dir0) == False:
+    os.system('mkdir ' + report_dir0)
+
 nOutput = int(cols_2[1])
 next(f_report)
 line_3 = f_report.readline()
@@ -150,10 +155,16 @@ profile_data = np.genfromtxt(fname_txt)
 nprof_data = profile_data[:,1]
 zprof_data = profile_data[:,0]
 
-
+S_median = np.zeros(nGenerations)
+S_mean = np.zeros(nGenerations)
+S_variance = np.zeros(nGenerations)
 for i in range(nGenerations):
     S_best[i] = max(S_nmatrix[i])
     best_individuals.append(np.argmax(S_nmatrix[i]))
+    S_median[i] = np.median(S_nmatrix[i])
+    S_mean[i] = np.mean(S_nmatrix[i])
+    S_variance[i] = np.std(S_nmatrix[i])
+    print(S_variance[i]/S_mean[i])
 
 ii_best_gen = np.argmax(S_best)
 jj_best_ind = best_individuals[ii_best_gen]
@@ -164,6 +175,18 @@ pl.xlabel('Generation')
 pl.ylabel(r'Best score $S_{max}$')
 pl.grid()
 pl.savefig(path2report + 'report/S_best_result.png')
+pl.close()
+
+fig = pl.figure(figsize=(8,5),dpi=120)
+pl.errorbar(gens, S_mean, S_variance,fmt='-o',c='k',label='Mean +/- Variance')
+pl.plot(gens, S_best,c='b',label='Best Score')
+pl.plot(gens, S_median,c='r', label='Median')
+
+pl.xlabel('Generation')
+pl.ylabel(r'Fitness Score $S$')
+pl.grid()
+pl.legend()
+pl.savefig(path2report + 'report/S_evolution.png')
 pl.close()
 
 fig = pl.figure(figsize=(4,10),dpi=120)
@@ -227,6 +250,8 @@ for line in f_report:
     fname_sim = cols[3]
     sim_dir = fname_sim[:-3]
 
+    nprof_ij = n_profile_matrix[ii_gen, jj_ind]
+
     sim_bscan_GA = bscan_rxList()
     sim_bscan_GA.load_sim(path2report + fname_sim)
     bscan_sig_sim = sim_bscan_GA.bscan_sig
@@ -235,6 +260,20 @@ for line in f_report:
     report_dir = path2report + 'report/' + sim_dir + '_report'
     if os.path.isdir(report_dir) == False:
         os.system('mkdir ' + report_dir)
+
+    fig = pl.figure(figsize=(4, 10), dpi=120)
+    pl.title(r'Generation: ' + str(ii_gen) + r', Individual: ' + str(jj_ind) + r', S = ' + str(
+        round(S_value, 2)))
+    pl.plot(nprof_ij, z_profile, '-o', c='b', label='Best Result from generation')
+    pl.plot(nprof_data, zprof_data, c='k', label='truth')
+    pl.grid()
+    pl.ylim(16, -1)
+    pl.ylabel(r'Depth z [m]')
+    pl.xlabel(r'Refractive Index Profile $n(z)$')
+    pl.legend()
+    pl.savefig(path2report + 'report/nprof_' + sim_dir + '.png')
+    pl.savefig(report_dir + '/nprof_' + sim_dir + '.png')
+    pl.close()
 
     for i in range(nDepths):
         print(i, tx_depths[i])
