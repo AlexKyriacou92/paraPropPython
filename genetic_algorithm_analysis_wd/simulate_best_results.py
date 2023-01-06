@@ -145,6 +145,8 @@ inds_output.append([ii_best_gen, jj_best_ind])
 fname_report = fname_output_prefix + 'simul_report.txt'
 fout = open(fname_report, 'w')
 fout.write('pathto\tnOutput \n' + fname_output_prefix  + '\t' + str(nOutput) + '\n' + '\n')
+fout.write('fname_psuedo_data\n')
+fout.write(fname_nmatrix + '\n')
 fout.write('gen\tind\tS\tfname_out\n')
 
 config = configparser.ConfigParser()
