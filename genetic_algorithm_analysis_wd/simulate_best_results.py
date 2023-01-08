@@ -26,18 +26,20 @@ from data import create_sim, create_rxList_from_file, create_tx_signal, create_t
 
 nArgs = len(sys.argv)
 print(nArgs)
-if nArgs == 5:
+if nArgs == 6:
     fname_config = sys.argv[1]
     fname_nmatrix = sys.argv[2]
-    fname_output_prefix = sys.argv[3]
-    nOutput = int(sys.argv[4])
+    fname_pseudodata = sys.argv[3]
+    fname_output_prefix = sys.argv[4]
+    nOutput = int(sys.argv[5])
     paralell_mode0 = True
-elif nArgs == 6:
+elif nArgs == 7:
     fname_config = sys.argv[1]
     fname_nmatrix = sys.argv[2]
-    fname_output_prefix = sys.argv[3]
-    nOutput = int(sys.argv[4])
-    paralell_mode0 = sys.argv[5]
+    fname_pseudodata = sys.argv[3]
+    fname_output_prefix = sys.argv[4]
+    nOutput = int(sys.argv[5])
+    paralell_mode0 = sys.argv[6]
 print(nOutput)
 yes_choices = ['yes', 'y']
 no_choices = ['no', 'n']
@@ -146,9 +148,7 @@ fname_report = fname_output_prefix + 'simul_report.txt'
 fout = open(fname_report, 'w')
 fout.write('pathto\tnOutput \n' + fname_output_prefix  + '\t' + str(nOutput) + '\n' + '\n')
 fout.write('fname_psuedo_data\tfname_nmatrix\n')
-datetime_str = fname_output_prefix[-8:]
-fname_pseudo_data = fname_output_prefix + fname_nmatrix[:-24] + 'nmatrix' + datetime_str + '.h5'
-fout.write(fname_pseudo_data + '\t' + fname_nmatrix + '\n')
+fout.write(fname_pseudodata + '\t' + fname_nmatrix + '\n')
 fout.write('gen\tind\tS\tfname_out\n')
 
 config = configparser.ConfigParser()

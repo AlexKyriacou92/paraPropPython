@@ -76,8 +76,8 @@ def main(fname_config):
     #Create directory to store results later
     results_dir = job_prefix + '_' + time_str
     os.system('mkdir ' + results_dir)
-    fname_pseudo_output = fname_pseudo_output[:-3] + '_' + time_str + '.h5'
-    fname_nmatrix_output = fname_nmatrix_output[:-3] + '_' + time_str + '.h5'
+    #fname_pseudo_output = fname_pseudo_output[:-3] + '_' + time_str + '.h5'
+    #fname_nmatrix_output = fname_nmatrix_output[:-3] + '_' + time_str + '.h5'
 
     #Load Genetic Algorithm Properties
     GA_1 = read_from_config(fname_config=config_cp)
