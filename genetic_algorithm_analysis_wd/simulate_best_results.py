@@ -67,7 +67,7 @@ elif nOutput > 10:
     else:
         print('invalid response, exiting')
         sys.exit()
-if nArgs == 6:
+if nArgs == 7:
     if paralell_mode0 == 'True':
         paralell_mode = True
     elif paralell_mode0 == 'False':
