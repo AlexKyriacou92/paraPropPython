@@ -55,6 +55,7 @@ if nArgs != 2:
 fname_config0 = sys.argv[1]
 
 def main(fname_config):
+    tstart = time.time()
     #Load Simulation Config
     config = configparser.ConfigParser()
     config.read(fname_config)
@@ -76,8 +77,8 @@ def main(fname_config):
     #Create directory to store results later
     results_dir = job_prefix + '_' + time_str
     os.system('mkdir ' + results_dir)
-    #fname_pseudo_output = fname_pseudo_output[:-3] + '_' + time_str + '.h5'
-    #fname_nmatrix_output = fname_nmatrix_output[:-3] + '_' + time_str + '.h5'
+    fname_pseudo_output = fname_pseudo_output[:-3] + '_' + time_str + '.h5'
+    fname_nmatrix_output = fname_nmatrix_output[:-3] + '_' + time_str + '.h5'
 
     #Load Genetic Algorithm Properties
     GA_1 = read_from_config(fname_config=config_cp)
@@ -335,6 +336,24 @@ def main(fname_config):
     #Final Step -> mv
 
     os.system('mv ' + config_cp + ' ' + fname_pseudo_output + ' ' + fname_nmatrix_output + ' ' + results_dir + '/')
+
+    print('Simulating Bscans of Best Results')
+    cmd_sim_best = 'python simulate_best_results.py ' + results_dir + '/' + config_cp + ' '
+    cmd_sim_best += results_dir + '/' + fname_nmatrix_output + ' '
+    cmd_sim_best += results_dir + '/' + fname_pseudo_output + ' '
+    cmd_sim_best += results_dir + '/'
+    cmd_sim_best += str(6)
+    os.system(cmd_sim_best)
+
+    print('Making Report (plots)')
+    cmd_make_report = 'python make_report.py ' + results_dir + '/' + 'simul_report.txt'
+    os.system(cmd_make_report)
+    now = datetime.datetime.now()
+
+    tend = time.time()
+    duration_s = tend - tstart
+    print('Finished at: ', now.strftime('%y.%m.%d %H:%M:%S'))
+    print('Total run time: ', datetime.timedelta(seconds=duration_s))
 
 if __name__ == '__main__':
     print('Begin Genetic Algorithm Analysis')
