@@ -116,8 +116,8 @@ next(f_report)
 line_3 = f_report.readline()
 cols_3 = line_3.split()
 print(cols_3)
-fname_pseudo = path2report + cols_3[0]
-fname_nmatrix = path2report + cols_3[1]
+fname_pseudo = cols_3[0]
+fname_nmatrix = cols_3[1]
 print(fname_pseudo, fname_nmatrix)
 next(f_report)
 #next(f_report)
