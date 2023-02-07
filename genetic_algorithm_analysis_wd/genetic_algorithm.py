@@ -30,6 +30,7 @@ class GA: #Genetic Algorithm Class
         self.fTournament = fTournament # Fraction of Selection by Tournament
 
         # Genetic Operators
+        self.fCrossOver = 1 - fMutation - fImmigration - fElite
         self.fMutation = fMutation # Fraction of Individuals to undergo Mutation
         self.Immigration = fImmigration # Fraction of Individuals to be introduced to a generation via Immigration
         self.fElite = fElite # Fraction of Individuals to be Designated 'Elite'

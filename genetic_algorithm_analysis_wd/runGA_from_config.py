@@ -218,7 +218,10 @@ def main(fname_config):
                 # n_profile_children = roulette(n_profile_parents, S_list, n_profile_initial)
                 print('starting selection')
                 n_profile_children = selection(prof_list=n_profile_parents, S_list=S_list,
-                                               prof_list_initial=n_prof_pool)
+                                               prof_list_initial=n_prof_pool,
+                                               f_roulette = GA_1.fRoulette,  f_elite = GA_1.fElite,
+                                               f_cross_over = GA_1.fCrossOver, f_immigrant = GA_1.fImmigrant,
+                                               P_mutation = GA_1.fMutation, mutation_thres = 0.95)
                 print('selection finished')
                 print(n_profile_children)
                 n_profile_matrix[ii_gen] = n_profile_children
@@ -298,8 +301,12 @@ def main(fname_config):
                 S_list = np.array(S_arr[ii_gen - 1])
                 print(ii_gen - 1)
 
+                #n_profile_children = selection(prof_list=n_profile_parents, S_list=S_list,prof_list_initial=n_prof_pool)
                 n_profile_children = selection(prof_list=n_profile_parents, S_list=S_list,
-                                               prof_list_initial=n_prof_pool)
+                                               prof_list_initial=n_prof_pool,
+                                               f_roulette=GA_1.fRoulette, f_elite=GA_1.fElite,
+                                               f_cross_over=GA_1.fCrossOver, f_immigrant=GA_1.fImmigrant,
+                                               P_mutation=GA_1.fMutation, mutation_thres=0.95)
                 print(n_profile_children)
                 n_profile_matrix[ii_gen] = n_profile_children
                 nmatrix_hdf.close()
