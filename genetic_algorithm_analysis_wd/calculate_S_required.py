@@ -102,12 +102,12 @@ for i in range(N):
         nmatrix_hdf = h5py.File(fname_nmatrix_output, 'r+')
         #S_arr = np.array(nmatrix_hdf['S_arr'])
         n_profile_matrix = nmatrix_hdf['n_profile_matrix']
-        n_profile_matrix[j] = nprof_rand[i,j]
+        n_profile_matrix[i,j] = nprof_rand[i,j]
         cmd_j = cmd_prefix + ' ' + fname_config + ' ' + fname_pseudo_output + ' ' + fname_nmatrix_output + ' ' + str(i) + ' ' + str(j)
         jobname = job_prefix + str(i) + '-' + str(j)
         sh_file = jobname + '.sh'
         out_file = dir_outfiles + '/' + jobname + '.out'
         print(out_file)
         make_job(sh_file, out_file, jobname, cmd_j)
-        #submit_job(sh_file)
+        submit_job(sh_file)
         os.system('rm -f ' + sh_file)
