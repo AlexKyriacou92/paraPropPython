@@ -104,6 +104,8 @@ def main(fname_config):
     fFlat = float(config['GA']['fFlat'])
     fSine = float(config['GA']['fSine'])
     fExp = float(config['GA']['fExp'])
+    S_cutoff = float(config['GA']['S_cutoff'])
+
     n_prof_pool = initialize(nStart, nprofile_sampling_mean, zprofile_sampling_mean, GA_1, fAnalytical, fFluctuations, fFlat, fSine, fExp)
     '''
     n_prof_pool = []
@@ -200,7 +202,9 @@ def main(fname_config):
         # Wait for jobs to be submitted
         print('1st generation finished')
         print('next generation:')
-        while ii_gen < GA_1.nGenerations:
+
+        S_max = 0
+        while ii_gen < GA_1.nGenerations or S_max < S_cutoff:
             nJobs = countjobs()
             tsleep = 30.
             print('Generation', ii_gen, 'Check jobs')
@@ -216,6 +220,7 @@ def main(fname_config):
                 #n_profile_initial = n_profile_matrix[0]
                 n_profile_parents = n_profile_matrix[ii_gen - 1]
                 S_list = np.array(S_arr[ii_gen - 1])
+                S_max = max(S_list)
                 print(ii_gen - 1)
 
                 # n_profile_children = roulette(n_profile_parents, S_list, n_profile_initial)
@@ -288,8 +293,9 @@ def main(fname_config):
                 proceed_bool = True
 
         ii_gen += 1
-        # Wait for jobs to be submitted
-        while ii_gen < GA_1.nGenerations:
+        # Wait for jobs to be
+        S_max = 0
+        while ii_gen < GA_1.nGenerations or S_max < S_cutoff:
             nJobs = countjobs()
             tsleep = 30.
             print('Generation', ii_gen, 'Check jobs')
@@ -305,7 +311,7 @@ def main(fname_config):
                 n_profile_parents = n_profile_matrix[ii_gen - 1]
                 S_list = np.array(S_arr[ii_gen - 1])
                 print(ii_gen - 1)
-
+                S_max = max(S_list)
                 #n_profile_children = selection(prof_list=n_profile_parents, S_list=S_list,prof_list_initial=n_prof_pool)
                 n_profile_children = selection(prof_list=n_profile_parents, S_list=S_list,
                                                prof_list_initial=n_prof_pool,
