@@ -32,7 +32,7 @@ class GA: #Genetic Algorithm Class
         # Genetic Operators
         self.fCrossOver = 1 - fMutation - fImmigration - fElite
         self.fMutation = fMutation # Fraction of Individuals to undergo Mutation
-        self.Immigrant = fImmigration # Fraction of Individuals to be introduced to a generation via Immigration
+        self.fImmigrant = fImmigration # Fraction of Individuals to be introduced to a generation via Immigration
         self.fElite = fElite # Fraction of Individuals to be Designated 'Elite'
         self.first_generation = np.zeros((self.nIndividuals, self.nGenes))
 
