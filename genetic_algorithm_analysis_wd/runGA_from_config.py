@@ -204,7 +204,10 @@ def main(fname_config):
             nJobs = countjobs()
             tsleep = 30.
             print('Generation', ii_gen, 'Check jobs')
-            if nJobs == 0:
+            max_time = 60. * 20  # TODO: Define this outside file
+            timeout = time.time() + max_time
+            timer = 0
+            if (nJobs == 0) or (time.time() > timeout) or (timer > max_time):
                 print('Submitted jobs')
                 # APPLY GA selection
                 nmatrix_hdf = h5py.File(fname_nmatrix, 'r+')
@@ -248,7 +251,7 @@ def main(fname_config):
                 print('Queue of jobs: ', nJobs)
                 print('Wait:', tsleep, ' seconds')
                 time.sleep(tsleep)
-
+                timer += tsleep
         for k in range(len(outfile_list)):
             out_file_k = outfile_list[k]
             os.system('rm -f ' + out_file_k)
@@ -290,7 +293,9 @@ def main(fname_config):
             nJobs = countjobs()
             tsleep = 30.
             print('Generation', ii_gen, 'Check jobs')
-            if nJobs == 0:
+            max_time = 60. * 20 #TODO: Define this outside file
+            timeout = time.time() + max_time
+            if (nJobs == 0) or (time.time() > timeout):
                 print('Submitted jobs')
                 # APPLY GA selection
                 nmatrix_hdf = h5py.File(fname_nmatrix, 'r+')
