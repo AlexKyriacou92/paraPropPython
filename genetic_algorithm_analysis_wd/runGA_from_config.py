@@ -7,7 +7,7 @@ from math import pi
 import h5py
 import numpy as np
 from scipy.interpolate import interp1d
-
+from matplotlib import pyplot as pl
 from genetic_algorithm import GA, read_from_config
 from makeSim_nmatrix import createMatrix
 import sys
@@ -20,9 +20,6 @@ import subprocess
 import time
 import configparser
 
-#=======================================================================================================================
-# Initialize the GA
-#=======================================================================================================================
 def countjobs():
     cmd = 'squeue | grep "kyriacou" | wc -l'
     try:
@@ -37,7 +34,7 @@ def get_profile_from_file(fname):
     n_profile = profile_data[:,1]
     return n_profile, z_profile
 
-def do_interpolation(zprof_in, nprof_in, N):
+def do_interpolation(zprof_in, nprof_in, N): #TODO: FIX THIS -> Start and End should match
     f_interp = interp1d(zprof_in, nprof_in)
     zprof_out = np.linspace(min(zprof_in),max(zprof_in), N)
     nprof_out = np.ones(N)
@@ -56,6 +53,7 @@ fname_config0 = sys.argv[1]
 
 def main(fname_config):
     tstart = time.time()
+
     #Load Simulation Config
     config = configparser.ConfigParser()
     config.read(fname_config)
@@ -104,30 +102,9 @@ def main(fname_config):
     fFlat = float(config['GA']['fFlat'])
     fSine = float(config['GA']['fSine'])
     fExp = float(config['GA']['fExp'])
+    S_cutoff = float(config['GA']['S_cutoff'])
+
     n_prof_pool = initialize(nStart, nprofile_sampling_mean, zprofile_sampling_mean, GA_1, fAnalytical, fFluctuations, fFlat, fSine, fExp)
-    '''
-    n_prof_pool = []
-    nQuarter = nStart // 4
-    nprof_analytical = initialize_from_analytical(nprofile_sampling_mean, 0.04 * np.ones(GA_1.nGenes), nQuarter)
-    nprof_flucations = initalize_from_fluctuations(nprofile_sampling_mean, zprofile_sampling_mean, nQuarter)
-    for i in range(nQuarter): # Sample from ref-index sampling profile + random noise
-        n_prof_pool.append(nprof_analytical[i])
-    for i in range(nQuarter): # Sample from ref-index + density fluctuations
-        n_prof_pool.append(nprof_flucations[i])
-    for i in range(nQuarter): # Sample from Flat Profiles
-        n_const = random.uniform(0, 0.78)
-        n_prof_flat = np.ones(GA_1.nGenes) + n_const
-        n_prof_pool.append(n_prof_flat)
-    for i in range(nQuarter): #Sample from Sine Waves
-        amp_rand = 0.4 * random.random()
-        z_period = random.uniform(0.5, 15)
-        k_factor = 1 / z_period
-        phase_rand = random.uniform(0, 2 * pi)
-        freq_rand = amp_rand * np.sin(2 * pi * zprofile_sampling_mean * k_factor + phase_rand)
-        n_prof_flat = np.ones(GA_1.nGenes) + n_const
-        n_prof_pool.append(n_prof_flat)
-    random.shuffle(n_prof_pool)
-    '''
 
     GA_1.initialize_from_sample(n_prof_pool)
 
@@ -200,7 +177,17 @@ def main(fname_config):
         # Wait for jobs to be submitted
         print('1st generation finished')
         print('next generation:')
-        while ii_gen < GA_1.nGenerations:
+
+        S_max = 0
+        S_max_list = []
+        S_mean_list = []
+        S_var_list = []
+        S_med_list = []
+
+        fname_log = results_dir + 'log_report.txt'
+        f_log = open(fname_log,'w')
+        f_log.write('gen\tS_max\tS_mean\tS_var\tS_med\n')
+        while ii_gen < GA_1.nGenerations or S_max < S_cutoff:
             nJobs = countjobs()
             tsleep = 30.
             print('Generation', ii_gen, 'Check jobs')
@@ -216,6 +203,7 @@ def main(fname_config):
                 #n_profile_initial = n_profile_matrix[0]
                 n_profile_parents = n_profile_matrix[ii_gen - 1]
                 S_list = np.array(S_arr[ii_gen - 1])
+                S_max = max(S_list)
                 print(ii_gen - 1)
 
                 # n_profile_children = roulette(n_profile_parents, S_list, n_profile_initial)
@@ -226,9 +214,33 @@ def main(fname_config):
                                                f_cross_over = GA_1.fCrossOver, f_immigrant = GA_1.fImmigrant,
                                                P_mutation = GA_1.fMutation, mutation_thres = 0.95)
                 print('selection finished')
-                print(n_profile_children)
                 n_profile_matrix[ii_gen] = n_profile_children
                 nmatrix_hdf.close()
+
+                S_max_list.append(S_max)
+                S_mean = np.mean(S_list)
+                S_var = np.std(S_list)
+                S_med = np.mean(S_list)
+                S_mean_list.append(S_mean)
+                S_var_list.append(S_var)
+                S_med_list.append(S_med)
+                gens = np.arange(0, ii_gen, 1)
+                # Make Plots:
+
+                fig = pl.figure(figsize=(8,5),dpi=120)
+                ax = fig.add_subplot(111)
+                ax.errorbar(gens, S_mean_list, S_var_list, fmt='-o', c='k', label='Mean +/- Variance')
+                ax.plot(gens, S_max_list, c='b', label='Best Score')
+                ax.plot(gens, S_med_list, c='r', label='Median')
+                ax.set_xlabel('Generation')
+                ax.set_ylabel(r'Fitness Score $S$')
+                ax.grid()
+                ax.legend()
+                pl.savefig(results_dir + '/' + 'S_current.png')
+                pl.close(fig)
+
+                line = str(ii_gen) + '\t' + str(S_max) + '\t' + str(S_mean) + '\t' + str(S_var) + '\t' + str(S_med) + '\n'
+                f_log.write(line)
                 for j in range(GA_1.nIndividuals):
                     # Create Command
                     dir_outfiles = dir_outfiles0 + '/' + 'gen' + str(ii_gen)
@@ -252,6 +264,7 @@ def main(fname_config):
                 print('Wait:', tsleep, ' seconds')
                 time.sleep(tsleep)
                 timer += tsleep
+        f_log.close()
         for k in range(len(outfile_list)):
             out_file_k = outfile_list[k]
             os.system('rm -f ' + out_file_k)
@@ -288,8 +301,9 @@ def main(fname_config):
                 proceed_bool = True
 
         ii_gen += 1
-        # Wait for jobs to be submitted
-        while ii_gen < GA_1.nGenerations:
+        # Wait for jobs to be
+        S_max = 0
+        while ii_gen < GA_1.nGenerations or S_max < S_cutoff:
             nJobs = countjobs()
             tsleep = 30.
             print('Generation', ii_gen, 'Check jobs')
@@ -305,14 +319,13 @@ def main(fname_config):
                 n_profile_parents = n_profile_matrix[ii_gen - 1]
                 S_list = np.array(S_arr[ii_gen - 1])
                 print(ii_gen - 1)
-
+                S_max = max(S_list)
                 #n_profile_children = selection(prof_list=n_profile_parents, S_list=S_list,prof_list_initial=n_prof_pool)
                 n_profile_children = selection(prof_list=n_profile_parents, S_list=S_list,
                                                prof_list_initial=n_prof_pool,
                                                f_roulette=GA_1.fRoulette, f_elite=GA_1.fElite,
                                                f_cross_over=GA_1.fCrossOver, f_immigrant=GA_1.fImmigrant,
                                                P_mutation=GA_1.fMutation, mutation_thres=0.95)
-                print(n_profile_children)
                 n_profile_matrix[ii_gen] = n_profile_children
                 nmatrix_hdf.close()
                 for j in range(GA_1.nIndividuals):
@@ -354,11 +367,13 @@ def main(fname_config):
     cmd_sim_best += results_dir + '/' + fname_nmatrix_output + ' '
     cmd_sim_best += results_dir + '/' + fname_pseudo_output + ' '
     cmd_sim_best += results_dir + '/'
-    cmd_sim_best += str(6)
+    cmd_sim_best += str(10)
+    print('running:', cmd_sim_best)
     os.system(cmd_sim_best)
 
     print('Making Report (plots)')
     cmd_make_report = 'python make_report.py ' + results_dir + '/' + 'simul_report.txt'
+    print('running: ', cmd_make_report)
     os.system(cmd_make_report)
     now = datetime.datetime.now()
 
