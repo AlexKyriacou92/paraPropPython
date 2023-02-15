@@ -23,6 +23,14 @@ def cross_breed(prof1, prof2):
             prof3[i] = prof2[i]
     return prof3
 
+def cross_breed2(prof1, prof2):
+    N = len(prof1)
+    j_cut = randint(0, N-1)
+    prof3 = np.ones(N)
+    prof3[:j_cut] = prof1[:j_cut]
+    prof3[j_cut:] = prof2[j_cut:]
+    return prof3
+
 def gaussian_mutation(prof_in, mutation_thres, n_prof_mean, n_prof_var):
     N = len(prof_in)
     M = 100
