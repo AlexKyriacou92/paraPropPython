@@ -7,7 +7,7 @@ from random import randint, uniform
 import random
 from scipy.interpolate import interp1d
 
-from genetic_operators import flat_mutation, gaussian_mutation, clone, cross_breed
+from genetic_operators import flat_mutation, gaussian_mutation, clone, cross_breed, cross_breed2
 def prob_from_sdist(S_ind, S_dist):
     num_lower = float(sum(S < S_ind for S in S_dist)) #count the number of individual with fitness function lower than the selected_indidivudal
     num_total = float(len(S_dist))
@@ -156,7 +156,9 @@ def selection(prof_list, S_list, prof_list_initial, f_roulette = 0.75, f_elite =
             p_list = random.sample(parent_list, 2)
             p1 = p_list[0]
             p2 = p_list[1]
-            prof_c = cross_breed(p1, p2)
+
+            #prof_c = cross_breed(p1, p2)
+            prof_c = cross_breed2(p1, p2)
             common_list.append(prof_c)
             ii_common += 1
         elif i_operator == 1:
