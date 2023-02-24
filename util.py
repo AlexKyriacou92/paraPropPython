@@ -463,6 +463,68 @@ def padded_frequency(index, dt):
     nPadd = 2**index
     return np.fft.rfftfreq(nPadd, dt)
 
+def get_profile_from_file(fname):
+    profile_data = np.genfromtxt(fname)
+    z_profile = profile_data[:,0]
+    n_profile = profile_data[:,1]
+    return n_profile, z_profile
+def smooth_padding(z_vec, n_vec, dz):
+    z_max = max(z_vec)
+    z_min = min(z_vec)
+    dz_old = abs(z_vec[1] - z_vec[0])
+    z_vec_padd = np.arange(-(z_max + dz), z_max + dz, dz)
+    nDepths_padd = len(z_vec_padd)
+    z_vec_two_way = np.arange(-(z_max+dz_old), z_max +dz_old, dz_old)
+    nDepths_two = len(z_vec_two_way)
+    nHalf = nDepths_two//2
+
+    n_vec_twoway = np.ones(nDepths_two)
+    if z_min > 0:
+        n_vec_full = np.ones(nHalf)
+        z_vec_full = np.arange(0, z_max+dz_old, dz_old)
+        i_min = findNearest(z_vec_full, z_min)
+        n_vec_full[i_min:] = n_vec
+        n_vec_full[:i_min] = n_vec[0]
+    else:
+        n_vec_full = n_vec
+
+    if len(n_vec_twoway[nHalf:]) == len(n_vec_full):
+        n_vec_twoway[nHalf:] = n_vec_full
+        n_vec_twoway[:nHalf] = np.flip(n_vec_full)
+        n_vec_twoway = np.fft.ifftshift(n_vec_twoway)
+    else:
+        dN = len(n_vec_twoway[nHalf:]) - len(n_vec_full)
+        if dN > 0:
+            print(len(n_vec_twoway[dN:nHalf]), len(n_vec_full))
+            n_vec_twoway[nHalf:-dN] = n_vec_full
+            n_vec_twoway[:nHalf] = np.flip(n_vec_full)
+        else:
+            n_vec_twoway[nHalf:] = n_vec_full[:-dN]
+            n_vec_twoway[:nHalf] = np.flip(n_vec_full[:-dN])
+
+    n_spec = np.fft.ifft(n_vec_twoway - 1)
+    n_spec = np.fft.fftshift(n_spec)
+    n_spec_padded = np.zeros(nDepths_padd)
+    nHalf_padd = nDepths_padd // 2
+
+    nPadd1 = len(n_spec_padded[nHalf_padd - nHalf:nHalf_padd + nHalf])
+    nPadd2 = len(n_spec)
+    if nPadd1 - nPadd2 == 0:
+        n_spec_padded[nHalf_padd - nHalf:nHalf_padd + nHalf] = n_spec
+    else:
+        dNpadd = nPadd1-nPadd2
+        if dNpadd > 0:
+            n_spec_padded[dNpadd + nHalf_padd - nHalf:nHalf_padd + nHalf] = n_spec
+        else:
+            n_spec_padded[nHalf_padd - nHalf:nHalf_padd + nHalf] = n_spec[dNpadd:]
+
+
+    n_spec_padded = np.fft.ifftshift(n_spec_padded)
+    n_vec_padded = np.fft.fft(n_spec_padded) + 1
+    n_vec_padded = np.flip(n_vec_padded[nHalf_padd:])
+    z_vec_padd = z_vec_padd[nHalf_padd:]
+    return n_vec_padded, z_vec_padd
+
 fitfunc = lambda p, x: gaussian(x, p[0], p[1], p[2], p[3])  # fit function for SciPy optimize
 errfunc = lambda p, x, y: fitfunc(p, x) - y  # residual function -> minimized by SciPy optimize
 
