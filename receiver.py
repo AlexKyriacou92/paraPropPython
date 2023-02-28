@@ -33,9 +33,11 @@ class receiver:
         z position (m)
     """
 
-    def __init__(self, x, z):
+    def __init__(self, x, z, IR_freq = [], IR_data=[]):
         self.x = x
         self.z = z
+        self.IR_data = IR_data
+        self.IR_freq = IR_freq
 
     def setup(self, freq, dt):
         """
@@ -54,7 +56,24 @@ class receiver:
         self.spectrum_plus = np.zeros(self.nFreq, dtype='complex')
         self.spectrum_minus = np.zeros(self.nFreq, dtype='complex')
         self.time = np.arange(0, dt * self.nFreq, dt)
-
+        self.IR = np.ones(self.nFreq)
+        if len(self.IR_data) > 0 and len(self.IR_freq) > 0:
+            IR_fmin = min(self.IR_freq)
+            IR_fmax = max(self.IR_freq)
+            for i in range(self.nFreq):
+                freq_i = self.freq[i]
+                if freq_i < IR_fmin:
+                    self.IR[i] = 0
+                elif freq_i > IR_fmax:
+                    self.IR[i] = 0
+                elif freq_i <= IR_fmax and freq_i >= IR_fmin:
+                    jj = util.findNearest(self.IR_freq, freq_i)
+                    self.IR[i] = self.IR_data[jj]
+        elif len(self.IR_data) > 0 and len(self.IR_freq) == 0:
+            print('error! must defined frequency vector so IR values correspond to to frequencies')
+        elif len(self.IR_freq) > 0 and len(self.IR_data) == 0:
+            print('warning! you set IR frequnecy values but not the IR data -> IR not implemented')
+        #TODO -> Add elif and else to self.IR_data
     def add_spectrum_component(self, f, A):
         """
         adds the contribution of a frequency to the received signal spectrum
@@ -67,8 +86,8 @@ class receiver:
             complex amplitude of received siganl (V/m???)
         """
         i = util.findNearest(self.freq, f)
-        self.spectrum[i] = A
-
+        #self.spectrum[i] = A * self.IR[i]
+        self.spectrum[i] = A * self.IR[i]
     def add_spectrum_component_minus(self, f, A):
         """
                 adds the contribution of a frequency to the received signal spectrum (for the reflected 'minus' signal
