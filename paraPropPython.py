@@ -113,135 +113,6 @@ class paraProp:
       
     
     ### ice profile functions ###
-    '''
-    def set_n(self, nVal=None, nVec=None, nFunc=None, nAir=1.0003, zVec=[]):
-        """
-        set the index of refraction profile of the simualtion
-        
-        future implementation plans:
-            - complex index of refraction
-        
-        Parameters
-        ----------
-        nVal : float
-            Postcondition: n(z>=0, x>=0) = nVal
-        nVec : array
-            1-d or 2-d array of float values
-            Precondition: spacing between rows is dz, spacing between columns is dx
-            Postcondition: n(z=0,x=0) = nVec[0,0], n(z=dz,x=dx) = nVec[1,1], ..., n(z>=len(nVec[:,0])*dz,x>=len(nVec[0,:])*dx) = nVec[-1,-1]
-        nFunc : function
-            Precondition: nFunc is a function of one or two variables, z and x, and returns a float value
-            Postcondition: n(z>=0,x>=0) = nFunc(z,x)
-        nAir : float
-            index of refraction of air
-            Postcondition: n(z<0) = nAir
-        """    
-        self.n = np.ones((self.zNumFull, self.xNum), dtype='complex')
-        
-        if nVal != None:
-            for i in range(self.zNumFull):
-                if self.zFull[i] >= 0:
-                    self.n[i,:] = nVal
-                else:
-                    self.n[i,:] = nAir
-        
-        elif nVal == None and nFunc == None:
-            if len(nVec.shape) == 1:
-                if len(zVec) != 0:
-                    dz_vec = abs(zVec[1] - zVec[0])
-                    zmax = zVec[-1]
-                    zmin = zVec[0]
-                    if dz_vec == self.dz:
-                        a = 0
-                        nzNum = len(nVec)
-                        for i in range(self.zNumFull):
-                            if self.zFull[i] >= 0:
-                                if self.zFull[i] >= zmin and self.zFull[i] <= zmax:
-                                    ai = a if a < nzNum else -1
-                                    self.n[i, :] = nVec[ai]
-                                    a += 1
-                                elif self.zFull[i] < zmin:
-                                    self.n[i,:] = nVec[0]
-                                elif self.zFull[i] > zmax:
-                                    self.n[i,:] = nVec[-1]
-                            else:
-                                self.n[i,:] = nAir
-                    elif dz_vec > self.dz:
-                        n_interp = interp1d(zVec, nVec)
-                        for i in range(self.zNumFull):
-                            if self.zFull[i] >= 0:
-                                if self.zFull[i] >= zmin and self.zFull[i] <= zmax:
-                                    self.n[i,:] = n_interp(self.zFull[i])
-                                elif self.zFull[i] < zmin:
-                                    self.n[i,:] = nVec[0]
-                                elif self.zFull[i] > zmax:
-                                    self.n[i,:] = nVec[-1]
-                            else:
-                                self.n[i,:] = nAir
-                    elif dz_vec < self.dz:
-                        for i in range(self.zNumFull):
-                            if self.zFull[i] >= 0:
-                                if self.zFull[i] >= zmin and self.zFull[i] <= zmax:
-                                    jj = util.findNearest(zVec, self.zFull[i])
-                                    self.n[i,:] = nVec[jj]
-                                elif self.zFull[i] < zmin:
-                                    self.n[i, :] = nVec[0]
-                                elif self.zFull[i] > zmax:
-                                    self.n[i, :] = nVec[-1]
-                            else:
-                                self.n[i, :] = nAir
-                else:
-                    a = 0
-                    nzNum = len(nVec)  # TODO: was originally nNum -> changed to nzNum
-                    for i in range(self.zNumFull):
-                        if self.zFull[i] >= 0:
-                            ai = a if a < nzNum else -1
-                            self.n[i, :] = nVec[ai]
-                            a += 1
-                        else:
-                            self.n[i, :] = nAir
-
-            elif len(nVec.shape) == 2: 
-                a = 0
-                b = 0
-                nzNum = len(nVec[:,0])
-                nxNum = len(nVec[0,:])
-                for i in range(self.zNumFull):
-                    for j in range(self.xNum):
-                        if self.zFull[i] >= 0:
-                            ai = a if a < nzNum else -1
-                            bi = b if b < nxNum else -1
-                            self.n[i,j] = nVec[ai,bi]
-                            a += 1
-                            b += 1
-                        else:
-                            self.n[i,j] = nAir
-         
-        elif nFunc != None:
-            sig = signature(nFunc)
-            numParams = len(sig.parameters)
-            if numParams == 1:
-                for i in range(self.zNumFull): #TODO: WTF IS GOING ON HERE? CHECK THIS SECTION
-                    if self.zFull[i] >= 0:
-                        z = self.zFull[i] if self.zFull[i] <= self.iceDepth else self.iceDepth
-                        self.n[i,:] = nFunc(z)
-                    else:
-                        self.n[i,:] = nAir
-            elif numParams >= 2:
-                for i in range(self.zNumFull):
-                    for j in range(self.xNum):
-                        if self.zFull[i] >= 0:
-                            z = self.zFull[i] if self.zFull[i] <= self.iceDepth else self.iceDepth
-                            x = self.x[j]
-                            self.n[i,j] = nFunc(z,x)
-                        else:
-                            self.n[i,j] = nAir
-                            
-        ### set reference index of refraction ###
-        self.n0 = self.at_depth(self.n[:,0], self.refDepth)
-        self.n = np.transpose(self.n) 
-    '''
-
     def set_n(self,  nVal=None, nVec=[], nFunc=None, nAir=1.0003, zVec=[], interpolation='padding'):
         """
         Function which sets 2D refractive index profile n(x,z) of simulation domain
@@ -376,38 +247,6 @@ class paraProp:
                             self.n[i, j] = nVec[i, j]
                 else:
                     print('error! the nVec must be set to be equal to be equal to the shape of ref-index domain matrix sim.n')
-            '''
-            elif len(nVec.shape) == 2:
-                zNumVec = len(nVec)
-                xNumVec = len(nVec[0])
-                if zNumVec == self.zNumFull and xNumVec == self.xNum:
-                    for i in range(self.zNumFull):
-                        for j in range(self.xNum):
-                            self.n[i,j] = nVec[i,j]
-                elif xNumVec != self.xNum and zNumVec == self.zNumFull:
-                    if xVec != 0:
-                        dx_vec = abs(xVec[1] - xVec[0])
-                        xVec_new = np.linspace(0, self.iceLength, self.xNum)
-                        nVec_new = np.ones(self.xNum)
-                        if dx_vec > self.dx:
-                            for i in range(self.zNumFull):
-                                if interpolation == 'padding':
-                                    nVec_new = util.smooth_padding(z_vec=xVec, n_vec=nVec[i,:], dz=self.dx)
-                                else:
-                                    f_interp = interp1d(xVec, nVec[i])
-                                    nVec_new[0] = nVec[0]
-                                    nVec_new[-1] = nVec[-1]
-                                    nVec_new[1:-1] = f_interp(xVec_new[1:-1])
-                        elif dx_vec < self.dx:
-                            for i in range(self.zNumFull):
-                                f_interp = interp1d(xVec, nVec[i])
-                                nVec_new[0] = nVec[0]
-                                nVec_new[-1] = nVec[-1]
-                                nVec_new[1:-1] = f_interp(xVec_new[1:-1])
-                    else:
-                        print('error, must specify xVec')
-                        return -1
-            '''
         else:
             print('error! you must choose between nFunc, nVal and nVec')
             return -1
@@ -532,10 +371,6 @@ class paraProp:
                 print('error! DEM vector must be set if function and surface_shift are set to none')
         self.n = np.transpose(nNew)
 
-
-    '''   
-    def set_rough_surface(self, ):
-    '''
     def get_n(self, x=None, z=None):
             """
             gets index of refraction profile of simulation
