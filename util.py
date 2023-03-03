@@ -14,6 +14,7 @@ from numpy import linalg as la
 import csv
 from numpy.lib.format import open_memmap
 import h5py
+from scipy.interpolate import interp1d
 
 I=1.j
 c_light = .29979246;#m/ns
@@ -468,6 +469,29 @@ def get_profile_from_file(fname):
     z_profile = profile_data[:,0]
     n_profile = profile_data[:,1]
     return n_profile, z_profile
+
+def get_profile_from_file_cut(fname, zmin, zmax):
+    profile_data = np.genfromtxt(fname)
+    z_profile0 = profile_data[:, 0]
+    n_profile0 = profile_data[:, 1]
+    ii_min = findNearest(z_profile0, zmin)
+    ii_max = findNearest(z_profile0, zmax)
+    if ii_max < len(z_profile0):
+        z_profile = z_profile0[ii_min:ii_max+1]
+        n_profile = n_profile0[ii_min:ii_max+1]
+    else:
+        z_profile = z_profile0[ii_min:]
+        n_profile = n_profile0[ii_min:]
+    return n_profile, z_profile
+def do_interpolation_same_depth(zprof_in, nprof_in, N):
+    f_interp = interp1d(zprof_in, nprof_in)
+    zprof_out = np.linspace(min(zprof_in),max(zprof_in), N)
+    nprof_out = np.ones(N)
+    nprof_out[0] = nprof_in[0]
+    nprof_out[-1] = nprof_in[-1]
+    nprof_out[1:-1] = f_interp(zprof_out[1:-1])
+    return nprof_out, zprof_out
+
 def smooth_padding(z_vec, n_vec, dz):
     z_max = max(z_vec)
     z_min = min(z_vec)

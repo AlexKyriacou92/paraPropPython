@@ -6,7 +6,7 @@ import matplotlib.pyplot as pl
 from random import randint, uniform
 import random
 from scipy.interpolate import interp1d
-
+import subprocess
 from genetic_operators import flat_mutation, gaussian_mutation, clone, cross_breed
 import sys
 
@@ -153,3 +153,10 @@ def make_sbatch_list(h5_file, config_file, prof_list):
         fname_out = jobname + '.out'
         make_command(h5_file, config_file, prof_list)
 '''
+def countjobs():
+    cmd = 'squeue | grep "kyriacou" | wc -l'
+    try:
+        output = int(subprocess.check_output(cmd, shell=True))
+    except:
+        output = 0
+    return output

@@ -120,8 +120,12 @@ def selection(prof_list, S_list, prof_list_initial, f_roulette = 0.75, f_elite =
 
     S_list_sorted = S_list[inds]
     prof_list_sorted = prof_list[inds]
-
+    names = []
+    S_out = []
     #TODO: Do I want to seperate elites from everyonelse
+    print('Numbers:\n')
+    print('nIndividuals:', nIndividuals)
+    print('nElites: ', nElite)
     if nElite > 0:
         S_list_elite = S_list_sorted[:nElite]
         prof_list_elite = prof_list_sorted[:nElite]
@@ -143,16 +147,16 @@ def selection(prof_list, S_list, prof_list_initial, f_roulette = 0.75, f_elite =
         parent_list.append(tournament_list[j])
 
     new_generation = []
-
+    names_common = []
     for i in range(nElite):
         new_generation.append(prof_list_elite[i])
-
+        names.append('Elite-'+str(inds[i]))
     common_list = []
     ii_common = 1
     nCommons = nIndividuals - nElite
     while ii_common <= nCommons:
         i_operator = rand_operator(f_cross_over, f_immigrant)
-        if i_operator == 0:
+        if i_operator == 0: #Cross Breeding
             p_list = random.sample(parent_list, 2)
             p1 = p_list[0]
             p2 = p_list[1]
@@ -160,14 +164,19 @@ def selection(prof_list, S_list, prof_list_initial, f_roulette = 0.75, f_elite =
             #prof_c = cross_breed(p1, p2)
             prof_c = cross_breed2(p1, p2)
             common_list.append(prof_c)
+            names_common.append('cross-bred')
             ii_common += 1
         elif i_operator == 1:
             prof_c = random.sample(prof_list_initial, 1)[0]
             common_list.append(prof_c)
+            names_common.append('immigrant')
+
             ii_common += 1
         elif i_operator == 2:
             prof_c = clone(random.sample(parent_list, 1))[0]
             common_list.append(prof_c)
+            names_common.append('clone')
+
             ii_common += 1
 
     #Apply Mutations
@@ -176,8 +185,11 @@ def selection(prof_list, S_list, prof_list_initial, f_roulette = 0.75, f_elite =
         if P_mutation > R:
             #print(i, common_list[i], type(common_list[i]))
             prof_m = flat_mutation(common_list[i], mutation_thres=mutation_thres)
+            names.append(names_common[i]+'-mutant')
         else:
             prof_m = common_list[i]
+            names.append(names_common[i])
         new_generation.append(prof_m)
     random.shuffle(new_generation)
-    return new_generation
+    #return new_generation
+    return new_generation, inds, S_list_sorted, names
