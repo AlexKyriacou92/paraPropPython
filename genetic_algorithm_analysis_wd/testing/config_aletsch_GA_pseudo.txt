@@ -49,6 +49,7 @@ fFluctuations = 0.9
 fFlat = 0.0
 fSine = 0.02
 fExp = 0.08
+mutation_thres = 0.95
 Weighting = False
 Fitness = Difference
 S_cutoff = 5e7
