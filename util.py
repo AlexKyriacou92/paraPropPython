@@ -15,6 +15,7 @@ import csv
 from numpy.lib.format import open_memmap
 import h5py
 from scipy.interpolate import interp1d
+from scipy.signal import decimate
 
 I=1.j
 c_light = .29979246;#m/ns
@@ -483,6 +484,23 @@ def get_profile_from_file_cut(fname, zmin, zmax):
         z_profile = z_profile0[ii_min:]
         n_profile = n_profile0[ii_min:]
     return n_profile, z_profile
+
+def get_profile_from_file_decimate(fname, zmin, zmax, dz_out):
+    nprof_cut, zprof_cut = get_profile_from_file_cut(fname, zmin, zmax)
+    dz_in = zprof_cut[1]-zprof_cut[0]
+    M = int(round(dz_out, 3)/round(dz_in, 3))
+    nprof_out = decimate(nprof_cut, M)
+    return nprof_out
+
+def save_profile_to_txtfile(zprof, nprof, fname):
+    N = len(nprof)
+    with open(fname,'r') as fout:
+        for i in range(N):
+            zi = zprof[i]
+            ni = nprof[i]
+            line = str(zi) + '\t' + str(ni) + '\n'
+            fout.write(line)
+
 def do_interpolation_same_depth(zprof_in, nprof_in, N):
     f_interp = interp1d(zprof_in, nprof_in)
     zprof_out = np.linspace(min(zprof_in),max(zprof_in), N)
