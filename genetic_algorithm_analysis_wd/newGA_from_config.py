@@ -109,7 +109,7 @@ def main(fname_config):
     nprof_gene_pool = initialize(nStart, nprof_sample_mean, zprof_sample_mean, GA_1, fAnalytical, fFluctuations,
                              fFlat, fSine, fExp)
     GA_1.initialize_from_sample(nprof_gene_pool)
-    nprof_initial = util.create_memmap('nprof_initial.npy', dimensions=(GA_1.nIndividuals, nDepths), data_type='real')
+    nprof_initial = util.create_memmap('nprof_initial.npy', dimensions=(GA_1.nIndividuals, nDepths), data_type='float')
 
     for i in range(GA_1.nIndividuals):
         nprof_initial[i] = create_profile(zspace_simul, GA_1.first_generation[i], zspace_genes, nprof_override, zprof_override)
