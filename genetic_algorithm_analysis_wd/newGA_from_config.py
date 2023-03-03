@@ -124,7 +124,8 @@ def main(fname_config):
     fname_nmatrix = fname_nmatrix_output
     if os.path.isfile(fname_nmatrix) == True:
         os.system('rm -f ' + fname_nmatrix)
-    createMatrix2(fname_config=config_cp, n_prof_initial=nprof_initial, genes_initial=GA_1.first_generation,
+    createMatrix2(fname_config=config_cp, n_prof_initial=nprof_initial,
+                  genes_initial=GA_1.first_generation,
                   z_gens=zspace_genes, z_profile=zspace_simul,
                   fname_nmatrix=fname_nmatrix, nGenerations=GA_1.nGenerations)
     hdf_nmatrix = h5py.File(fname_nmatrix, 'r+')
