@@ -75,9 +75,17 @@ def main(fname_config):
 
     # Save Sampling ref-index profiles to numpy arrays and interpolate
     print('Saving to numpy arrays')
-    nprof_sample_mean0, zprof_sample_mean0 = get_profile_from_file(fname_nprofile_sampling_mean)
-    nprof_sample_mean, zprof_sample_mean = do_interpolation_same_depth(zprof_in=zprof_sample_mean0, nprof_in=nprof_sample_mean0, N=GA_1.nGenes)
+    #nprof_sample_mean0, zprof_sample_mean0 = get_profile_from_file(fname_nprofile_sampling_mean)
+    # Set Overide
+    zMin_genes = float(config['GA']['minDepth'])
+    zMax_genes = float(config['GA']['maxDepth'])
+    iceDepth = float(config['GEOMETRY']['iceDepth'])
+    dz = float(config['GEOMETRY']['dz'])
 
+    nprof_sample_mean, zprof_sample_mean = util.get_profile_from_file_decimate(fname=fname_nprofile_sampling_mean,
+                                                                                 zmin=zMin_genes, zmax=zMax_genes, dz_out=dz)
+    #nprof_sample_mean, zprof_sample_mean = do_interpolation_same_depth(zprof_in=zprof_sample_mean0, nprof_in=nprof_sample_mean0, N=GA_1.nGenes)
+    #TODO: -> Be careful -> Gens and dz are set indepenently -> fix this
     nStart = 10000  # Starting Sample
     dz_start = abs(zprof_sample_mean[1] - zprof_sample_mean[0])
     print('starting sample', nStart, 'dz_start = ', dz_start)
@@ -91,11 +99,7 @@ def main(fname_config):
     S_cutoff = float(config['GA']['S_cutoff'])
     mutation_thres = float(config['GA']['mutation_thres'])
 
-    # Set Overide
-    zMin_genes = float(config['GA']['minDepth'])
-    zMax_genes = float(config['GA']['maxDepth'])
-    iceDepth = float(config['GEOMETRY']['iceDepth'])
-    dz = float(config['GEOMETRY']['dz'])
+
 
     zspace_genes = np.linspace(zMin_genes, zMax_genes, GA_1.nGenes)
     dz_genes = zspace_genes[1]-zspace_genes[0]
