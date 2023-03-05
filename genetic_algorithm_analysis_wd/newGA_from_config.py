@@ -75,7 +75,6 @@ def main(fname_config):
 
     # Save Sampling ref-index profiles to numpy arrays and interpolate
     print('Saving to numpy arrays')
-    #nprof_sample_mean0, zprof_sample_mean0 = get_profile_from_file(fname_nprofile_sampling_mean)
     # Set Overide
     zMin_genes = float(config['GA']['minDepth'])
     zMax_genes = float(config['GA']['maxDepth'])
@@ -84,15 +83,10 @@ def main(fname_config):
 
     zspace_genes = np.linspace(zMin_genes, zMax_genes, GA_1.nGenes)
     dz_genes = zspace_genes[1] - zspace_genes[0]
-
-    nprof_sample_mean, zprof_sample_mean = util.get_profile_from_file_decimate(fname=fname_nprofile_sampling_mean,
-                                                                                 zmin=zMin_genes, zmax=zMax_genes, dz_out=dz_genes)
-    #nprof_sample_mean, zprof_sample_mean = do_interpolation_same_depth(zprof_in=zprof_sample_mean0, nprof_in=nprof_sample_mean0, N=GA_1.nGenes)
+    print(dz_genes)
+    nprof_sample_mean = util.get_profile_from_file_decimate(fname=fname_nprofile_sampling_mean, zmin=zMin_genes, zmax=zMax_genes, dz_out=dz_genes)
     #TODO: -> Be careful -> Gens and dz are set indepenently -> fix this
     nStart = 10000  # Starting Sample
-    dz_start = abs(zprof_sample_mean[1] - zprof_sample_mean[0])
-    print('starting sample', nStart, 'dz_start = ', dz_start)
-
 
     fAnalytical = float(config['GA']['fAnalytical'])
     fFluctuations = float(config['GA']['fFluctuations'])
@@ -108,7 +102,7 @@ def main(fname_config):
     nDepths = len(zspace_simul)
     #Selecting Initiate Populations
     print('initializing populations of ref-index profiles')
-    nprof_gene_pool = initialize(nStart, nprof_sample_mean, zprof_sample_mean, GA_1, fAnalytical, fFluctuations,
+    nprof_gene_pool = initialize(nStart, nprof_sample_mean, zspace_genes, GA_1, fAnalytical, fFluctuations,
                              fFlat, fSine, fExp)
     GA_1.initialize_from_sample(nprof_gene_pool)
     nprof_initial = util.create_memmap('nprof_initial.npy', dimensions=(GA_1.nIndividuals, nDepths), data_type='float')
