@@ -233,7 +233,7 @@ def main(fname_config):
                                                f_cross_over = GA_1.fCrossOver, f_immigrant = GA_1.fImmigrant,
                                                P_mutation = GA_1.fMutation, mutation_thres = mutation_thres)
                 #n_profile_children_genes = np.array(n_profile_children_genes)
-                print(n_profile_children_genes.shape)
+                print(len(n_profile_children_genes))
                 print(len(n_profile_children_genes[0]), len(zspace_genes))
                 for j in range(GA_1.nIndividuals):
                     nprof_children_genes_j = n_profile_children_genes[j]#TODO: Check that x-y size is equal
