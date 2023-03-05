@@ -177,7 +177,10 @@ def main(fname_config):
                    nprof_override=nprof_override, zprof_override=zprof_override)
     nDepths = len(zprof_simulation)
 
-    nprof_matrix = np.ones((GA_1.nGenerations, GA_1.nIndividuals, nDepths))
+   # nprof_matrix = np.ones((GA_1.nGenerations, GA_1.nIndividuals, nDepths))
+    nprof_matrix = util.create_memmap('testing/paraPropData/nprof_matrix.npy',
+                                      dimensions=(GA_1.nGenerations, GA_1.nIndividuals, nDepths),
+                                      data_type='float')
     nprof_genes_matrix = np.ones((GA_1.nGenerations, GA_1.nIndividuals, GA_0.nGenes))
     S_matrix = np.zeros((GA_1.nGenerations, GA_1.nIndividuals))
     res_list = np.zeros(GA_1.nIndividuals)
@@ -222,6 +225,7 @@ def main(fname_config):
     nCount = 0
     np.save('testing/paraPropData/zprof_pseudodata.npy', zprof_simulation)
     np.save('testing/paraPropData/nprof_psuedodata.npy', nprof_pseudodata)
+
     for i in range(1, GA_1.nGenerations):
         print(i)
         n_profile_parents = nprof_genes_matrix[i-1]
@@ -236,7 +240,6 @@ def main(fname_config):
         res_list = np.zeros(GA_1.nIndividuals)
         for j in range(GA_1.nIndividuals):
             nprof_genes_j = n_profile_children[j]
-            #print(i,j, len(nprof_genes_j), len(zprof_sample_mean))
             nprof_gen_j = create_profile(zprof_simulation, nprof_genes=nprof_genes_j, zprof_genes=zprof_sample_mean,
                                              nprof_override=nprof_override, zprof_override=zprof_override)
             nprof_matrix[i,j] = nprof_gen_j
@@ -252,61 +255,50 @@ def main(fname_config):
         print(i, 'max(S) =', max(S_matrix[i]))
         j_best = np.argmax(S_matrix[i])
         print('Ave Residual, <delta_n> = ', res_list[j_best]*100, '%')
+        if i==0 or i==5 or i % 10 == 0:
+            fig = pl.figure(figsize=(10,8),dpi=120)
+            ax = fig.add_subplot(121)
+            ax2 = fig.add_subplot(122)
+            ax.set_title('Gen:' + str(i) + ' S_max = ' + str(round(S_max[i],3)))
+            ax.plot(nprof_matrix[i, j_best], zprof_simulation, label='Best',c='b')
+            ax.plot(nprof_pseudodata, zprof_simulation, c='k',label='Truth:\nDecimated Guliya profile + Aletsch PS data')
+            ax2.plot((nprof_matrix[i, j_best]-nprof_pseudodata)*100, zprof_simulation, c='b')
+            ax.set_ylim(16, 0)
+            ax2.set_ylim(16,0)
+            ax2.grid()
+            ax.grid()
+            ax.set_xlabel('Ref Index n')
+            ax2.set_xlabel('Ref Index Residuals $\Delta n$')
 
-        fig = pl.figure(figsize=(10,8),dpi=120)
-        ax = fig.add_subplot(121)
-        ax2 = fig.add_subplot(122)
-        ax.set_title('Gen:' + str(i) + ' S_max = ' + str(round(S_max[i],3)))
-        ax.plot(nprof_matrix[i, j_best], zprof_simulation, label='Best',c='b')
-        ax.plot(nprof_pseudodata, zprof_simulation, c='k',label='Truth:\nDecimated Guliya profile + Aletsch PS data')
-        ax2.plot((nprof_matrix[i, j_best]-nprof_pseudodata)*100, zprof_simulation, c='b')
-        ax.set_ylim(16, 0)
-        ax2.set_ylim(16,0)
-        ax2.grid()
-        ax.grid()
-        ax.set_xlabel('Ref Index n')
-        ax2.set_xlabel('Ref Index Residuals $\Delta n$')
-
-        ax.set_ylabel('Depth z [m]')
-        ax.legend()
-        fig.savefig(path2plots +'ref-index_best_results.png')
-        if i == 0 or i == 5 or i%10 == 0:
+            ax.set_ylabel('Depth z [m]')
+            ax.legend()
             fig.savefig(path2plots +'ref-index-best-gen'+str(i)+'.png')
-        pl.close(fig)
+            pl.close(fig)
+            pl.figure(figsize=(8,5),dpi=120)
+            pl.plot(S_max[:nCount],c='r',label='Max')
+            pl.plot(S_mean[:nCount],c='k',label='Mean')
+            pl.plot(S_median[:nCount],c='g',label='Median')
 
-        pl.figure(figsize=(8,5),dpi=120)
-
-        pl.plot(S_max[:nCount],c='r',label='Max')
-        pl.plot(S_mean[:nCount],c='k',label='Mean')
-        pl.plot(S_median[:nCount],c='g',label='Median')
-        S_matrix_plot = []
-        gens = []
-        for k in range(nCount):
-            pl.scatter(float(k)*np.ones(len(S_matrix[k])), S_matrix[k],c='b')
-            gens.append(k)
-            for l in range(GA_1.nIndividuals):
-                S_matrix_plot.append(S_matrix[k,l])
-        pl.grid()
-        pl.xlabel('Generations')
-        pl.ylabel('Score')
-        pl.savefig(path2plots + 'scatter_plot.png')
-        pl.close(fig)
-
+            pl.grid()
+            pl.xlabel('Generations')
+            pl.ylabel('Score')
+            pl.savefig(path2plots + 'scatter_plot.png')
+            pl.close(fig)
         nCount += 1
 
     np.save('testing/paraPropData/S_matrix_ref_index.npy', S_matrix)
-    np.save('testing/paraPropData/nprof_arr.npy', nprof_matrix)
     np.save('testing/paraPropData/nprof_genes_arr.npy', nprof_genes_matrix)
     fig = pl.figure(figsize=(8, 5), dpi=120)
     pl.plot(S_max, c='r', label='Max')
     pl.plot(S_mean, c='k', label='Mean')
     pl.plot(S_median, c='g', label='Median')
+    S_matrix_plot = []
+    gens = []
     for k in range(GA_1.nGenerations):
         pl.scatter(float(k) * np.ones(len(S_matrix[k])), S_matrix[k], c='b')
         for l in range(GA_1.nIndividuals):
             ax.plot(S_median[:nCount], c='g', label='Median')
             gens.append(k)
-
             S_matrix_plot.append(S_matrix[k, l])
     pl.grid()
     pl.savefig(path2plots + 'scatter_plot.png')
