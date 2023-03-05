@@ -72,7 +72,7 @@ def createMatrix(fname_config, n_prof_initial, z_profile, fname_nmatrix, nGenera
     nmatrix_hdf.create_dataset('rxList', data=rxList_positions)
     nmatrix_hdf.close()
 
-def createMatrix2(fname_config, n_prof_initial, genes_initial, z_profile, z_genes, fname_nmatrix,nGenerations):  # creates matrix
+def createMatrix2(fname_config, n_prof_initial, genes_initial, z_profile, z_genes, fname_nmatrix ,nGenerations):  # creates matrix
     nProf = len(n_prof_initial)
     nDepths = len(n_prof_initial[0])
     nmatrix_hdf = h5py.File(fname_nmatrix, 'w')
@@ -83,7 +83,7 @@ def createMatrix2(fname_config, n_prof_initial, genes_initial, z_profile, z_gene
     nmatrix_hdf.create_dataset('n_profile_matrix', data=n_matrix)
     nmatrix_hdf.create_dataset('z_profile', data=z_profile)
 
-    nGenes = len(genes_initial)
+    nGenes = len(genes_initial[0])
     genes_matrix = np.zeros((nGenerations, nProf, nGenes))
     genes_matrix[0] = genes_initial
     nmatrix_hdf.create_dataset('genes_matrix', data=genes_matrix)
