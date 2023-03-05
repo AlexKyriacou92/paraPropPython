@@ -233,7 +233,6 @@ def main(fname_config):
                                                f_cross_over = GA_1.fCrossOver, f_immigrant = GA_1.fImmigrant,
                                                P_mutation = GA_1.fMutation, mutation_thres = mutation_thres)
                 n_profile_children_genes = np.array(n_profile_children_genes)
-                n_profile_matrix[ii_gen] = n_profile_matrix
                 for j in range(GA_1.nIndividuals):
                     nprof_children_genes_j = n_profile_children_genes[j]
                     nprof_children_j = create_profile(zspace_simul, nprof_genes=nprof_children_genes_j,
