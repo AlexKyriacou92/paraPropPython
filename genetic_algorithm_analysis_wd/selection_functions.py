@@ -105,6 +105,7 @@ def selection(prof_list, S_list, prof_list_initial, f_roulette = 0.75, f_elite =
     '''
     nIndividuals = len(S_list) # Number of Individuals in the Generation
     nInitial = len(prof_list_initial)
+    prof_list_initial_l = list(prof_list_initial)
 
     '''
     nParents = int(f_parent * float(nIndividuals))
@@ -167,7 +168,7 @@ def selection(prof_list, S_list, prof_list_initial, f_roulette = 0.75, f_elite =
             names_common.append('cross-bred')
             ii_common += 1
         elif i_operator == 1:
-            prof_c = random.sample(prof_list_initial, 1)[0]
+            prof_c = random.sample(prof_list_initial_l, 1)[0]
             common_list.append(prof_c)
             names_common.append('immigrant')
 
