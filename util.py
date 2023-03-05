@@ -488,13 +488,15 @@ def get_profile_from_file_cut(fname, zmin, zmax):
 def get_profile_from_file_decimate(fname, zmin, zmax, dz_out):
     nprof_cut, zprof_cut = get_profile_from_file_cut(fname, zmin, zmax)
     dz_in = zprof_cut[1]-zprof_cut[0]
+    print(zprof_cut)
+    print(dz_out, dz_in)
     M = int(round(dz_out, 3)/round(dz_in, 3))
     nprof_out = decimate(nprof_cut, M)
     return nprof_out
 
 def save_profile_to_txtfile(zprof, nprof, fname):
     N = len(nprof)
-    with open(fname,'r') as fout:
+    with open(fname,'w+') as fout:
         for i in range(N):
             zi = zprof[i]
             ni = nprof[i]
