@@ -82,8 +82,11 @@ def main(fname_config):
     iceDepth = float(config['GEOMETRY']['iceDepth'])
     dz = float(config['GEOMETRY']['dz'])
 
+    zspace_genes = np.linspace(zMin_genes, zMax_genes, GA_1.nGenes)
+    dz_genes = zspace_genes[1] - zspace_genes[0]
+
     nprof_sample_mean, zprof_sample_mean = util.get_profile_from_file_decimate(fname=fname_nprofile_sampling_mean,
-                                                                                 zmin=zMin_genes, zmax=zMax_genes, dz_out=dz)
+                                                                                 zmin=zMin_genes, zmax=zMax_genes, dz_out=dz_genes)
     #nprof_sample_mean, zprof_sample_mean = do_interpolation_same_depth(zprof_in=zprof_sample_mean0, nprof_in=nprof_sample_mean0, N=GA_1.nGenes)
     #TODO: -> Be careful -> Gens and dz are set indepenently -> fix this
     nStart = 10000  # Starting Sample
@@ -98,11 +101,6 @@ def main(fname_config):
     fExp = float(config['GA']['fExp'])
     S_cutoff = float(config['GA']['S_cutoff'])
     mutation_thres = float(config['GA']['mutation_thres'])
-
-
-
-    zspace_genes = np.linspace(zMin_genes, zMax_genes, GA_1.nGenes)
-    dz_genes = zspace_genes[1]-zspace_genes[0]
 
     zspace_simul = np.arange(0, iceDepth+dz, dz)
     fname_override = config['Override']['fname_override']
