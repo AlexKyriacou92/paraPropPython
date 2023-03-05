@@ -234,7 +234,8 @@ def main(fname_config):
                                                P_mutation = GA_1.fMutation, mutation_thres = mutation_thres)
                 n_profile_children_genes = np.array(n_profile_children_genes)
                 for j in range(GA_1.nIndividuals):
-                    nprof_children_genes_j = n_profile_children_genes[j]
+                    nprof_children_genes_j = n_profile_children_genes[j]#TODO: Check that x-y size is equal
+                    print(len(zspace_simul), len(nprof_children_genes_j), len(zspace_genes), len(nprof_override), len(zprof_override))
                     nprof_children_j = create_profile(zspace_simul, nprof_genes=nprof_children_genes_j,
                                                     zprof_genes=zspace_genes,
                                                     nprof_override=nprof_override,
