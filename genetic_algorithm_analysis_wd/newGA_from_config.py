@@ -142,7 +142,7 @@ def main(fname_config):
         nprof_genes = util.get_profile_from_file_decimate(fname=fname_pseudodata0, zmin=zMin_genes, zmax=zMax_genes, dz_out=dz_genes)
         nprof_pseudodata = create_profile(zspace_simul, nprof_genes=nprof_genes, zprof_genes=zspace_genes,
                                           nprof_override = nprof_override, zprof_override=zprof_override)
-        fname_pseudodata = dir_outfiles0 + 'nprof_pseudodata.txt'
+        fname_pseudodata = dir_outfiles0 + '/' + 'nprof_pseudodata.txt'
         save_profile_to_txtfile(zprof=zspace_simul,nprof=nprof_pseudodata, fname=fname_pseudodata)
 
         # Create Pseudo_Data Bscan
