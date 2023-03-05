@@ -120,6 +120,7 @@ def main(fname_config):
     fname_nmatrix = fname_nmatrix_output
     if os.path.isfile(fname_nmatrix) == True:
         os.system('rm -f ' + fname_nmatrix)
+    print(GA_1.first_generation.shape)
     createMatrix2(fname_config=config_cp, n_prof_initial=nprof_initial,
                   genes_initial=GA_1.first_generation,
                   z_genes=zspace_genes, z_profile=zspace_simul,
@@ -138,12 +139,10 @@ def main(fname_config):
         fname_pseudodata0 = config['INPUT']['fname_pseudodata']
 
         # Create Pseudo_Data Profile
-        nprof_genes, zprof_genes = util.get_profile_from_file_decimate(fname=fname_pseudodata0,
-                                                                                   zmin=zMin_genes, zmax=zMax_genes,
-                                                                                   dz_out=dz_genes)
-        nprof_pseudodata = create_profile(zspace_simul, nprof_genes=nprof_genes, zprof_genes=zprof_genes,
+        nprof_genes = util.get_profile_from_file_decimate(fname=fname_pseudodata0, zmin=zMin_genes, zmax=zMax_genes, dz_out=dz_genes)
+        nprof_pseudodata = create_profile(zspace_simul, nprof_genes=nprof_genes, zprof_genes=zspace_genes,
                                           nprof_override = nprof_override, zprof_override=zprof_override)
-        fname_pseudodata = fname=dir_outfiles0 + 'nprof_pseudodata.txt'
+        fname_pseudodata = dir_outfiles0 + 'nprof_pseudodata.txt'
         save_profile_to_txtfile(zprof=zspace_simul,nprof=nprof_pseudodata, fname=fname_pseudodata)
 
         # Create Pseudo_Data Bscan
