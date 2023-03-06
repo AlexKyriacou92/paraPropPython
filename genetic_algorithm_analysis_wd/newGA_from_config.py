@@ -242,6 +242,7 @@ def main(fname_config):
                                                     zprof_override=zprof_override)
                     n_profile_matrix[ii_gen, j] = nprof_children_j
                     genes_matrix[ii_gen, j] = nprof_children_genes_j
+
                 S_max_list.append(S_max)
                 S_mean = np.mean(S_list)
                 S_var = np.std(S_list)
@@ -266,6 +267,8 @@ def main(fname_config):
 
                 line = str(ii_gen) + '\t' + str(S_max) + '\t' + str(S_mean) + '\t' + str(S_var) + '\t' + str(S_med) + '\n'
                 f_log.write(line)
+
+                nmatrix_hdf.close()
                 for j in range(GA_1.nIndividuals):
                     #Create Command
                     dir_outfiles = dir_outfiles0 + '/' + 'gen' + str(ii_gen)
