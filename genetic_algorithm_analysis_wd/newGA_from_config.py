@@ -226,19 +226,16 @@ def main(fname_config):
                 nprof_parents = genes_matrix[ii_gen-1]
                 S_list = np.array(S_arr[ii_gen - 1])
                 S_max = max(S_list)
-                print(ii_gen - 1)
-                print(nprof_parents, len(nprof_parents))
+
                 n_profile_children_genes = selection(prof_list=nprof_parents, S_list=S_list,
                                                prof_list_initial=nprof_gene_pool,
                                                f_roulette = GA_1.fRoulette,  f_elite = GA_1.fElite,
                                                f_cross_over = GA_1.fCrossOver, f_immigrant = GA_1.fImmigrant,
                                                P_mutation = GA_1.fMutation, mutation_thres = mutation_thres)
                 #n_profile_children_genes = np.array(n_profile_children_genes)
-                print(len(n_profile_children_genes))
-                print(len(n_profile_children_genes[0]), len(zspace_genes))
+
                 for j in range(GA_1.nIndividuals):
                     nprof_children_genes_j = n_profile_children_genes[j]#TODO: Check that x-y size is equal
-                    print(len(zspace_simul), len(nprof_children_genes_j), len(zspace_genes), len(nprof_override), len(zprof_override))
                     nprof_children_j = create_profile(zspace_simul, nprof_genes=nprof_children_genes_j,
                                                     zprof_genes=zspace_genes,
                                                     nprof_override=nprof_override,
