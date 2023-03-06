@@ -192,5 +192,6 @@ def selection(prof_list, S_list, prof_list_initial, f_roulette = 0.75, f_elite =
             names.append(names_common[i])
         new_generation.append(prof_m)
     random.shuffle(new_generation)
-    #return new_generation
-    return new_generation, inds, S_list_sorted, names
+    #return new_generation, inds, S_list_sorted, names
+    return new_generation
+
