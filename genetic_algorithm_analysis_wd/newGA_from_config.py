@@ -289,9 +289,10 @@ def main(fname_config):
             else:
                 print('Queue of jobs: ', nJobs)
                 print('Wait:', tsleep, ' seconds')
-                time.sleep(tsleep)
                 t_cycle += tsleep
                 print('Elapsed time: ', datetime.timedelta(seconds=t_cycle))
+
+                time.sleep(tsleep)
         f_log.close()
         for k in range(len(outfile_list)):
             out_file_k = outfile_list[k]
