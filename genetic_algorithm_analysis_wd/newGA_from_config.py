@@ -61,8 +61,11 @@ def main(fname_config):
     #Create directory to store results later
     results_dir = job_prefix + '_' + time_str
     os.system('mkdir ' + results_dir)
-    fname_pseudo_output = results_dir + '/' + fname_pseudo_output0[:-3] + '_' + time_str + '.h5'
-    fname_nmatrix_output = results_dir + '/' + fname_nmatrix_output0[:-3] + '_' + time_str + '.h5'
+
+    fname_pseudo_output = fname_pseudo_output0[:-3] + '_' + time_str + '.h5'
+    fname_nmatrix_output = fname_nmatrix_output0[:-3] + '_' + time_str + '.h5'
+    #fname_pseudo_output = results_dir + '/' + fname_pseudo_output0[:-3] + '_' + time_str + '.h5'
+    #fname_nmatrix_output = results_dir + '/' + fname_nmatrix_output0[:-3] + '_' + time_str + '.h5'
 
     # Load Genetic Algorithm Properties
     print('load GA parameters')
@@ -254,6 +257,7 @@ def main(fname_config):
                 S_var_list.append(S_var)
                 S_med_list.append(S_med)
 
+                nmatrix_hdf.close()
 
                 gens = np.arange(0, ii_gen, 1)
                 # Make Plots:
@@ -306,15 +310,14 @@ def main(fname_config):
                     fname_out = results_dir + '/' + fname_output_suffix
                     cmd_i = cmd_prefix + ' ' + fname_config + ' ' + fname_nmatrix + ' ' + str(ii_last) + ' ' + str(jj_select) + ' ' + fname_out
 
-                    job_prefix = 'bscan-'
-                    jobname = job_prefix + str(ii_last) + '-' + str(jj_select)
+                    job_prefix2 = 'bscan-'
+                    jobname = job_prefix2 + str(ii_last) + '-' + str(jj_select)
                     sh_file = jobname + '.sh'
                     out_file = results_dir + '/' + 'outfiles' + '/' + jobname + '.out'
                     print(out_file)
                     make_job(sh_file, out_file, jobname, cmd_i)
                     submit_job(sh_file)
                     os.system('rm -f ' + sh_file)
-                nmatrix_hdf.close()
 
                 for j in range(GA_1.nIndividuals):
                     #Create Command
@@ -333,6 +336,11 @@ def main(fname_config):
                     os.system('rm -f ' + sh_file)
                 ii_gen += 1
                 print('Jobs running -> Generation: ', ii_gen)
+
+                fname_pseudo_output2 = results_dir + '/' + fname_pseudo_output0[:-3] + '_' + time_str + '.h5'
+                fname_nmatrix_output2 = results_dir + '/' + fname_nmatrix_output0[:-3] + '_' + time_str + '.h5'
+                os.system('cp ' + fname_pseudo_output + ' ' + fname_pseudo_output2)
+                os.system('cp ' + fname_nmatrix_output + ' ' + fname_nmatrix_output2)
             else:
                 print('Queue of jobs: ', nJobs)
                 print('Wait:', tsleep, ' seconds')
