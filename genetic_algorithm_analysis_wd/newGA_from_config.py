@@ -212,12 +212,21 @@ def main(fname_config):
         f_log = open(fname_log, 'w')
         f_log.write('gen\tS_max\tS_mean\tS_var\tS_med\n')
         f_log.close()
+
+
+        fname_report = results_dir + '/' + 'simul_report.txt'
+        fout = open(fname_report, 'w')
+        fout.write('fname_psuedo_data\tfname_nmatrix\n')
+        fout.write(fname_pseudodata + '\t' + fname_nmatrix + '\n')
+        fout.write('gen\tind\tS\tfname_out\n')
+        fout.close()
         tsleep = 10.
         max_time = 2 * duration_1st_gen
+        t_cycle = 0
+
         while (ii_gen < GA_1.nGenerations) or (S_max < S_cutoff):
             nJobs = countjobs()
             print('Generation', ii_gen, 'Check jobs')
-            t_cycle = 0
 
             if (nJobs == 0) or (t_cycle > max_time):
                 print('Submit Jobs Now \n')
@@ -247,6 +256,7 @@ def main(fname_config):
                                                     zprof_override=zprof_override)
                     n_profile_matrix[ii_gen, j] = nprof_children_j
                     genes_matrix[ii_gen, j] = nprof_children_genes_j
+                t_cycle = 0
 
                 S_max_list.append(S_max)
                 S_mean = np.mean(S_list)
@@ -282,6 +292,7 @@ def main(fname_config):
                 ii_last = ii_gen-1
                 if ii_last == 0 or ii_last == 1 or ii_last == 5 or ii_last%10 == 0:
                     jj_select = np.argmax(np.array(S_arr[ii_last]))
+
                     nprof_best = n_profile_matrix2[ii_last, jj_select]
 
                     fig = pl.figure(figsize=(10,8),dpi=120)
@@ -309,6 +320,11 @@ def main(fname_config):
                     fname_output_suffix2 = 'pseudo_bscan_output_' + str(ii_last) + '_' + str(jj_select) + '.h5'
                     fname_out = results_dir + '/' + fname_output_suffix2
                     cmd_prefix2 = 'python runSim_nProfile_from_nmatrix.py '
+
+                    fout = open(fname_report, 'a')
+                    line_report = str(ii_last) + '\t' + str(jj_select) + '\t' + str(S_max) + '\t' + fname_output_suffix2 + '\n'
+                    fout.write(line_report)
+                    fout.close()
 
                     cmd_i2 = cmd_prefix2 + ' ' + config_cp + ' ' + fname_nmatrix + ' ' + str(ii_last) + ' ' + str(jj_select) + ' ' + fname_out
 
@@ -349,7 +365,7 @@ def main(fname_config):
                 t_cycle += tsleep
                 print('Elapsed seconds: ', t_cycle)
                 print('Elapsed time: ', datetime.timedelta(seconds=t_cycle))
-
+                print('')
                 time.sleep(tsleep)
         f_log.close()
         for k in range(len(outfile_list)):
