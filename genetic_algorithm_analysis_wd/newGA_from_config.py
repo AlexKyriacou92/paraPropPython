@@ -293,11 +293,11 @@ def main(fname_config):
                     ax2.grid()
                     ax2.set_xlabel('Ref Index Residuals $\Delta n$')
 
-                    ax.set_ylim(16, 0)
-                    ax.grid()
-                    ax.set_xlabel('Ref Index n')
-                    ax.set_ylabel('Depth z [m]')
-                    ax.legend()
+                    ax1.set_ylim(16, 0)
+                    ax1.grid()
+                    ax1.set_xlabel('Ref Index n')
+                    ax1.set_ylabel('Depth z [m]')
+                    ax1.legend()
                     fig.savefig(results_dir + '/' + 'ref_index-' + str(ii_last).zfill(3) + '.png')
                     pl.close(fig)
 

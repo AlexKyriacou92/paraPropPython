@@ -27,7 +27,7 @@ def inverse_signal_offset(sig_sim, sig_data, mode='abs'):
 def fitness_correlation(sig_sim, sig_data, mode='abs'):
     return inverse_signal_offset(sig_sim, sig_data, mode)
 
-def fitness_pulse_FT_data(sig_sim, sig_data, mode = 'Correlation'):
+def fitness_pulse_FT_data0(sig_sim, sig_data, mode = 'Correlation'):
     if mode == 'Correlation': # Signal Cross Correlation Method
         sig_multi = abs(sig_sim * sig_data)
         sig_multi_sq = sig_multi**2
@@ -43,4 +43,28 @@ def fitness_pulse_FT_data(sig_sim, sig_data, mode = 'Correlation'):
         sig_multi = abs(sig_sim * sig_data)
         sig_multi_sq = sig_multi ** 2
         S = sum(sig_multi_sq)
+    return S
+
+def fitness_pulse_FT_data(sig_sim, sig_data, mode='Correlation'):
+    nData = len(sig_data)
+    S = 0
+    if mode == 'Correlation': # Signal Cross Correlation Method
+        dot_product = np.zeros(nData)
+        for i in range(nData):
+            dot_product[i] = sig_data[i] * sig_sim[i]
+        dot_prod_sum = abs(sum(dot_product))**2 / sum(abs(sig_data))**2
+        S = dot_prod_sum
+    elif mode == 'Difference':
+        sig_diff_c = sig_data - sig_sim
+        inv_sij = 0
+        for i in range(nData):
+            inv_sij += abs(sig_diff_c[i])/abs(sig_data[i])
+        S = 1/inv_sij**2
+    else:
+        print('WARNING! \n mode should be set to: Correlation or Difference, will default to Correlation')
+        dot_product = np.zeros(nData)
+        for i in range(nData):
+            dot_product[i] = sig_data[i] * sig_sim[i]
+        dot_prod_sum = abs(sum(dot_product)) ** 2 / sum(abs(sig_data)) ** 2
+        S = dot_prod_sum
     return S
