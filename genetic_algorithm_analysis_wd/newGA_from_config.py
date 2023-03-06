@@ -216,6 +216,8 @@ def main(fname_config):
 
         fname_report = results_dir + '/' + 'simul_report.txt'
         fout = open(fname_report, 'w')
+        nOutput = GA_1.nGenerations%10 + 4
+        fout.write('pathto\tnOutput \n' + results_dir + '\t' + str(nOutput) + '\n' + '\n')
         fout.write('fname_psuedo_data\tfname_nmatrix\n')
         fout.write(fname_pseudodata + '\t' + fname_nmatrix + '\n')
         fout.write('gen\tind\tS\tfname_out\n')
@@ -387,26 +389,10 @@ def main(fname_config):
 
     os.system('mv ' + config_cp + ' ' + fname_pseudo_output + ' ' + fname_nmatrix_output + ' ' + results_dir + '/')
 
-    print('Simulating Bscans of Best Results')
-    cmd_sim_best = 'python simulate_best_results.py ' + results_dir + '/' + config_cp + ' '
-    cmd_sim_best += results_dir + '/' + fname_nmatrix_output + ' '
-    cmd_sim_best += results_dir + '/' + fname_pseudo_output + ' '
-    cmd_sim_best += results_dir + '/'
-    cmd_sim_best += str(10)
-    print('running:', cmd_sim_best)
-    os.system(cmd_sim_best)
-
     print('Making Report (plots)')
     cmd_make_report = 'python make_report.py ' + results_dir + '/' + 'simul_report.txt'
     print('running: ', cmd_make_report)
     os.system(cmd_make_report)
-    now = datetime.datetime.now()
-
-    #tend = time.time()
-    #duration_s = tend - tstart
-    #print('Finished at: ', now.strftime('%y.%m.%d %H:%M:%S'))
-    #print('Total run time: ', datetime.timedelta(seconds=duration_s))
-
     return -1
 
 if __name__ == '__main__':
