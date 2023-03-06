@@ -256,7 +256,7 @@ def main(fname_config):
                 S_mean_list.append(S_mean)
                 S_var_list.append(S_var)
                 S_med_list.append(S_med)
-
+                n_profile_matrix2 = np.array(n_profile_matrix)
                 nmatrix_hdf.close()
 
                 gens = np.arange(0, ii_gen, 1)
@@ -282,7 +282,7 @@ def main(fname_config):
                 ii_last = ii_gen-1
                 if ii_last == 0 or ii_last == 1 or ii_last == 5 or ii_last%10 == 0:
                     jj_select = np.argmax(np.array(S_arr[ii_last]))
-                    nprof_best = n_profile_matrix[ii_last, jj_select]
+                    nprof_best = n_profile_matrix2[ii_last, jj_select]
 
                     fig = pl.figure(figsize=(10,8),dpi=120)
                     ax1 = fig.add_subplot(121)
@@ -347,6 +347,7 @@ def main(fname_config):
                 print('Queue of jobs: ', nJobs)
                 print('Wait:', tsleep, ' seconds')
                 t_cycle += tsleep
+                print('Elapsed seconds: ', t_cycle)
                 print('Elapsed time: ', datetime.timedelta(seconds=t_cycle))
 
                 time.sleep(tsleep)
