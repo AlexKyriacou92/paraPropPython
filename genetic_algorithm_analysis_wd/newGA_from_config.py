@@ -290,7 +290,7 @@ def main(fname_config):
                 f_log.close()
                 #Save Simulations from Last Generation
                 ii_last = ii_gen-1
-                if ii_last == 0 or ii_last == 1 or ii_last == 5 or ii_last%10 == 0:
+                if ii_last == 0 or ii_last == 1 or ii_last == 5 or ii_last%10 == 0 or ii_gen+1 == GA_1.nGenerations:
                     jj_select = np.argmax(np.array(S_arr[ii_last]))
 
                     nprof_best = n_profile_matrix2[ii_last, jj_select]
