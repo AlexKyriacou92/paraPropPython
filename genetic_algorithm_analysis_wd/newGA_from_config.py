@@ -61,8 +61,8 @@ def main(fname_config):
     #Create directory to store results later
     results_dir = job_prefix + '_' + time_str
     os.system('mkdir ' + results_dir)
-    fname_pseudo_output = fname_pseudo_output0[:-3] + '_' + time_str + '.h5'
-    fname_nmatrix_output = fname_nmatrix_output0[:-3] + '_' + time_str + '.h5'
+    fname_pseudo_output = results_dir + '/' + fname_pseudo_output0[:-3] + '_' + time_str + '.h5'
+    fname_nmatrix_output = results_dir + '/' + fname_nmatrix_output0[:-3] + '_' + time_str + '.h5'
 
     # Load Genetic Algorithm Properties
     print('load GA parameters')
@@ -203,10 +203,11 @@ def main(fname_config):
         S_var_list = []
         S_med_list = []
 
-        fname_log = results_dir + 'log_report.txt'
-        f_log = open(fname_log,'w')
-        f_log.write('gen\tS_max\tS_mean\tS_var\tS_med\n')
-
+        fname_log = results_dir + '/log_report.txt'
+        #f_log = open(fname_log,'w')
+        #f_log.write('gen\tS_max\tS_mean\tS_var\tS_med\n')
+        with open(fname_log) as f_log:
+            f_log.write('gen\tS_max\tS_mean\tS_var\tS_med\n')
         tsleep = 10.
         max_time = 2 * duration_1st_gen
         while (ii_gen < GA_1.nGenerations) or (S_max < S_cutoff):
@@ -246,10 +247,13 @@ def main(fname_config):
                 S_max_list.append(S_max)
                 S_mean = np.mean(S_list)
                 S_var = np.std(S_list)
-                S_med = np.mean(S_list)
+                S_med = np.median(S_list)
+
                 S_mean_list.append(S_mean)
                 S_var_list.append(S_var)
                 S_med_list.append(S_med)
+
+
                 gens = np.arange(0, ii_gen, 1)
                 # Make Plots:
 
@@ -266,9 +270,51 @@ def main(fname_config):
                 pl.close(fig)
 
                 line = str(ii_gen) + '\t' + str(S_max) + '\t' + str(S_mean) + '\t' + str(S_var) + '\t' + str(S_med) + '\n'
-                f_log.write(line)
+                with open(fname_log) as f_log:
+                    f_log.write(line)
 
+                #Save Simulations from Last Generation
+                ii_last = ii_gen-1
+                if ii_last == 0 or ii_last == 1 or ii_last == 5 or ii_last%10 == 0:
+                    jj_select = np.argmax(np.array(S_arr[ii_last]))
+                    nprof_best = n_profile_matrix[ii_last, jj_select]
+
+                    fig = pl.figure(figsize=(10,8),dpi=120)
+                    ax1 = fig.add_subplot(121)
+                    ax2 = fig.add_subplot(122)
+                    ax1.set_title('S_max = ' + str(round(S_max,3)))
+
+                    ax1.plot(nprof_best, zspace_simul, label='Best')
+                    ax1.plot(nprof_pseudodata, zspace_simul, c='k',label='Truth:\nDecimated Guliya profile + Aletsch PS data')
+                    ax1.set_xlim(0.8, 2.2)
+
+                    ax2.plot((nprof_best-nprof_pseudodata)*100, zspace_simul, c='b')
+                    ax2.set_ylim(16, 0)
+                    ax2.grid()
+                    ax2.set_xlabel('Ref Index Residuals $\Delta n$')
+
+                    ax.set_ylim(16, 0)
+                    ax.grid()
+                    ax.set_xlabel('Ref Index n')
+                    ax.set_ylabel('Depth z [m]')
+                    ax.legend()
+                    fig.savefig(results_dir + '/' + 'ref_index-' + str(ii_last).zfill(3) + '.png')
+                    pl.close(fig)
+
+                    fname_output_suffix = 'pseudo_bscan_output_' + str(ii_last) + '_' + str(jj_select) + '.h5'
+                    fname_out = results_dir + '/' + fname_output_suffix
+                    cmd_i = cmd_prefix + ' ' + fname_config + ' ' + fname_nmatrix + ' ' + str(ii_last) + ' ' + str(jj_select) + ' ' + fname_out
+
+                    job_prefix = 'bscan-'
+                    jobname = job_prefix + str(ii_last) + '-' + str(jj_select)
+                    sh_file = jobname + '.sh'
+                    out_file = results_dir + '/' + 'outfiles' + '/' + jobname + '.out'
+                    print(out_file)
+                    make_job(sh_file, out_file, jobname, cmd_i)
+                    submit_job(sh_file)
+                    os.system('rm -f ' + sh_file)
                 nmatrix_hdf.close()
+
                 for j in range(GA_1.nIndividuals):
                     #Create Command
                     dir_outfiles = dir_outfiles0 + '/' + 'gen' + str(ii_gen)
