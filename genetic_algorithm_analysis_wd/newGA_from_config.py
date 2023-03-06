@@ -306,18 +306,20 @@ def main(fname_config):
                     fig.savefig(results_dir + '/' + 'ref_index-' + str(ii_last).zfill(3) + '.png')
                     pl.close(fig)
 
-                    fname_output_suffix = 'pseudo_bscan_output_' + str(ii_last) + '_' + str(jj_select) + '.h5'
-                    fname_out = results_dir + '/' + fname_output_suffix
-                    cmd_i = cmd_prefix + ' ' + fname_config + ' ' + fname_nmatrix + ' ' + str(ii_last) + ' ' + str(jj_select) + ' ' + fname_out
+                    fname_output_suffix2 = 'pseudo_bscan_output_' + str(ii_last) + '_' + str(jj_select) + '.h5'
+                    fname_out = results_dir + '/' + fname_output_suffix2
+                    cmd_prefix2 = 'python runSim_nProfile_from_nmatrix.py '
+
+                    cmd_i2 = cmd_prefix2 + ' ' + config_cp + ' ' + fname_nmatrix + ' ' + str(ii_last) + ' ' + str(jj_select) + ' ' + fname_out
 
                     job_prefix2 = 'bscan-'
-                    jobname = job_prefix2 + str(ii_last) + '-' + str(jj_select)
-                    sh_file = jobname + '.sh'
-                    out_file = results_dir + '/' + 'outfiles' + '/' + jobname + '.out'
-                    print(out_file)
-                    make_job(sh_file, out_file, jobname, cmd_i)
-                    submit_job(sh_file)
-                    os.system('rm -f ' + sh_file)
+                    jobname2 = job_prefix2 + str(ii_last) + '-' + str(jj_select)
+                    sh_file2 = jobname2 + '.sh'
+                    out_file2 = results_dir + '/' + 'outfiles' + '/' + jobname2 + '.out'
+                    print(out_file2)
+                    make_job(sh_file2, out_file2, jobname2, cmd_i2)
+                    submit_job(sh_file2)
+                    os.system('rm -f ' + sh_file2)
 
                 for j in range(GA_1.nIndividuals):
                     #Create Command
