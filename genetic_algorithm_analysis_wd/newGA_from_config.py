@@ -206,8 +206,9 @@ def main(fname_config):
         fname_log = results_dir + '/log_report.txt'
         #f_log = open(fname_log,'w')
         #f_log.write('gen\tS_max\tS_mean\tS_var\tS_med\n')
-        with open(fname_log) as f_log:
-            f_log.write('gen\tS_max\tS_mean\tS_var\tS_med\n')
+        f_log = open(fname_log, 'w')
+        f_log.write('gen\tS_max\tS_mean\tS_var\tS_med\n')
+        f_log.close()
         tsleep = 10.
         max_time = 2 * duration_1st_gen
         while (ii_gen < GA_1.nGenerations) or (S_max < S_cutoff):
@@ -270,9 +271,9 @@ def main(fname_config):
                 pl.close(fig)
 
                 line = str(ii_gen) + '\t' + str(S_max) + '\t' + str(S_mean) + '\t' + str(S_var) + '\t' + str(S_med) + '\n'
-                with open(fname_log) as f_log:
-                    f_log.write(line)
-
+                f_log = open(fname_log,'a')
+                f_log.write(line)
+                f_log.close()
                 #Save Simulations from Last Generation
                 ii_last = ii_gen-1
                 if ii_last == 0 or ii_last == 1 or ii_last == 5 or ii_last%10 == 0:
