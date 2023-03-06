@@ -51,7 +51,7 @@ def fitness_pulse_FT_data(sig_sim, sig_data, mode='Correlation'):
     if mode == 'Correlation': # Signal Cross Correlation Method
         dot_product = np.zeros(nData)
         for i in range(nData):
-            dot_product[i] = sig_data[i] * sig_sim[i]
+            dot_product[i] = sig_data[i].real * sig_sim[i].real
         dot_prod_sum = abs(sum(dot_product))**2 / sum(abs(sig_data))**2
         S = dot_prod_sum
     elif mode == 'Difference':
@@ -64,7 +64,7 @@ def fitness_pulse_FT_data(sig_sim, sig_data, mode='Correlation'):
         print('WARNING! \n mode should be set to: Correlation or Difference, will default to Correlation')
         dot_product = np.zeros(nData)
         for i in range(nData):
-            dot_product[i] = sig_data[i] * sig_sim[i]
+            dot_product[i] = sig_data[i].real * sig_sim[i].real
         dot_prod_sum = abs(sum(dot_product)) ** 2 / sum(abs(sig_data)) ** 2
         S = dot_prod_sum
     return S
