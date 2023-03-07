@@ -233,12 +233,17 @@ def main(fname_config):
             if (nJobs == 0) or (t_cycle > max_time):
                 print('Submit Jobs Now \n')
                 if t_cycle > max_time and nJobs > 0:
-                    print('Processes still running, N = ', nJobs)
-                    print('Running kill command')
-                    os.system('python kill-jobs.py')
-                    print('Wait')
-                    time.sleep(2*tsleep)
-
+                    kk = 1
+                    nJobs_2 = countjobs()
+                    while nJobs_2 > 0 and kk <= 10:
+                        print('Processes still running, N = ', nJobs)
+                        print('Running kill command')
+                        os.system('python kill-jobs.py')
+                        print('Wait')
+                        time.sleep(tsleep)
+                        nJobs_2 = countjobs()
+                        kk += 1
+                        print(nJobs_2)
                 #APPLY GA SELECTION
                 print('Applying Selection Routines')#TODO: Check
                 nmatrix_hdf = h5py.File(fname_nmatrix, 'r+')
