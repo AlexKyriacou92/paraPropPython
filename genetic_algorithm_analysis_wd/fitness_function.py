@@ -27,7 +27,7 @@ def inverse_signal_offset(sig_sim, sig_data, mode='abs'):
 def fitness_correlation(sig_sim, sig_data, mode='abs'):
     return inverse_signal_offset(sig_sim, sig_data, mode)
 
-def fitness_pulse_FT_data0(sig_sim, sig_data, mode = 'Correlation'):
+def fitness_pulse_FT_data(sig_sim, sig_data, mode = 'Correlation'):
     if mode == 'Correlation': # Signal Cross Correlation Method
         sig_multi = abs(sig_sim * sig_data)
         sig_multi_sq = sig_multi**2
@@ -45,7 +45,7 @@ def fitness_pulse_FT_data0(sig_sim, sig_data, mode = 'Correlation'):
         S = sum(sig_multi_sq)
     return S
 
-def fitness_pulse_FT_data(sig_sim, sig_data, mode='Correlation'):
+def fitness_pulse_FT_data_2(sig_sim, sig_data, mode='Correlation'):
     nData = len(sig_data)
     S = 0
     if mode == 'Correlation': # Signal Cross Correlation Method
