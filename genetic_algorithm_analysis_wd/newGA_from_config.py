@@ -46,12 +46,7 @@ def main(fname_config):
     now = datetime.datetime.now()
     time_str = now.strftime('%y%m%d_%H%M%S')
 
-    #Save config file
-    config_cp = fname_config[:-4] + '_' + time_str + '.txt'
-    os.system('cp ' + fname_config + ' ' + config_cp)
-    print('saving config file to ', config_cp)
-
-    #Set up Simulation Output Files
+    # Set up Simulation Output Files
     print('set up output files')
     sim_mode = config['INPUT']['sim_mode']
     job_prefix = config['INPUT']['prefix']
@@ -61,6 +56,13 @@ def main(fname_config):
     #Create directory to store results later
     results_dir = job_prefix + '_' + time_str
     os.system('mkdir ' + results_dir)
+
+    #Save config file
+    #config_cp = fname_config[:-4] + '_' + time_str + '.txt'
+    config_cp = results_dir + 'config-file' + time_str + '.txt'
+    os.system('cp ' + fname_config + ' ' + config_cp)
+    print('saving config file to ', config_cp)
+
 
     fname_pseudo_output = fname_pseudo_output0[:-3] + '_' + time_str + '.h5'
     fname_nmatrix_output = fname_nmatrix_output0[:-3] + '_' + time_str + '.h5'
@@ -145,7 +147,7 @@ def main(fname_config):
         nprof_genes = util.get_profile_from_file_decimate(fname=fname_pseudodata0, zmin=zMin_genes, zmax=zMax_genes, dz_out=dz_genes)
         nprof_pseudodata = create_profile(zspace_simul, nprof_genes=nprof_genes, zprof_genes=zspace_genes,
                                           nprof_override = nprof_override, zprof_override=zprof_override)
-        fname_pseudodata = dir_outfiles0 + '/' + 'nprof_pseudodata.txt'
+        fname_pseudodata = results_dir + '/' + 'nprof_pseudodata.txt'
         save_profile_to_txtfile(zprof=zspace_simul,nprof=nprof_pseudodata, fname=fname_pseudodata)
 
         # Create Pseudo_Data Bscan
@@ -219,7 +221,7 @@ def main(fname_config):
         nOutput = GA_1.nGenerations%10 + 4
         fout.write('pathto\tnOutput \n' + results_dir + '\t' + str(nOutput) + '\n' + '\n')
         fout.write('fname_psuedo_data\tfname_nmatrix\n')
-        fout.write(fname_pseudodata + '\t' + fname_nmatrix + '\n')
+        fout.write(fname_pseudo_output + '\t' + fname_nmatrix + '\n')
         fout.write('gen\tind\tS\tfname_out\n')
         fout.close()
         tsleep = 10.
