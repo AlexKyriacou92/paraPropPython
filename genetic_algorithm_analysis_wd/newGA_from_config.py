@@ -59,7 +59,7 @@ def main(fname_config):
 
     #Save config file
     #config_cp = fname_config[:-4] + '_' + time_str + '.txt'
-    config_cp = results_dir + 'config-file' + time_str + '.txt'
+    config_cp = results_dir + '/config-file' + time_str + '.txt'
     os.system('cp ' + fname_config + ' ' + config_cp)
     print('saving config file to ', config_cp)
 
