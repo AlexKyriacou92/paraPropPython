@@ -232,23 +232,29 @@ def main(fname_config):
 
             if (nJobs == 0) or (t_cycle > max_time):
                 print('Submit Jobs Now \n')
+                if t_cycle > max_time and nJobs > 0:
+                    print('Processes still running, N = ', nJobs)
+                    print('Running kill command')
+                    os.system('python kill-jobs.py')
+                    print('Wait')
+                    time.sleep(2*tsleep)
 
                 #APPLY GA SELECTION
-                print('Applying Selection Routines')
+                print('Applying Selection Routines')#TODO: Check
                 nmatrix_hdf = h5py.File(fname_nmatrix, 'r+')
                 S_arr = np.array(nmatrix_hdf['S_arr'])
                 n_profile_matrix = nmatrix_hdf['n_profile_matrix']
                 genes_matrix = nmatrix_hdf['genes_matrix']
-                nprof_parents = genes_matrix[ii_gen-1]
+                nprof_parents = genes_matrix[ii_gen - 1]
                 S_list = np.array(S_arr[ii_gen - 1])
                 S_max = max(S_list)
 
                 n_profile_children_genes = selection(prof_list=nprof_parents, S_list=S_list,
-                                               prof_list_initial=nprof_gene_pool,
-                                               f_roulette = GA_1.fRoulette,  f_elite = GA_1.fElite,
-                                               f_cross_over = GA_1.fCrossOver, f_immigrant = GA_1.fImmigrant,
-                                               P_mutation = GA_1.fMutation, mutation_thres = mutation_thres)
-                #n_profile_children_genes = np.array(n_profile_children_genes)
+                                                     prof_list_initial=nprof_gene_pool,
+                                                     f_roulette=GA_1.fRoulette, f_elite=GA_1.fElite,
+                                                     f_cross_over=GA_1.fCrossOver, f_immigrant=GA_1.fImmigrant,
+                                                     P_mutation=GA_1.fMutation, mutation_thres=mutation_thres)
+
 
                 for j in range(GA_1.nIndividuals):
                     nprof_children_genes_j = n_profile_children_genes[j]#TODO: Check that x-y size is equal
