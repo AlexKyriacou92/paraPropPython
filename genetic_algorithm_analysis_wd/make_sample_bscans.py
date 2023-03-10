@@ -35,7 +35,7 @@ if len(sys.argv) == 2:
     nOutput = 10
 elif len(sys.argv) == 3:
     path2dir = sys.argv[1]
-    nOutput = sys.argv[2]
+    nOutput = int(sys.argv[2])
 else:
     print('error, incorrect arg number: ', len(sys.argv), ', should be 2 or 3')
     print('correct input: python ', sys.argv[0], '<path2dir> <nOutput? = 10>')
