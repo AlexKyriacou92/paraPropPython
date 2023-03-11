@@ -315,16 +315,16 @@ def main(fname_config):
                     ax2 = fig.add_subplot(122)
                     ax1.set_title('S_max = ' + str(round(S_max,3)))
 
-                    ax1.plot(nprof_best, zspace_simul, label='Best')
+                    ax1.plot(nprof_best, zspace_simul, label='Best',c='b')
                     ax1.plot(nprof_pseudodata, zspace_simul, c='k',label='Truth:\nDecimated Guliya profile + Aletsch PS data')
-                    ax1.set_xlim(0.8, 2.2)
+                    ax1.set_xlim(1.1, 1.9)
 
                     ax2.plot((nprof_best-nprof_pseudodata)*100, zspace_simul, c='b')
-                    ax2.set_ylim(16, 0)
+                    ax2.set_ylim(18, 0)
                     ax2.grid()
                     ax2.set_xlabel('Ref Index Residuals $\Delta n$')
 
-                    ax1.set_ylim(16, 0)
+                    ax1.set_ylim(18, 0)
                     ax1.grid()
                     ax1.set_xlabel('Ref Index n')
                     ax1.set_ylabel('Depth z [m]')
