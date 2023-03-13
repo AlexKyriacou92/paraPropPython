@@ -39,11 +39,11 @@ else:
     sys.exit()
 #==============================================
 print(fname_pseudo_data, os.path.isfile(fname_pseudo_data))
-n_matrix_hdf = h5py.File(fname_n_matrix,'r') #The matrix holding n_profiles
-n_profile_matrix = np.array(n_matrix_hdf.get('n_profile_matrix'))
-n_profile_ij = n_profile_matrix[ii_generation,jj_select] #The Individual (n profile) contains genes (n values per z)
-z_profile_ij = np.array(n_matrix_hdf.get('z_profile'))
-n_matrix_hdf.close()
+with h5py.File(fname_n_matrix,'r') as n_matrix_hdf:
+    n_matrix_hdf = h5py.File(fname_n_matrix,'r') #The matrix holding n_profiles
+    n_profile_matrix = np.array(n_matrix_hdf.get('n_profile_matrix'))
+    n_profile_ij = n_profile_matrix[ii_generation,jj_select] #The Individual (n profile) contains genes (n values per z)
+    z_profile_ij = np.array(n_matrix_hdf.get('z_profile'))
 
 nGenes = len(n_profile_ij)
 
