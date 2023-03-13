@@ -1,8 +1,0 @@
-../paraPropPython.py:332: RuntimeWarning: divide by zero encountered in double_scalars
-  centerLmbda0 = centerLmbda/abs(self.n0)
-Traceback (most recent call last):
-  File "runSim_nProfile_FT.py", line 65, in <module>
-    sim.set_dipole_source_profile(tx_signal.frequency, sourceDepth)  # Set Source Profile
-  File "../paraPropPython.py", line 338, in set_dipole_source_profile
-    nPoints = int((centerLmbda0/2) / self.dz)
-OverflowError: cannot convert float infinity to integer

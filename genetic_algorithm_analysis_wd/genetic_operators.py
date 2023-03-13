@@ -57,6 +57,28 @@ def flat_mutation(prof_in, mutation_thres, nmin = 1.2, nmax=1.8):
             prof_out[i] = prof_in[i]
     return prof_out
 
+def fluctuation_mutation(prof_in, mutation_thres, mutation_var):
+    N = len(prof_in)
+    prof_out = np.ones(N)
+    M = 100
+    for i in range(N):
+        r = random()
+        if r > mutation_thres:
+            gaussian_dist = np.random.normal(prof_in[i], mutation_var, M)
+            ii = 1
+            n_ii = 1
+            while ii < 2:
+                jj = randint(0, M-1)
+                n_jj = gaussian_dist[jj]
+                if n_jj < 1.8 and n_jj > 1.2:
+                    n_ii = n_jj
+                    ii += 1
+            prof_out[i] = n_ii
+        else:
+            prof_out[i] = prof_in[i]
+    return prof_out
+
+
 def clone(prof_in):
     prof_out = prof_in
     return prof_out

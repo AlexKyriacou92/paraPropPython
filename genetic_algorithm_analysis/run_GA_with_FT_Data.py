@@ -104,26 +104,37 @@ t_sleep = nMinutes * minutes_s
 while jj < nGens:
     nJobs = countjobs()
     if nJobs == 0:
-        nmatrix_hdf = h5py.File(fname_nmatrix, 'r+')
-        S_arr = nmatrix_hdf['S_arr']
-        n_profile_matrix = nmatrix_hdf['n_profile_matrix']
+        if jj == 1:
+            nmatrix_hdf = h5py.File(fname_nmatrix, 'r+')
+            n_profile_matrix = nmatrix_hdf['n_profile_matrix']
+            n_profile_parents = n_profile_matrix[jj-1]
+            nmatrix_hdf.close()
+            for ii in range(nIndividuals):
+                fname_shell = test_job_data(prefix='test', config_file=fname_config, bscan_data_file=fname_data,
+                                            nprof_matrix_file=fname_nmatrix, gene=jj, individual=ii)
+                submit_job(fname_shell)
+            jj += 1
+        else:
+            nmatrix_hdf = h5py.File(fname_nmatrix, 'r+')
+            S_arr = nmatrix_hdf['S_arr']
+            n_profile_matrix = nmatrix_hdf['n_profile_matrix']
 
-        n_profile_initial = n_profile_matrix[0]
-        n_profile_parents = n_profile_matrix[jj - 1]
-        S_list = S_arr[jj - 1]
-        print(jj - 1)
+            n_profile_initial = n_profile_matrix[0]
+            n_profile_parents = n_profile_matrix[jj - 1]
+            S_list = S_arr[jj - 1]
+            print(jj - 1)
 
-        #n_profile_children = roulette(n_profile_parents, S_list, n_profile_initial)
-        n_profile_children = selection(prof_list=n_profile_parents, S_list=S_list, prof_list_initial=n_prof_pool)
-        n_profile_matrix[jj] = n_profile_children
-        nmatrix_hdf.close()
+            #n_profile_children = roulette(n_profile_parents, S_list, n_profile_initial)
+            n_profile_children = selection(prof_list=n_profile_parents, S_list=S_list, prof_list_initial=n_prof_pool)
+            n_profile_matrix[jj] = n_profile_children
+            nmatrix_hdf.close()
 
-        nIndividuals = len(n_profile_children)
-        for ii in range(nIndividuals):
-            fname_shell = test_job_data(prefix='test', config_file=fname_config, bscan_data_file=fname_data,
-                                   nprof_matrix_file=fname_nmatrix, gene=jj, individual=ii)
-            submit_job(fname_shell)
-        jj += 1
+            nIndividuals = len(n_profile_children)
+            for ii in range(nIndividuals):
+                fname_shell = test_job_data(prefix='test', config_file=fname_config, bscan_data_file=fname_data,
+                                       nprof_matrix_file=fname_nmatrix, gene=jj, individual=ii)
+                submit_job(fname_shell)
+            jj += 1
     else:
         print('generation: ', jj-1, ',', nJobs, 'remaining, wait ', t_sleep, ' seconds')
         print(datetime.datetime.now())

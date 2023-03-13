@@ -278,6 +278,13 @@ class bscan_rxList: #This one is a nTx x nRx dimension bscan
         ascan = self.bscan_sig[txNum, rxNum]
         return ascan
 
+    def bscan_parallel(self, xRx):
+        self.bscan_plot = np.zeros((self.nTX, self.tx_signal.nSamples), dtype='complex')
+        #ii_rx_x = util.findNearest(self.rx_ranges, xRx)
+        for i in range(self.nTX):
+            self.bscan_plot[i] = self.bscan_sig[i, i, :]
+        return self.bscan_plot
+
 
 class bscan:
     def load_sim(self, fname):

@@ -136,6 +136,7 @@ def main(fname_config):
         profile_data = np.genfromtxt(fname_pseudodata)
         hdf_nmatrix.create_dataset('reference_data',data=profile_data)
         hdf_nmatrix.close()
+
         # Next -> Calculate list of S parameters
 
         ii_gen = 0  # Zeroth Generation

@@ -18,9 +18,10 @@ from scipy.interpolate import interp1d
 
 #fname_pseudo = sys.argv[1]
 #fname_report = sys.argv[2]
-fname_report = sys.argv[1]
-
-#fname_report = pathto_report + 'simul_report.txt'
+#fname_report = sys.argv[1]
+path2report = sys.argv[1]
+#path2report = sys.argv[2]
+fname_report = path2report + 'simul_report.txt'
 #fname_sim = sys.argv[2]
 #path2report = sys.argv[3]
 
@@ -104,7 +105,7 @@ f_report = open(fname_report,'r')
 next(f_report)
 line_2 = f_report.readline()
 cols_2 = line_2.split()
-path2report = cols_2[0]
+#path2report = cols_2[0]
 
 report_dir0 = path2report + 'report'
 if os.path.isdir(report_dir0) == False:
@@ -123,7 +124,8 @@ next(f_report)
 #next(f_report)
 
 #Plot n-matrix
-hdf_nmatrix = h5py.File(fname_nmatrix, 'r')
+print(path2report + fname_nmatrix)
+hdf_nmatrix = h5py.File(path2report+fname_nmatrix, 'r')
 
 n_profile_matrix = np.array(hdf_nmatrix.get('n_profile_matrix'))
 S_nmatrix = np.array(hdf_nmatrix.get('S_arr'))
@@ -136,11 +138,14 @@ signalPulse = np.array(hdf_nmatrix.get('signalPulse'))
 tspace = np.array(hdf_nmatrix.get('tspace'))
 source_depths = np.array(hdf_nmatrix.get('source_depths'))
 
-fname_config = path2report + hdf_nmatrix.attrs['config_file']
+#fname_config = path2report + hdf_nmatrix.attrs['config_file']
+fname_config = path2report + 'config-file.txt'
 print(fname_config)
+print(os.path.isfile(fname_config))
+#paraPropPython_output/GA_analysis/newGA/gul_230308_000911/config-file.txt
+#paraPropPython_output/GA_analysis/newGA/gul_230308_000911/config-file.txt
 config = configparser.ConfigParser()
 config.read(fname_config)
-print(os.path.isfile(fname_config))
 
 input_config = config['INPUT']
 print(input_config)
@@ -230,7 +235,7 @@ pl.close()
 #======================================================
 
 sim_bscan_pseudo = bscan_rxList()
-sim_bscan_pseudo.load_sim(fname_pseudo)
+sim_bscan_pseudo.load_sim(path2report+fname_pseudo)
 tspace = sim_bscan_pseudo.tx_signal.tspace
 tx_depths = sim_bscan_pseudo.tx_depths
 nSamples = sim_bscan_pseudo.nSamples
