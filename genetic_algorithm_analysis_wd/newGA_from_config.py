@@ -59,10 +59,10 @@ def main(fname_config):
 
     #Save config file
     #config_cp = fname_config[:-4] + '_' + time_str + '.txt'
-    config_cp = results_dir + '/config-file' + time_str + '.txt'
+    #config_cp = results_dir + '/config-file' + time_str + '.txt'
+    config_cp = results_dir + '/config-file.txt'
     os.system('cp ' + fname_config + ' ' + config_cp)
     print('saving config file to ', config_cp)
-
 
     fname_pseudo_output = fname_pseudo_output0[:-3] + '_' + time_str + '.h5'
     fname_nmatrix_output = fname_nmatrix_output0[:-3] + '_' + time_str + '.h5'
