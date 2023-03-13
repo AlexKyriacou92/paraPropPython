@@ -306,6 +306,8 @@ def main(fname_config):
                 #Save Simulations from Last Generation
                 ii_last = ii_gen-1
                 if ii_last == 0 or ii_last == 1 or ii_last == 5 or ii_last%10 == 0 or ii_gen+1 == GA_1.nGenerations:
+                    fname_nmatrix2 = fname_nmatrix[:-3] + '_2.h5'
+                    os.system('cp ' + fname_nmatrix + ' ' + fname_nmatrix2)
                     jj_select = np.argmax(np.array(S_arr[ii_last]))
 
                     nprof_best = n_profile_matrix2[ii_last, jj_select]
@@ -341,7 +343,7 @@ def main(fname_config):
                     fout.write(line_report)
                     fout.close()
 
-                    cmd_i2 = cmd_prefix2 + ' ' + config_cp + ' ' + fname_nmatrix + ' ' + str(ii_last) + ' ' + str(jj_select) + ' ' + fname_out
+                    cmd_i2 = cmd_prefix2 + ' ' + config_cp + ' ' + fname_nmatrix2 + ' ' + str(ii_last) + ' ' + str(jj_select) + ' ' + fname_out
 
                     job_prefix2 = 'bscan-'
                     jobname2 = job_prefix2 + str(ii_last) + '-' + str(jj_select)
