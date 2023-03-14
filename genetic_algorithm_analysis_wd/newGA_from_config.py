@@ -304,6 +304,8 @@ def main(fname_config):
                 f_log.write(line)
                 f_log.close()
                 #Save Simulations from Last Generation
+
+                '''
                 ii_last = ii_gen-1
                 if ii_last == 0 or ii_last == 1 or ii_last == 5 or ii_last%10 == 0 or ii_gen+1 == GA_1.nGenerations:
                     fname_nmatrix2 = fname_nmatrix[:-3] + '_2.h5'
@@ -353,6 +355,7 @@ def main(fname_config):
                     make_job(sh_file2, out_file2, jobname2, cmd_i2)
                     submit_job(sh_file2)
                     os.system('rm -f ' + sh_file2)
+                '''
 
                 for j in range(GA_1.nIndividuals):
                     #Create Command
