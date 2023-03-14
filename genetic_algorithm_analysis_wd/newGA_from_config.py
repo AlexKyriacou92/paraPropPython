@@ -281,7 +281,10 @@ def main(fname_config):
                 S_mean_list.append(S_mean)
                 S_var_list.append(S_var)
                 S_med_list.append(S_med)
-                n_profile_matrix2 = np.array(n_profile_matrix)
+
+                #n_profile_matrix2 = np.array(n_profile_matrix)
+                #Note -> ^^ is necessary if you want to save simulations as you go
+
                 nmatrix_hdf.close()
 
                 gens = np.arange(0, ii_gen, 1)
