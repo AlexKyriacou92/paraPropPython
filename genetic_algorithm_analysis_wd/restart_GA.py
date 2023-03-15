@@ -93,7 +93,8 @@ def main(fname_config, fname_nmatrix, fname_pseudo_output, path2dir):
         cmd_prefix = 'python runSim_nProfile_pseudodata.py '
         dir_outfiles0 = path2dir + '/outfiles'
 
-        for ii_gen in range(nGens_complete, nGens_total):
+        for ii in range(nGens_complete, nGens_total):
+            ii_gen = ii - 1
             # APPLY GA SELECTION
             print('Applying Selection Routines')  # TODO: Check
             gens.append(ii_gen)
