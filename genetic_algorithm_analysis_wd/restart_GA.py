@@ -93,8 +93,7 @@ def main(fname_config, fname_nmatrix, fname_pseudo_output, path2dir):
         cmd_prefix = 'python runSim_nProfile_pseudodata.py '
         dir_outfiles0 = path2dir + '/outfiles'
 
-        for ii in range(nGens_complete, nGens_total):
-            ii_gen = ii - 1
+        for ii_gen in range(nGens_complete-1, nGens_total):
             # APPLY GA SELECTION
             print('Applying Selection Routines')  # TODO: Check
             gens.append(ii_gen)
@@ -169,7 +168,7 @@ def main(fname_config, fname_nmatrix, fname_pseudo_output, path2dir):
             nJobs = countjobs()
             t_cycle = 0
             tsleep = 10
-            if ii_gen == nGens_complete:
+            if ii_gen == nGens_complete-1:
                 while nJobs > 0:
                     print('Queue of jobs: ', nJobs)
                     print('Wait:', tsleep, ' seconds')
