@@ -97,51 +97,56 @@ def main(fname_config, fname_nmatrix, fname_pseudo_output, path2dir):
             # APPLY GA SELECTION
             print('Applying Selection Routines')  # TODO: Check
             gens.append(ii_gen)
-            with h5py.File(fname_nmatrix, 'r+') as nmatrix_hdf:
-                S_arr = np.array(nmatrix_hdf['S_arr'])
-                n_profile_matrix = nmatrix_hdf['n_profile_matrix']
-                genes_matrix = nmatrix_hdf['genes_matrix']
-                nprof_parents = genes_matrix[ii_gen - 1]
-                S_list = np.array(S_arr[ii_gen - 1])
-                if np.all(S_list == 0) == True:
-                    print('error, failure to run last generation, exiting')
-                    sys.exit()
-                S_max = max(S_list)
+            #with h5py.File(fname_nmatrix, 'r+') as nmatrix_hdf:
+            nmatrix_hdf = h5py.File(fname_nmatrix, 'r+')
+            S_arr = np.array(nmatrix_hdf['S_arr'])
+            n_profile_matrix = nmatrix_hdf['n_profile_matrix']
+            genes_matrix = nmatrix_hdf['genes_matrix']
+            nprof_parents = genes_matrix[ii_gen - 1]
+            S_list = np.array(S_arr[ii_gen - 1])
+            print(S_list)
+            if np.all(S_list == 0) == True:
+                print('error, failure to run last generation, exiting')
+                sys.exit()
+            S_max = max(S_list)
 
-                n_profile_children_genes = selection(prof_list=nprof_parents, S_list=S_list,
-                                                     prof_list_initial=nprof_gene_pool,
-                                                     f_roulette=GA_1.fRoulette, f_elite=GA_1.fElite,
-                                                     f_cross_over=GA_1.fCrossOver, f_immigrant=GA_1.fImmigrant,
-                                                     P_mutation=GA_1.fMutation, mutation_thres=mutation_thres)
+            n_profile_children_genes = selection(prof_list=nprof_parents, S_list=S_list,
+                                                 prof_list_initial=nprof_gene_pool,
+                                                 f_roulette=GA_1.fRoulette, f_elite=GA_1.fElite,
+                                                 f_cross_over=GA_1.fCrossOver, f_immigrant=GA_1.fImmigrant,
+                                                 P_mutation=GA_1.fMutation, mutation_thres=mutation_thres)
 
-                for j in range(GA_1.nIndividuals):
-                    nprof_children_genes_j = n_profile_children_genes[j]  # TODO: Check that x-y size is equal
-                    nprof_children_j = create_profile(zspace_simul, nprof_genes=nprof_children_genes_j,
-                                                      zprof_genes=zspace_genes,
-                                                      nprof_override=nprof_override,
-                                                      zprof_override=zprof_override)
-                    n_profile_matrix[ii_gen, j] = nprof_children_j
-                    genes_matrix[ii_gen, j] = nprof_children_genes_j
-                jj_best = np.argmax(S_arr)
-                S_max_list.append(S_max)
-                S_mean = np.mean(S_list)
-                S_var = np.std(S_list)
-                S_med = np.median(S_list)
+            for j in range(GA_1.nIndividuals):
+                nprof_children_genes_j = n_profile_children_genes[j]  # TODO: Check that x-y size is equal
+                nprof_children_j = create_profile(zspace_simul, nprof_genes=nprof_children_genes_j,
+                                                  zprof_genes=zspace_genes,
+                                                  nprof_override=nprof_override,
+                                                  zprof_override=zprof_override)
+                n_profile_matrix[ii_gen, j] = nprof_children_j
+                genes_matrix[ii_gen, j] = nprof_children_genes_j
+            jj_best = np.argmax(S_arr)
+            S_max_list.append(S_max)
+            S_mean = np.mean(S_list)
+            S_var = np.std(S_list)
+            S_med = np.median(S_list)
 
-                S_mean_list.append(S_mean)
-                S_var_list.append(S_var)
-                S_med_list.append(S_med)
-                fname_log = path2dir + '/log_report.txt'
-                with open(fname_log, 'a') as f_log:
-                    line = str(ii_gen) + '\t' + str(S_max) + '\t' + str(S_mean) + '\t' + str(S_var) + '\t' + str(S_med) + '\n'
-                    f_log.write(line)
+            S_mean_list.append(S_mean)
+            S_var_list.append(S_var)
+            S_med_list.append(S_med)
+            fname_log = path2dir + '/log_report.txt'
 
+            with open(fname_log, 'a') as f_log:
+                line = str(ii_gen) + '\t' + str(S_max) + '\t' + str(S_mean) + '\t' + str(S_var) + '\t' + str(
+                    S_med) + '\n'
+                f_log.write(line)
 
-                fname_report = path2dir + '/' + 'simul_report.txt'
-                if ii_gen == 0 or ii_gen == 1 or ii_gen == 5 or ii_gen % 10 == 0 or ii_gen + 1 == GA_1.nGenerations:
-                    with open(fname_report,'a') as f_report:
-                        line = str(ii_gen) + '\t' + str(jj_best) + '\t' + str(S_max) + '\n'
-                        f_report.write(line)
+            fname_report = path2dir + '/' + 'simul_report.txt'
+            if ii_gen == 0 or ii_gen == 1 or ii_gen == 5 or ii_gen % 10 == 0 or ii_gen + 1 == GA_1.nGenerations:
+                with open(fname_report, 'a') as f_report:
+                    line = str(ii_gen) + '\t' + str(jj_best) + '\t' + str(S_max) + '\n'
+                    f_report.write(line)
+            nmatrix_hdf.close()
+
 
             for j in range(GA_1.nIndividuals):
                 # Create Command
@@ -237,18 +242,20 @@ else:
     sys.exit()
     
 
-with h5py.File(fname_nmatrix) as nmatrix_hdf:
-    print('Calculate Completed Generations')
-    S_arr = nmatrix_hdf['S_arr']
-    nGens_total = len(S_arr)
-    nGens_complete = 0
-    for i in range(nGens_total):
-        S_arr_gen = S_arr[i]
-        if np.all(S_arr_gen == 0) == False:
-            nGens_complete += 1
-        else:
-            break
-    print('Generations Completed: ', nGens_complete)
+#with h5py.File(fname_nmatrix) as nmatrix_hdf:
+print('Calculate Completed Generations')
+nmatrix_hdf = h5py.File(fname_nmatrix, 'r')
+S_arr = nmatrix_hdf['S_arr']
+nGens_total = len(S_arr)
+nGens_complete = 0
+for i in range(nGens_total):
+    S_arr_gen = S_arr[i]
+    if np.all(S_arr_gen == 0) == False:
+        nGens_complete += 1
+    else:
+        break
+print('Generations Completed: ', nGens_complete)
+nmatrix_hdf.close()
 
 if __name__ == '__main__':
     print('Begin Genetic Algorithm Analysis')
