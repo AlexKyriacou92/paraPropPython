@@ -27,61 +27,7 @@ import util
 from util import get_profile_from_file, smooth_padding, do_interpolation_same_depth
 from util import save_profile_to_txtfile
 
-if len(sys.argv) == 2:
-    path2dir = sys.argv[1]
-    fname_config = path2dir + 'config-file.txt'
-    if os.path.isfile(fname_config) == False:
-        print('error, config file', fname_config, 'does not exist')
-        sys.exit()
-elif len(sys.argv) == 3:
-    path2dir = sys.argv[1]
-    fname_config = sys.argv[2] #Override Config File, must include full path!
-    if os.path.isfile(fname_config) == False:
-        print('error, override config file', fname_config, 'does not exist')
-        sys.exit()
-else:
-    print('error! Must specific path to directory, arg number must be: 1 or 2')
-    print('python ', sys.argv[0], ' <path2simul> <new_configfile.txt?>')
-    sys.exit()
-    
-fname_report = path2dir + 'simul_report.txt'
-if os.path.isfile(fname_report) == True:
-    with open(fname_report, 'r') as f_report:
-        next(f_report)
-        print(f_report.readline())
-        next(f_report)
-        print(f_report.readline())
-        col_files = f_report.split()
-        fname_pseudo_output_suffix = col_files[0]
-        fname_pseudo_output = path2dir + fname_pseudo_output_suffix
-        if os.path.isfile(fname_pseudo_output) == False:
-            print('error, ', fname_pseudo_output, 'does not exist')
-            sys.exit()
-        fname_nmatrix_suffix = col_files[1]
-        fname_nmatrix = path2dir + fname_pseudo_output
-        if os.path.isfile(fname_nmatrix) == False:
-            print('error,', fname_nmatrix, 'does not exist')
-            sys.exit()
-else:
-    print('error, ', fname_report, 'does not exist')
-    sys.exit()
-    
-
-with h5py.File(fname_nmatrix) as nmatrix_hdf:
-    print('Calculate Completed Generations')
-    S_arr = nmatrix_hdf['S_arr']
-    nGens_total = len(S_arr)
-    nGens_complete = 0
-    for i in range(nGens_total):
-        S_arr_gen = S_arr[i]
-        if np.all(S_arr_gen == 0) == False:
-            nGens_complete += 1
-        else:
-            break
-    print('Generations Completed: ', nGens_complete)
-    
-    
-def main(fname_config, fname_nmatrix, fname_pseudo):
+def main(fname_config, fname_nmatrix, fname_pseudo_output, path2dir):
     config = configparser.ConfigParser()
     config.read(fname_config)
     # Step 1 -> Restart Initialization
@@ -134,16 +80,14 @@ def main(fname_config, fname_nmatrix, fname_pseudo):
     sim_mode = config['INPUT']['sim_mode']
     job_prefix = config['INPUT']['prefix']
 
-    S_max = 0
     S_max_list = []
     S_mean_list = []
     S_var_list = []
     S_med_list = []
     gens = []
 
-    t_cycle = 0
     t_max = 0
-
+    
     if sim_mode == 'pseudo':
 
         cmd_prefix = 'python runSim_nProfile_pseudodata.py '
@@ -154,7 +98,6 @@ def main(fname_config, fname_nmatrix, fname_pseudo):
             print('Applying Selection Routines')  # TODO: Check
             gens.append(ii_gen)
             with h5py.File(fname_nmatrix, 'r+') as nmatrix_hdf:
-                nmatrix_hdf = h5py.File(fname_nmatrix, 'r+')
                 S_arr = np.array(nmatrix_hdf['S_arr'])
                 n_profile_matrix = nmatrix_hdf['n_profile_matrix']
                 genes_matrix = nmatrix_hdf['genes_matrix']
@@ -188,21 +131,17 @@ def main(fname_config, fname_nmatrix, fname_pseudo):
                 S_mean_list.append(S_mean)
                 S_var_list.append(S_var)
                 S_med_list.append(S_med)
-                name_log = results_dir + '/log_report.txt'
+                fname_log = path2dir + '/log_report.txt'
+                with open(fname_log, 'a') as f_log:
+                    line = str(ii_gen) + '\t' + str(S_max) + '\t' + str(S_mean) + '\t' + str(S_var) + '\t' + str(S_med) + '\n'
+                    f_log.write(line)
 
-                f_log = open(fname_log, 'w')
-                f_log.write('gen\tS_max\tS_mean\tS_var\tS_med\n')
-                f_log.close()
 
-
-                fname_report = results_dir + '/' + 'simul_report.txt'
-                fout = open(fname_report, 'w')
-                nOutput = GA_1.nGenerations%10 + 4
-                fout.write('pathto\tnOutput \n' + results_dir + '\t' + str(nOutput) + '\n' + '\n')
-                fout.write('fname_psuedo_data\tfname_nmatrix\n')
-                fout.write(fname_pseudo_output + '\t' + fname_nmatrix + '\n')
-                fout.write('gen\tind\tS\tfname_out\n')
-                fout.close()
+                fname_report = path2dir + '/' + 'simul_report.txt'
+                if ii_gen == 0 or ii_gen == 1 or ii_gen == 5 or ii_gen % 10 == 0 or ii_gen + 1 == GA_1.nGenerations:
+                    with open(fname_report,'a') as f_report:
+                        line = str(ii_gen) + '\t' + str(jj_best) + '\t' + str(S_max) + '\n'
+                        f_report.write(line)
 
             for j in range(GA_1.nIndividuals):
                 # Create Command
@@ -256,3 +195,62 @@ def main(fname_config, fname_nmatrix, fname_pseudo):
                         print('Killing jobs, sleep for', datetime.timedelta(seconds=t_sleep2))
                         if nJobs == 0:
                             break
+
+if len(sys.argv) == 2:
+    path2dir = sys.argv[1]
+    fname_config = path2dir + 'config-file.txt'
+    if os.path.isfile(fname_config) == False:
+        print('error, config file', fname_config, 'does not exist')
+        sys.exit()
+elif len(sys.argv) == 3:
+    path2dir = sys.argv[1]
+    fname_config = sys.argv[2] #Override Config File, must include full path!
+    if os.path.isfile(fname_config) == False:
+        print('error, override config file', fname_config, 'does not exist')
+        sys.exit()
+else:
+    print('error! Must specific path to directory, arg number must be: 1 or 2')
+    print('python ', sys.argv[0], ' <path2simul> <new_configfile.txt?>')
+    sys.exit()
+    
+fname_report = path2dir + 'simul_report.txt'
+if os.path.isfile(fname_report) == True:
+    with open(fname_report, 'r') as f_report:
+        next(f_report)
+        print(f_report.readline())
+        next(f_report)
+        print(f_report.readline())
+        line0 = f_report.readline()
+        col_files = line0.split()
+        fname_pseudo_output_suffix = col_files[0]
+        fname_pseudo_output = path2dir + fname_pseudo_output_suffix
+        if os.path.isfile(fname_pseudo_output) == False:
+            print('error, ', fname_pseudo_output, 'does not exist')
+            sys.exit()
+        fname_nmatrix_suffix = col_files[1]
+        fname_nmatrix = path2dir + fname_nmatrix_suffix
+        if os.path.isfile(fname_nmatrix) == False:
+            print('error,', fname_nmatrix, 'does not exist')
+            sys.exit()
+else:
+    print('error, ', fname_report, 'does not exist')
+    sys.exit()
+    
+
+with h5py.File(fname_nmatrix) as nmatrix_hdf:
+    print('Calculate Completed Generations')
+    S_arr = nmatrix_hdf['S_arr']
+    nGens_total = len(S_arr)
+    nGens_complete = 0
+    for i in range(nGens_total):
+        S_arr_gen = S_arr[i]
+        if np.all(S_arr_gen == 0) == False:
+            nGens_complete += 1
+        else:
+            break
+    print('Generations Completed: ', nGens_complete)
+
+if __name__ == '__main__':
+    print('Begin Genetic Algorithm Analysis')
+    main(fname_config=fname_config, fname_nmatrix=fname_nmatrix, fname_pseudo_output=fname_pseudo_output, path2dir=path2dir)
+    print('GA Completed')
