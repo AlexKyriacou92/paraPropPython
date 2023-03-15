@@ -181,14 +181,13 @@ def main(fname_config, fname_nmatrix, fname_pseudo_output, path2dir):
                 t_max = 3*t_cycle
             else:
                 while nJobs > 0 and t_cycle < t_max:
-                    print('Queue of jobs: ', nJobs)
+                    print('Gen:', ii_gen)
                     print('Wait:', tsleep, ' seconds')
                     time.sleep(tsleep)
                     t_cycle += tsleep
                     print('Elapsed seconds: ', t_cycle)
                     print('Elapsed time: ', datetime.timedelta(seconds=t_cycle))
                     print('Queue of jobs:', nJobs)
-
                     nJobs = countjobs()
                     print('')
                 if t_cycle > t_max and nJobs > 0:
