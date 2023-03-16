@@ -87,6 +87,8 @@ for i in range(nGens):
 jj_best_arr = np.array(jj_best_arr)
 ii_best = np.argmax(S_max_arr)
 jj_best = int(jj_best_arr[ii_best])
+print(max(S_max_arr), ii_best, jj_best)
+print(S_max_arr)
 
 coord_list = []
 coord_list.append([ii_best, jj_best])
