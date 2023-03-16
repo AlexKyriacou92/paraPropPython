@@ -39,12 +39,11 @@ else:
     sys.exit()
 #==============================================
 print(fname_pseudo_data, os.path.isfile(fname_pseudo_data))
-with h5py.File(fname_n_matrix,'r') as n_matrix_hdf:
-    n_matrix_hdf = h5py.File(fname_n_matrix,'r') #The matrix holding n_profiles
-    n_profile_matrix = np.array(n_matrix_hdf.get('n_profile_matrix'))
-    n_profile_ij = n_profile_matrix[ii_generation,jj_select] #The Individual (n profile) contains genes (n values per z)
-    z_profile_ij = np.array(n_matrix_hdf.get('z_profile'))
-
+n_matrix_hdf = h5py.File(fname_n_matrix,'r') #The matrix holding n_profiles
+n_profile_matrix = np.array(n_matrix_hdf.get('n_profile_matrix'))
+n_profile_ij = n_profile_matrix[ii_generation,jj_select] #The Individual (n profile) contains genes (n values per z)
+z_profile_ij = np.array(n_matrix_hdf.get('z_profile'))
+n_matrix_hdf.close()
 nGenes = len(n_profile_ij)
 
 #==============================================
@@ -152,7 +151,7 @@ for i in range(nDepths):
 
 print(S_corr)
 if fname_out == None:
-    with h5py.File(fname_n_matrix, 'r+') as n_matrix_hdf:
-        S_arr = n_matrix_hdf['S_arr']
-        S_arr[ii_generation, jj_select] = S_corr
+    n_matrix_hdf = h5py.File(fname_n_matrix, 'r+')
+    S_arr = n_matrix_hdf['S_arr']
+    S_arr[ii_generation, jj_select] = S_corr
 
