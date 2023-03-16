@@ -79,20 +79,30 @@ nIndividuals = len(S_nmatrix[0])
 for i in range(nGens0):
     if np.all(S_nmatrix == 0) == False:
         nGens += 1
+S_max_arr = np.zeros(nGens)
+jj_best_arr = []
+for i in range(nGens):
+    S_max_arr[i] = max(S_nmatrix[i])
+    jj_best_arr.append(np.argmax(S_nmatrix[i]))
+jj_best_arr = np.array(jj_best_arr)
+ii_best = np.argmax(S_max_arr)
+jj_best = int(jj_best_arr[ii_best])
 
 coord_list = []
+coord_list.append([ii_best, jj_best])
 ii_list = np.random.randint(low=0, high=nGens-1, size=nOutput)
-for i in range(nOutput):
-    ii_gen = ii_list[i]
-    M = 100
-    jj_ind_list = np.random.randint(0, nIndividuals-1, M)
-    for k in range(M):
-        jj_ind = jj_ind_list[k]
-        S_k = S_nmatrix[ii_gen, jj_ind]
-        if S_k > 0:
-            break
-    coords = [ii_gen, jj_ind]
-    coord_list.append(coords)
+if nOutput > 1:
+    for i in range(nOutput-1):
+        ii_gen = ii_list[i]
+        M = 100
+        jj_ind_list = np.random.randint(0, nIndividuals-1, M)
+        for k in range(M):
+            jj_ind = jj_ind_list[k]
+            S_k = S_nmatrix[ii_gen, jj_ind]
+            if S_k > 0:
+                break
+        coords = [ii_gen, jj_ind]
+        coord_list.append(coords)
 
 print(coord_list)
 
