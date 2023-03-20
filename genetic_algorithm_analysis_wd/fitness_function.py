@@ -57,15 +57,24 @@ def fitness_pulse_FT_data(sig_sim, sig_data, mode = 'Correlation'):
             s_corr[i] = ((sig_sim[i].real + 1j*sig_sim[i].imag) * (sig_data[i].real - 1j*sig_data[i].imag))/s_auto[i]
         s_corr /= float(nSamples)
         s = abs(sum(s_corr))**2
-    else:
+    elif mode == 'Correlation2':
         nSamples = len(sig_data)
         s_corr = np.zeros(nSamples)
         s_auto = np.zeros(nSamples)
         for i in range(nSamples):
-            s_auto[i] = (abs(sig_sim[i]))*abs(sig_data[i])
-            s_corr[i] = ((sig_sim[i].real + 1j*sig_sim[i].imag) * (sig_data[i].real - 1j*sig_data[i].imag))/s_auto[i]
+            s_auto[i] = (abs(sig_sim[i]) * abs(sig_data[i]))**2
+            s_corr[i] = ((sig_sim[i].real * sig_data[i].real)**2 + (sig_sim[i].imag * sig_data[i].imag)**2)/s_auto[i]
         s_corr /= float(nSamples)
-        s = abs(sum(s_corr))**2
+        s = s_corr
+    elif mode == 'Difference':
+        nSamples = len(sig_data)
+        s_corr = np.zeros(nSamples)
+        s_auto = np.zeros(nSamples)
+        for i in range(nSamples):
+            s_auto[i] = (abs(sig_sim[i])*abs(sig_data[i]))**2
+            s_corr[i] = abs((sig_sim[i].real - sig_data[i].real)**2 + abs(sig_sim[i].imag - sig_data[i].imag))**2/s_auto[i]
+        s_corr = np.sqrt(s_corr)/float(nSamples)
+        s = s_corr
     return s
 
 def fitness_pulse_FT_data_2(sig_sim, sig_data, mode='Correlation'):
