@@ -16,12 +16,13 @@ from data import create_sim, create_rxList_from_file, create_transmitter_array, 
 from data import create_tx_signal, bscan
 
 fname_results = sys.argv[1]
-fname_txt = sys.argv[2]
 hdf_results = h5py.File(fname_results, 'r')
+
 
 n_profile_matrix = np.array(hdf_results.get('n_profile_matrix'))
 S_results = np.array(hdf_results.get('S_arr'))
 z_profile = np.array(hdf_results.get('z_profile'))
+n_profile_ref = np.array(hdf_results.get('reference_data'))
 
 nGenerations = int(hdf_results.attrs['nGenerations'])
 nIndividuals = int(hdf_results.attrs['nIndividuals'])
@@ -36,12 +37,13 @@ S_best = np.ones(nGenerations)
 gens = np.arange(1, nGenerations+1, 1)
 
 best_individuals = []
-
+'''
 profile_data = np.genfromtxt(fname_txt)
 nprof_data = profile_data[:,1]
 zprof_data = profile_data[:,0]
-
-
+'''
+nprof_data = n_profile_ref
+zprof_data = z_profile
 for i in range(nGenerations):
     S_best[i] = max(S_results[i])
     best_individuals.append(np.argmax(S_results[i]))
@@ -58,7 +60,7 @@ pl.show()
 
 fig = pl.figure(figsize=(4,10),dpi=120)
 pl.title(r'Generation: '+ str(ii_best_gen) + r', Individual: ' + str(jj_best_ind) + r', S = ' + str(round(S_best[ii_best_gen]/1e6,2)) + r' $ \times 10^{6}$')
-pl.plot(n_profile_best, z_profile, '-o', c='b',label='Best Result')
+pl.plot(n_profile_best, z_profile, c='b',label='Best Result')
 pl.plot(nprof_data, zprof_data,c='k',label='truth')
 pl.grid()
 pl.ylim(16,-1)
@@ -80,9 +82,9 @@ n_residuals = n_profile_best - n_space_interp
 
 fig = pl.figure(figsize=(4,10),dpi=120)
 pl.title(r'Generation: '+ str(ii_best_gen) + r', Individual: ' + str(jj_best_ind) + r', S = ' + str(round(S_best[ii_best_gen]/1e6,2)) + r' $ \times 10^{6}$')
-pl.plot(n_residuals, z_profile, '-o', c='b',label='Residuals')
+pl.plot(n_residuals, z_profile, c='b',label='Residuals')
 pl.axvline(0,c='r')
-pl.fill_betweenx(z_profile, -0.025, +0.025,color='r',alpha=0.5,label='Boundary +/- 2.5%')
+pl.fill_betweenx(z_profile, -0.05, +0.05,color='r',alpha=0.5,label='Boundary +/- 5%')
 pl.grid()
 pl.ylim(16,-1)
 pl.ylabel(r'Depth z [m]')
