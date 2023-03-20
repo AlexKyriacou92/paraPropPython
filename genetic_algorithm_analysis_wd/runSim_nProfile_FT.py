@@ -168,7 +168,10 @@ for i in range(nDepths):
                 sig_sim = bscan_npy[i,j] * sim_inv_weights[i,j]
                 S_corr_ijk = fitness_pulse_FT_data(sig_sim = sig_sim, sig_data=sigFFT, mode=fitness_mode)
                 S_corr += S_corr_ijk
-
+Norm = float(nDepths)*float(nReceivers)
+print(S_corr)
+print('Normalize over nTX =', nDepths, 'and nRX =', nReceivers)
+S_corr /= Norm
 print(S_corr)
 hdf_output.attrs['S_corr'] = S_corr
 hdf_output.close()
