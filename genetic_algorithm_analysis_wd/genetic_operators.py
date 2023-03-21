@@ -4,7 +4,7 @@ import h5py
 import numpy as np
 import matplotlib.pyplot as pl
 from random import random, randint, uniform
-
+from genetic_functions import makeRandomDensityVector
 #Test functions for mutation and cloning
 
 def cross_breed(prof1, prof2):
@@ -58,6 +58,7 @@ def flat_mutation(prof_in, mutation_thres, nmin = 1.2, nmax=1.8):
     return prof_out
 
 def fluctuation_mutation(prof_in, mutation_thres, mutation_var):
+    #TODO: Change Mutation Method
     N = len(prof_in)
     prof_out = np.ones(N)
     M = 100
@@ -78,6 +79,22 @@ def fluctuation_mutation(prof_in, mutation_thres, mutation_var):
             prof_out[i] = prof_in[i]
     return prof_out
 
+
+def mutation(prof_in, mutation_thres, z_space, i_mode=0):
+    N = len(prof_in)
+    prof_out = np.ones(N)
+    if i_mode == 0:
+        ranVec = makeRandomDensityVector(z_space)
+        for i in range(N):
+            r = random()
+            if r > mutation_thres:
+                prof_out[i] = prof_in[i] + ranVec[i]
+            else:
+                prof_out[i] = prof_in[i]
+        return prof_out
+    elif i_mode == 1:
+        prof_out = flat_mutation(prof_in, mutation_thres)
+        return prof_out
 
 def clone(prof_in):
     prof_out = prof_in
