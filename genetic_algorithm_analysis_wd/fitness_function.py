@@ -27,7 +27,7 @@ def inverse_signal_offset(sig_sim, sig_data, mode='abs'):
 def fitness_correlation(sig_sim, sig_data, mode='abs'):
     return inverse_signal_offset(sig_sim, sig_data, mode)
 
-'''
+
 def fitness_pulse_FT_data(sig_sim, sig_data, mode = 'Correlation'):
     if mode == 'Correlation': # Signal Cross Correlation Method
         sig_multi = abs(sig_sim * sig_data)
@@ -65,7 +65,7 @@ def fitness_pulse_FT_data(sig_sim, sig_data, mode = 'Correlation'):
             s_auto[i] = (abs(sig_sim[i]) * abs(sig_data[i]))**2
             s_corr[i] = ((sig_sim[i].real * sig_data[i].real)**2 + (sig_sim[i].imag * sig_data[i].imag)**2)/s_auto[i]
         s_corr /= float(nSamples)
-        s = s_corr
+        s = sum(s_corr)
     elif mode == 'Difference':
         nSamples = len(sig_data)
         s_corr = np.zeros(nSamples)
@@ -73,10 +73,10 @@ def fitness_pulse_FT_data(sig_sim, sig_data, mode = 'Correlation'):
         for i in range(nSamples):
             s_auto[i] = (abs(sig_sim[i])*abs(sig_data[i]))**2
             s_corr[i] = abs((sig_sim[i].real - sig_data[i].real)**2 + abs(sig_sim[i].imag - sig_data[i].imag))**2/s_auto[i]
-        s_corr = np.sqrt(s_corr)/float(nSamples)
+        s_corr = np.sqrt(sum(s_corr))/float(nSamples)
         s = s_corr
     return s
-
+'''
 def fitness_pulse_FT_data_2(sig_sim, sig_data, mode='Correlation'):
     nData = len(sig_data)
     S = 0
