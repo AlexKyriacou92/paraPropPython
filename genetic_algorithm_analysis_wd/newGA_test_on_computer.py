@@ -25,7 +25,7 @@ sys.path.append('../')
 import util
 from util import get_profile_from_file, smooth_padding, do_interpolation_same_depth
 from util import save_profile_to_txtfile
-fname_config0 = 'config_aletsch_small.txt'
+fname_config0 = 'config_aletsch_small_2.txt'
 
 def main(fname_config):
     print('start')
