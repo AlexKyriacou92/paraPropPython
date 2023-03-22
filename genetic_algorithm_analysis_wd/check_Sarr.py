@@ -32,5 +32,8 @@ nGen = int(sys.argv[2])
 with h5py.File(fname_nmatrix, 'r') as nmatrix_hdf:
     S_arr = np.array(nmatrix_hdf['S_arr'])
     S_list = S_arr[nGen]
-print(S_list)
-print(np.all(S_list == 0))
+nIndividuals = len(S_list)
+S_list_non_zero = [x for x in S_list if x > 0]
+nReal = len(S_list_non_zero)
+frac = float(nReal)/float(nIndividuals)
+print('ii_gen: ', nGen, 'fraction not zero, f = ', round(frac*100, 2), '%')
