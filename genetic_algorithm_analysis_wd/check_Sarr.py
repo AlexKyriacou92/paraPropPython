@@ -45,7 +45,7 @@ jj_ind = np.argmax(S_list_non_zero)
 print(n_profile_ii[jj_ind])
 nDepths = len(n_profile_ii[jj_ind])
 fname_out = 'nprof_best_' + str(nGen) + '-' + str(jj_ind) + '.txt'
-with open(fname_out) as fout:
+with open(fname_out, 'w') as fout:
     for j in range(nDepths):
         n_j = n_profile_ii[jj_ind][j]
         line = str(n_j) + '\n'
