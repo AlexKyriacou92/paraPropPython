@@ -410,13 +410,13 @@ def main(fname_config):
     # Final Step -> mv
 
     os.system('mv ' + config_cp + ' ' + fname_pseudo_output + ' ' + fname_nmatrix_output + ' ' + results_dir + '/')
-
+    '''
     print('Making Report (plots)')
-    cmd_make_report = 'python make_report.py ' + results_dir + '/' + 'simul_report.txt'
+    cmd_make_report = 'python make_report.py ' + results_dir + '/'
     print('running: ', cmd_make_report)
     os.system(cmd_make_report)
     return -1
-
+    '''
 if __name__ == '__main__':
     print('Begin Genetic Algorithm Analysis')
     main(fname_config0)
