@@ -316,7 +316,7 @@ def selection(prof_list, S_list, prof_list_initial, f_roulette = 0.75, f_elite =
             print('Mutate')
 
             #TODO: Add Mutation Different Methods
-            j_rand = random.randint(0, nParents-1, 1)
+            j_rand = np.random.randint(0, nParents-1, 1)[0]
             prof_m = flat_mutation(parent_list[j_rand], mutation_thres=mutation_thres)
             common_list.append(prof_m)
             ii_common += 1
