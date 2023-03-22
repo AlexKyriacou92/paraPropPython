@@ -253,7 +253,7 @@ def main(fname_config):
 
                 #Save Scores from Last Generation from NPY to HDF File
                 S_arr_npy = np.load(fname_nmatrix_npy, 'r+')
-                print('S_list, gen = ', ii_gen-1, '\n', S_arr_npy[ii_gen])
+                print('S_list, gen = ', ii_gen-1, '\n', S_arr_npy[ii_gen-1])
 
                 nmatrix_hdf = h5py.File(fname_nmatrix, 'r+')
                 S_arr_last = nmatrix_hdf['S_arr']
