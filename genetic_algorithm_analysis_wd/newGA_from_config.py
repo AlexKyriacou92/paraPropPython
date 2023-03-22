@@ -260,7 +260,7 @@ def main(fname_config):
                                                      prof_list_initial=nprof_gene_pool,
                                                      f_roulette=GA_1.fRoulette, f_elite=GA_1.fElite,
                                                      f_cross_over=GA_1.fCrossOver, f_immigrant=GA_1.fImmigrant,
-                                                     P_mutation=GA_1.fMutation, mutation_thres=mutation_thres)
+                                                     f_mutant=GA_1.fMutation, mutation_thres=mutation_thres)
 
 
                 for j in range(GA_1.nIndividuals):
