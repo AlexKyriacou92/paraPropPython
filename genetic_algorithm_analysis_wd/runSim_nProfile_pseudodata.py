@@ -38,6 +38,8 @@ else:
     print('incorrect arg number')
     sys.exit()
 #==============================================
+fname_n_matrix_npy = fname_n_matrix[:-3] + '.npy'
+
 print(fname_pseudo_data, os.path.isfile(fname_pseudo_data))
 n_matrix_hdf = h5py.File(fname_n_matrix,'r') #The matrix holding n_profiles
 n_profile_matrix = np.array(n_matrix_hdf.get('n_profile_matrix'))
@@ -150,7 +152,11 @@ for i in range(nDepths):
         S_corr += S_corr_ijk
 
 print(S_corr)
+S_arr_out = np.load(fname_n_matrix_npy, 'r+')
+S_arr_out[ii_generation, jj_select] = S_corr
+
+'''
 n_matrix_hdf = h5py.File(fname_n_matrix, 'r+')
 S_arr = n_matrix_hdf['S_arr']
 S_arr[ii_generation, jj_select] = S_corr
-
+'''
