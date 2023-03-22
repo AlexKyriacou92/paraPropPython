@@ -155,6 +155,9 @@ def main(fname_config):
         profile_data = np.genfromtxt(fname_pseudodata)
         hdf_nmatrix.create_dataset('reference_data',data=nprof_pseudodata)
         hdf_nmatrix.close()
+        fname_nmatrix_npy = fname_nmatrix[:-3] + '.npy'
+        nmatrix_npy = util.create_memmap(fname_nmatrix_npy, data_type='float',
+                                       dimensions=(GA_1.nGenerations, GA_1.nIndividuals))
 
         # Next -> Calculate list of S parameters
         ii_gen = 0  # Zeroth Generation
@@ -168,7 +171,7 @@ def main(fname_config):
             if os.path.isdir(dir_outfiles) == False:
                 os.system('mkdir ' + dir_outfiles)
             cmd_j = cmd_prefix + ' ' + config_cp + ' ' + fname_pseudo_output + ' ' + fname_nmatrix + ' ' + str(
-                ii_gen) + ' ' + str(j)
+                ii_gen) + ' ' + str(j) + ' ' + results_dir + '/bscan-sim-gen' + str(ii_gen) + '-ind' + str(j) + '.h5'
             os.system(cmd_j)
         print('jobs submitted')
         proceed_bool = False
@@ -236,6 +239,16 @@ def main(fname_config):
                         nJobs_2 = countjobs()
                         kk += 1
                         print(nJobs_2)
+
+                # Save Scores from Last Generation from NPY to HDF File
+                S_arr_npy = np.load(fname_nmatrix_npy, 'r+')
+                print('S_list, gen = ', ii_gen - 1, '\n', S_arr_npy[ii_gen])
+
+                nmatrix_hdf = h5py.File(fname_nmatrix, 'r+')
+                S_arr_last = nmatrix_hdf['S_arr']
+                S_arr_last[ii_gen - 1] = S_arr_npy[ii_gen - 1]
+                nmatrix_hdf.close()
+
                 #APPLY GA SELECTION
                 print('Applying Selection Routines')#TODO: Check
                 nmatrix_hdf = h5py.File(fname_nmatrix, 'r+')
@@ -312,87 +325,27 @@ def main(fname_config):
                 f_log.close()
 
 
-                #Save Simulations from Last Generation
 
-                '''
-                ii_last = ii_gen-1
-                if ii_last == 0 or ii_last == 1 or ii_last == 5 or ii_last%10 == 0 or ii_gen+1 == GA_1.nGenerations:
-                    fname_nmatrix2 = fname_nmatrix[:-3] + '_2.h5'
-                    os.system('cp ' + fname_nmatrix + ' ' + fname_nmatrix2)
-                    jj_select = np.argmax(np.array(S_arr[ii_last]))
-
-                    nprof_best = n_profile_matrix2[ii_last, jj_select]
-
-                    fig = pl.figure(figsize=(10,8),dpi=120)
-                    ax1 = fig.add_subplot(121)
-                    ax2 = fig.add_subplot(122)
-                    ax1.set_title('S_max = ' + str(round(S_max,3)))
-
-                    ax1.plot(nprof_best, zspace_simul, label='Best',c='b')
-                    ax1.plot(nprof_pseudodata, zspace_simul, c='k',label='Truth:\nDecimated Guliya profile + Aletsch PS data')
-                    ax1.set_xlim(1.1, 1.9)
-
-                    ax2.plot((nprof_best-nprof_pseudodata)*100, zspace_simul, c='b')
-                    ax2.set_ylim(18, 0)
-                    ax2.grid()
-                    ax2.set_xlabel('Ref Index Residuals $\Delta n$')
-
-                    ax1.set_ylim(18, 0)
-                    ax1.grid()
-                    ax1.set_xlabel('Ref Index n')
-                    ax1.set_ylabel('Depth z [m]')
-                    ax1.legend()
-                    fig.savefig(results_dir + '/' + 'ref_index-' + str(ii_last).zfill(3) + '.png')
-                    pl.close(fig)
-                    fout = open(fname_report, 'a')
-                    fname_output_suffix2 = 'pseudo_bscan_output_' + str(ii_last) + '_' + str(jj_select) + '.h5'
-                    fname_out = results_dir + '/' + fname_output_suffix2
-
-                    line_report = str(ii_last) + '\t' + str(jj_select) + '\t' + str(
-                        S_max) + '\n'
-                    fout.write(line_report)
-                    fout.close()
-                                        
-                    #cmd_prefix2 = 'python runSim_nProfile_from_nmatrix.py '
-
-                    
-                    #cmd_i2 = cmd_prefix2 + ' ' + config_cp + ' ' + fname_nmatrix2 + ' ' + str(ii_last) + ' ' + str(jj_select) + ' ' + fname_out
-                    #job_prefix2 = 'bscan-'
-                    #jobname2 = job_prefix2 + str(ii_last) + '-' + str(jj_select)
-                    #sh_file2 = jobname2 + '.sh'
-                    #out_file2 = results_dir + '/' + 'outfiles' + '/' + jobname2 + '.out'
-                    #print(out_file2)
-                    #make_job(sh_file2, out_file2, jobname2, cmd_i2)
-                    #submit_job(sh_file2)
-                    
-                    #os.system('rm -f ' + sh_file2)
-                    
-                '''
                 for j in range(GA_1.nIndividuals):
                     #Create Command
                     dir_outfiles = dir_outfiles0 + '/' + 'gen' + str(ii_gen)
                     if os.path.isdir(dir_outfiles) == False:
                         os.system('mkdir ' + dir_outfiles)
                     cmd_j = cmd_prefix + ' ' + config_cp + ' ' + fname_pseudo_output + ' ' + fname_nmatrix + ' ' + str(
-                        ii_gen) + ' ' + str(j)
-                    '''
-                    jobname = job_prefix + str(ii_gen) + '-' + str(j)
-                    sh_file = jobname + '.sh'
-                    out_file = dir_outfiles + '/' + jobname + '.out'
-                    outfile_list.append(out_file)
-                    make_job(sh_file, out_file, jobname, cmd_j)
-                    submit_job(sh_file)
-                    # After Jobs are submitted
-                    os.system('rm -f ' + sh_file)
-                    '''
+                        ii_gen) + ' ' + str(j) + ' ' + results_dir + '/bscan-sim-gen' + str(ii_gen) + '-ind' + str(j) + '.h5'
+
                     os.system(cmd_j)
                 ii_gen += 1
                 print('Jobs running -> Generation: ', ii_gen)
 
                 fname_pseudo_output2 = results_dir + '/' + fname_pseudo_output0[:-3] + '_' + time_str + '.h5'
                 fname_nmatrix_output2 = results_dir + '/' + fname_nmatrix_output0[:-3] + '_' + time_str + '.h5'
+                fname_nmatrix_output2_npy = fname_nmatrix_output2[:-3] + '.npy'
+
                 os.system('cp ' + fname_pseudo_output + ' ' + fname_pseudo_output2)
                 os.system('cp ' + fname_nmatrix_output + ' ' + fname_nmatrix_output2)
+                os.system('cp ' + fname_nmatrix_npy + ' ' + fname_nmatrix_output2_npy)
+
             else:
                 print('Queue of jobs: ', nJobs)
                 print('Wait:', tsleep, ' seconds')
@@ -410,23 +363,7 @@ def main(fname_config):
         #print('error, incorrect sim_mode, enter: pseudo or data')
         print('error, incorrect sim_mode, enter: pseudo')
         sys.exit()
-    '''
-    #TODO: Choose Data
-    elif sim_mode == 'data':
-        fname_data = config['INPUT']['fname_data']
-        ii_gen = 0  # Zeroth Generation
-        cmd_prefix = 'python runSim_nProfile_FT.py '
-    '''
-    # Final Step -> mv
 
-    os.system('mv ' + config_cp + ' ' + fname_pseudo_output + ' ' + fname_nmatrix_output + ' ' + results_dir + '/')
-    '''
-    print('Making Report (plots)')
-    cmd_make_report = 'python make_report.py ' + results_dir + '/'
-    print('running: ', cmd_make_report)
-    os.system(cmd_make_report)
-    return -1
-    '''
 if __name__ == '__main__':
     print('Begin Genetic Algorithm Analysis')
     main(fname_config0)
