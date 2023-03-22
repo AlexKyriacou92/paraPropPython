@@ -4,8 +4,22 @@ import h5py
 import numpy as np
 import matplotlib.pyplot as pl
 from random import random, randint, uniform
-from genetic_functions import makeRandomDensityVector
+#from genetic_functions import makeRandomDensityVector
 #Test functions for mutation and cloning
+import sys
+sys.path.append('../')
+import util
+B = 1.0
+C = 0.01
+D = 0.5
+E = 1.0
+low_cut = 0.5
+def makeRandomDensityVector(z, a=0.6, b=B, c=C, d=D, e=E, low_cut=low_cut):
+    """make a vector of random density fluctuations. This is currently used with the Taylor Dome n(z) profile.
+    the density fluctuations are on the order of a few percent of the density."""
+    dz = abs(z[1] - z[0])
+    ranVec = util.lowpassFilter(dz, low_cut, (a / (b + (z * c))) * (e*np.random.random_sample(len(z)) - d))
+    return ranVec
 
 def cross_breed(prof1, prof2):
     '''
