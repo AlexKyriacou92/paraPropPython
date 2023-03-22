@@ -162,7 +162,6 @@ def main(fname_config):
         os.system(cmd)
 
         nmatrix_hdf = h5py.File(fname_nmatrix, 'r+')
-        profile_data = np.genfromtxt(fname_pseudodata)
         nmatrix_hdf.create_dataset('reference_data',data=nprof_pseudodata)
         nmatrix_hdf.close()
 
@@ -205,8 +204,6 @@ def main(fname_config):
         ii_gen += 1
         # Wait for jobs to be submitted
         print('1st generation finished')
-        print('write to npy array')
-
         print('next generation:')
 
         S_max = 0
