@@ -264,7 +264,7 @@ def selection0(prof_list, S_list, prof_list_initial, f_roulette = 0.75, f_elite 
     #return new_generation, inds, S_list_sorted, names
     return new_generation
 
-def selection(prof_list, S_list, prof_list_initial, f_roulette = 0.75, f_elite = 0.01, f_cross_over = 0.75, f_immigrant = 0.04,  P_mutation = 0.01, f_mutant=0.25, mutation_thres = 0.95):
+def selection(prof_list, S_list, prof_list_initial, f_roulette = 0.75, f_elite = 0.01, f_cross_over = 0.75, f_immigrant = 0.04, f_mutant=0.25, mutation_thres = 0.95):
     nIndividuals = len(S_list) # Number of Individuals in the Generation
     prof_list_initial_l = list(prof_list_initial)
 
@@ -309,7 +309,8 @@ def selection(prof_list, S_list, prof_list_initial, f_roulette = 0.75, f_elite =
             ii_common += 1
         elif i_operator == 1:
             #TODO: Add Mutation Different Methods
-            prof_m = flat_mutation(common_list[i], mutation_thres=mutation_thres)
+            j_rand = random.randint(0, nParents-1, 1)
+            prof_m = flat_mutation(parent_list[j_rand], mutation_thres=mutation_thres)
             common_list.append(prof_m)
             ii_common += 1
 
