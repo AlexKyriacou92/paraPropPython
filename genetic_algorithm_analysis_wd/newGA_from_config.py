@@ -124,7 +124,7 @@ def main(fname_config):
     """
     fname_nmatrix = fname_nmatrix_output
     fname_nmatrix_npy = fname_nmatrix[:-3] + '.npy'
-    nmatrix_npy = util.open_memmap(fname_nmatrix_npy, data_type= 'float',dimensions=(GA_1.nGenerations, GA_1.nIndividuals))
+    nmatrix_npy = util.create_memmap(fname_nmatrix_npy, data_type= 'float',dimensions=(GA_1.nGenerations, GA_1.nIndividuals))
 
     if os.path.isfile(fname_nmatrix) == True:
         os.system('rm -f ' + fname_nmatrix)
