@@ -285,9 +285,12 @@ def selection(prof_list, S_list, prof_list_initial, f_roulette = 0.75, f_elite =
 
     nR = int(f_roulette * float(nParents))
     nT = nParents - nR
-
+    print('Roulette')
     roulette_list, S_list_r = roulette(prof_list, S_list, nR)
+    print('Tournament')
+
     tournament_list, S_list_t = tournament(prof_list, S_list, nT)
+    print()
     for i in range(nR):
         parent_list.append(roulette_list[i])
     for j in range(nT):
@@ -298,9 +301,11 @@ def selection(prof_list, S_list, prof_list_initial, f_roulette = 0.75, f_elite =
     common_list = []
     ii_common = 1
     nCommons = nIndividuals - nElite
+    print('Commons')
     while ii_common <= nCommons:
         i_operator = rand_operator(f_cross_over, f_mutant) #TODO: Change this operator
         if i_operator == 0: #Cross Breeding
+            print('Cross-Breed')
             p_list = random.sample(parent_list, 2)
             p1 = p_list[0]
             p2 = p_list[1]
@@ -308,6 +313,8 @@ def selection(prof_list, S_list, prof_list_initial, f_roulette = 0.75, f_elite =
             common_list.append(prof_c)
             ii_common += 1
         elif i_operator == 1:
+            print('Mutate')
+
             #TODO: Add Mutation Different Methods
             j_rand = random.randint(0, nParents-1, 1)
             prof_m = flat_mutation(parent_list[j_rand], mutation_thres=mutation_thres)
@@ -315,6 +322,8 @@ def selection(prof_list, S_list, prof_list_initial, f_roulette = 0.75, f_elite =
             ii_common += 1
 
         elif i_operator == 2:
+            print('Immigrant')
+
             prof_c = random.sample(prof_list_initial_l, 1)[0]
             common_list.append(prof_c)
             ii_common += 1
