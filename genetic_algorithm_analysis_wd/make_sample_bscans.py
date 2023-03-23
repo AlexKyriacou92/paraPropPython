@@ -13,15 +13,18 @@ import numpy as np
 from scipy.interpolate import interp1d
 from matplotlib import pyplot as pl
 
-import util
 from genetic_algorithm import GA, read_from_config
 from makeSim_nmatrix import createMatrix, createMatrix2
-import sys
+
 
 from genetic_functions import initialize_from_analytical, roulette, initalize_from_fluctuations, initialize
 from pleiades_scripting import make_command, test_job, submit_job, test_job_data, make_command_data, make_job, countjobs
 from selection_functions import selection
 from genetic_functions import create_profile
+
+
+import sys
+
 def calculate_sij(n_prof_sim, n_prof_data):
     Nsim = len(n_prof_sim)
     Ndata = len(n_prof_data)
