@@ -12,6 +12,8 @@ import h5py
 import numpy as np
 from scipy.interpolate import interp1d
 from matplotlib import pyplot as pl
+
+import util
 from genetic_algorithm import GA, read_from_config
 from makeSim_nmatrix import createMatrix, createMatrix2
 import sys
@@ -81,17 +83,30 @@ for i in range(nGens0):
         nGens += 1
 S_max_arr = np.zeros(nGens)
 jj_best_arr = []
+S_list = []
+k_list = []
+ind_list = []
 for i in range(nGens):
     S_max_arr[i] = max(S_nmatrix[i])
     jj_best_arr.append(np.argmax(S_nmatrix[i]))
+    for j in range(nIndividuals):
+        S_list.append(S_nmatrix[i,j])
+        ind_list.append([i,j])
 jj_best_arr = np.array(jj_best_arr)
 ii_best = np.argmax(S_max_arr)
 jj_best = int(jj_best_arr[ii_best])
-print(max(S_max_arr), ii_best, jj_best)
-print(S_max_arr)
+
+k_worst = np.argmin(S_list)
+ii_worst = ind_list[k_worst][0]
+jj_worst = ind_list[k_worst][1]
+S_worst = S_list[k_worst]
+
+print('Best score:', max(S_max_arr), 'should equal:', S_max_arr[ii_best], 'gen:', ii_best, 'ind:', jj_best)
+print('Worst score:', S_worst, 'gen:', ii_worst, 'ind:', jj_worst)
 
 coord_list = []
 coord_list.append([ii_best, jj_best])
+coord_list.append([ii_worst, jj_worst])
 ii_list = np.random.randint(low=0, high=nGens-1, size=nOutput)
 if nOutput > 1:
     for i in range(nOutput-1):
@@ -117,7 +132,7 @@ if os.path.isdir(path2rand_files) == False:
 fname_randlist = path2rand_files + '/' + 'bscan_list.txt'
 if os.path.isfile(fname_randlist) == False:
     f_rand = open(fname_randlist, 'w')
-    line = 'ii_gen \t jj_ind \t S_signal \t S_nprof \t fname_bscan'
+    line = 'ii_gen \t jj_ind \t S_signal \t S_nprof \t fname_bscan\n'
     f_rand.write(line)
 else:
     f_rand = open(fname_randlist, 'a')
