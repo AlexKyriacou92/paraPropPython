@@ -295,6 +295,16 @@ for m in range(len(R_plot)):
             ax2 = fig.add_subplot(222)
             ax3 = fig.add_subplot(223)
             ax4 = fig.add_subplot(224)
+
+            fig_label = '$\Delta S$ = ' + str(S_signal/S_signal_list[i-1]) + '\n'
+            s_ij_max = delta_s2[i, ii_tx, ii_rx]
+            fig_label += '$\Delta_{ij}$ = ' + str(s_ij_max) + ', $\log(\Delta s_{ij}) = $' + str(np.log10(s_ij_max)) + '\n'
+            s_ij_w_max = delta_s_w2[i, ii_tx, ii_rx]
+            fig_label += '$\Delta_{w, ij}$ = ' + str(s_ij_w_max) + ', $\log(\Delta s_{w,ij}) = $' + str(np.log10(s_ij_w_max)) + '\n'
+            s_ij_w_ratio = s_ij_w_max / np.sum(delta_s_w2[i])
+            fig_label += '$\Delta_{w, ij}/S$ = ' + str(s_ij_w_ratio) + ', $\log(\Delta s_{w,ij}/S) = $' + str(
+                np.log10(s_ij_w_ratio))
+            fig.suptitle(fig_label)
             ii_gen_last = ii_list[i-1]
             jj_ind_last = jj_list[i-1]
             ax1.plot(n_profile_rand, zspace_simul,c='b',label='Ref Index, gen: ' + str(ii_gen) + ' ind: ' + str(jj_ind))
