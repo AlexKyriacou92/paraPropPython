@@ -189,4 +189,10 @@ class receiver:
     def get_impulse_response(self):
         return self.impulse_response
 
+    def add_gaussian_noise(self, noise_amplitude=0):
+        nSamples = len(self.spectrum)
+        if noise_amplitude > 0:
+            noise = noise_amplitude*np.random.normal(0, noise_amplitude, nSamples)
+            self.spectrum += noise
+
 #TODO: Add antenna pattern to this module
