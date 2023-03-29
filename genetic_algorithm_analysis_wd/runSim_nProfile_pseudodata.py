@@ -58,8 +58,10 @@ bscan_pseudo_data.load_sim(fname_pseudo_data)
 
 tx_signal = create_tx_signal(fname_config)
 tx_signal.get_gausspulse()
+tx_signal.add_gaussian_noise()
 
 rxList0 = create_rxList_from_file(fname_config)
+noise_amp = rxList0[0].noise_amplitude
 tx_depths = create_transmitter_array(fname_config)
 nDepths = len(tx_depths)
 nReceivers = len(rxList0)
@@ -81,6 +83,7 @@ for i in range(nDepths):
     tend = time.time()
     for j in range(nReceivers):
         rx_j = rxList[j]
+        rx_j.add_gaussian_noise(noise_amplitude=noise_amp)
         bscan_npy[i,j] = rx_j.get_signal()
 
     if i == 0:
