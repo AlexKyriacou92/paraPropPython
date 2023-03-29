@@ -33,11 +33,12 @@ class receiver:
         z position (m)
     """
 
-    def __init__(self, x, z, IR_freq = [], IR_data=[]):
+    def __init__(self, x, z, noise_amplitude = 0, IR_freq = [], IR_data=[]):
         self.x = x
         self.z = z
         self.IR_data = IR_data
         self.IR_freq = IR_freq
+        self.noise_amplitude = noise_amplitude
 
     def setup(self, freq, dt):
         """
@@ -188,11 +189,18 @@ class receiver:
 
     def get_impulse_response(self):
         return self.impulse_response
-
-    def add_gaussian_noise(self, noise_amplitude=0):
+    '''
+    def add_gaussian_noise(self):
         nSamples = len(self.spectrum)
-        if noise_amplitude > 0:
-            noise = noise_amplitude*np.random.normal(0, noise_amplitude, nSamples)
-            self.spectrum += noise
+        if self.noise_amplitude > 0:
+            self.noise = self.noise_amplitude*np.random.normal(0, self.noise_amplitude, nSamples)
+            self.spectrum += self.noise
+    '''
 
+    def add_gaussian_noise(self, noise_amplitude):
+        self.noise_amplitude = noise_amplitude
+        nSamples = len(self.spectrum)
+        if self.noise_amplitude > 0:
+            self.noise = self.noise_amplitude * np.random.normal(0, self.noise_amplitude, nSamples)
+            self.spectrum += self.noise
 #TODO: Add antenna pattern to this module

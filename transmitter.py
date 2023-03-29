@@ -12,7 +12,7 @@ Trasnmitter acts as the source for the radio emission that is observed at the re
 '''
 
 class tx_signal:
-    def __init__(self, frequency, bandwidth, t_centre, dt, tmax, amplitude = 1, freqMin=None, freqMax=None):
+    def __init__(self, frequency, bandwidth, t_centre, dt, tmax, amplitude = 1, noise_amplitude = 0, freqMin=None, freqMax=None):
         self.amplitude = amplitude
         self.frequency = frequency
         self.bandwidth = bandwidth
@@ -24,6 +24,7 @@ class tx_signal:
         self.nSamples = int(tmax/dt)
         self.tspace = np.linspace(0, tmax, self.nSamples)
         self.freq_space = np.fft.fftfreq(self.nSamples, self.dt)
+        self.noise_amplitude = noise_amplitude
 
         if freqMin == None:
             self.freqMin = 0
@@ -101,12 +102,16 @@ class tx_signal:
 
         return self.pulse
 
-    def add_gaussian_noise(self, noise_amplitude):
+    def add_gaussian_noise(self):
         nSamples = len(self.spectrum)
+        noise_amplitude = self.noise_amplitude
         if noise_amplitude > 0:
-            noise = noise_amplitude*np.random.normal(0, noise_amplitude, nSamples)
-            self.spectrum += noise
+            self.noise = noise_amplitude*np.random.normal(0, noise_amplitude, nSamples)
+            self.spectrum += self.noise
             self.pulse = np.fft.ifft(self.spectrum)
+
+    #TODO -> Add Data Defined Noise Spectrum
+    #TODO: White Noise?
 '''
 class transmitter:
     def __init__(self, z, xO = 0):

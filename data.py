@@ -41,6 +41,13 @@ def create_tx_signal(fname_config):
                        bandwidth=float(signal_config['bandwidth']), t_centre=float(signal_config['t_centre']),
                        tmax=float(signal_config['t_max']), dt=float(signal_config['dt']),
                        freqMin=float(signal_config['freqMin']), freqMax=float(signal_config['freqMax']))
+
+    if config.has_option('TX_SIGNAL', 'noise') == True:
+        sig_tx = tx_signal(amplitude=float(signal_config['amplitude']), frequency=float(signal_config['freq_centre']),
+                  bandwidth=float(signal_config['bandwidth']), t_centre=float(signal_config['t_centre']),
+                  tmax=float(signal_config['t_max']), dt=float(signal_config['dt']),
+                  freqMin=float(signal_config['freqMin']), freqMax=float(signal_config['freqMax']),
+                  noise_amplitude=float(config['RECEIVER']['noise']))
     return sig_tx
 
 def create_receiver_array(fname_config):
@@ -98,12 +105,21 @@ def create_rxList_from_file(fname_config):
 
     f_recievers = open(fname_rx_ranges, 'r')
     next(f_recievers)
-    for line in f_recievers:
-        cols = line.split()
-        rx_x = float(cols[0])
-        rx_z = float(cols[1])
-        rx_i = rx(x=rx_x, z=rx_z)
-        rxList.append(rx_i)
+    if config.has_option('RECEIVER', 'noise') == True:
+        noise_amplitude = float(receiver_config['noise'])
+        for line in f_recievers:
+            cols = line.split()
+            rx_x = float(cols[0])
+            rx_z = float(cols[1])
+            rx_i = rx(x=rx_x, z=rx_z, noise_amplitude=noise_amplitude)
+            rxList.append(rx_i)
+    else:
+        for line in f_recievers:
+            cols = line.split()
+            rx_x = float(cols[0])
+            rx_z = float(cols[1])
+            rx_i = rx(x=rx_x, z=rx_z)
+            rxList.append(rx_i)
     return rxList
 
 def create_transmitter_array(fname_config):
