@@ -20,6 +20,7 @@ def createMatrix(fname_config, n_prof_initial, z_profile, fname_nmatrix, nGenera
     nmatrix_hdf = h5py.File(fname_nmatrix, 'w')
 
     S_arr = np.zeros((nGenerations, nProf))
+
     n_matrix = np.zeros((nGenerations, nProf, nDepths))
     n_matrix[0] = n_prof_initial
     nmatrix_hdf.create_dataset('n_profile_matrix', data=n_matrix)
@@ -114,6 +115,7 @@ def createMatrix2(fname_config, n_prof_initial, genes_initial, z_profile, z_gene
     nmatrix_hdf.attrs["nSamples"] = tx_signal.nSamples
 
     tx_depths = create_transmitter_array(fname_config)
+    nTX = len(tx_depths)
     rxList = create_rxList_from_file(fname_config)
     nmatrix_hdf.create_dataset("source_depths", data=tx_depths)
     nmatrix_hdf.create_dataset('tspace', data=tx_signal.tspace)
@@ -129,4 +131,6 @@ def createMatrix2(fname_config, n_prof_initial, genes_initial, z_profile, z_gene
         rxList_positions[i, 1] = rx_i.z
 
     nmatrix_hdf.create_dataset('rxList', data=rxList_positions)
+    nRX = len(rxList)
+    S_matrix = np.zeros((nGenerations, nProf, nTX, nRX)) #S_Matrix to Hold Local Fitness/Objective Scores
     nmatrix_hdf.close()
