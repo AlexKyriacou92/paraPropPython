@@ -31,21 +31,33 @@ if len(sys.argv) == 2:
     fname_pseudo_external_str = 'None'
     fname_nmatrix_external_str = 'None'
     test_mode_str = 'False'
+    parallel_mode_str = 'True'
 elif len(sys.argv) == 3:
     fname_config = sys.argv[1]
     fname_pseudo_external_str = sys.argv[2]
     fname_nmatrix_external_str = 'None'
-    test_mode_str = False
+    test_mode_str = 'False'
+    parallel_mode_str = 'True'
+
 elif len(sys.argv) == 4:
     fname_config = sys.argv[1]
     fname_pseudo_external_str = sys.argv[2]
     fname_nmatrix_external_str = sys.argv[3]
     test_mode_str = 'False'
+    parallel_mode_str = 'True'
+
 elif len(sys.argv) == 5:
     fname_config = sys.argv[1]
     fname_pseudo_external_str = sys.argv[2]
     fname_nmatrix_external_str = sys.argv[3]
     test_mode_str = sys.argv[4]
+    parallel_mode_str = 'True'
+elif len(sys.argv) == 6:
+    fname_config = sys.argv[1]
+    fname_pseudo_external_str = sys.argv[2]
+    fname_nmatrix_external_str = sys.argv[3]
+    test_mode_str = sys.argv[4]
+    parallel_mode_str = sys.argv[5]
 else:
     print('error! wrong arg number:', len(sys.argv))
     sys.exit()
@@ -56,6 +68,13 @@ elif test_mode_str == 'False':
     test_mode = False
 else:
     test_mode = False
+
+if parallel_mode_str == 'True':
+    parallel_mode = True
+elif parallel_mode_str == 'False':
+    parallel_mode = False
+else:
+    parallel_mode = False
 
 #Check if PseudoData Exists
 if fname_pseudo_external_str == 'None':
@@ -80,7 +99,7 @@ else:
         print('Using old nmatrix')
         fname_nmatrix_external = fname_nmatrix_external_str
 
-def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = None, test_mode=False):
+def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = None, test_mode=False, parallel_mode=True):
     #Initialization
     print('start')
     start = time.time()
@@ -352,7 +371,7 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
         for jj_ind in range(GA_1.nIndividuals):
             print('Individual', jj_ind)
             cmd_j = cmd_prefix + ' ' + fname_config + ' ' + fname_pseudo_output + ' ' + fname_nmatrix_output + ' ' + str(ii_gen) + ' ' + str(jj_ind)
-            if test_mode == True:
+            if parallel_mode == True:
                 os.system(cmd_j)
             else:
                 dir_outfiles = dir_outfiles0 + '/' + 'gen' + str(ii_gen)
@@ -364,7 +383,7 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
                 submit_job(sh_file)
                 os.system('rm -f ' + sh_file)
 
-        if test_mode == False:
+        if parallel_mode == False:
             print('jobs submitted')
             proceed_bool = False
             while proceed_bool == False:
@@ -517,8 +536,8 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
                 print('Individual ', j)
                 cmd_j = cmd_prefix + ' ' + config_cp + ' ' + fname_pseudo_output + ' ' + fname_nmatrix_output + ' ' + str(
                     ii_gen) + ' ' + str(j)
-                print(test_mode)
-                if test_mode == False:
+                print(parallel_mode)
+                if parallel_mode == False:
                     print('Submit to Cluster')
                     # Create Command
                     dir_outfiles = dir_outfiles0 + '/' + 'gen' + str(ii_gen)
@@ -559,5 +578,6 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
 if __name__ == '__main__':
     print('Run GA')
     main(fname_config=fname_config, fname_pseudo_external=fname_pseudo_external,
-         fname_nmatrix_external=fname_nmatrix_external, test_mode=test_mode)
+         fname_nmatrix_external=fname_nmatrix_external,
+         test_mode=test_mode, parallel_mode=parallel_mode)
     print('End GA')
