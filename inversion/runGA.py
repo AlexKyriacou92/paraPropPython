@@ -13,11 +13,12 @@ import numpy as np
 from scipy.interpolate import interp1d
 from matplotlib import pyplot as pl
 import sys
+import random
 
 from makeSim_nmatrix import createMatrix, createMatrix2
 from GA_algorithm import read_from_config
 from makeDepthScan import depth_scan_from_hdf, depth_scan_from_txt
-from initialize import create_profile
+from initialize import create_profile, initialize
 from pleiades_scripting import make_command, test_job, submit_job, test_job_data, make_command_data, make_job, countjobs
 from GA_selection import selection
 sys.path.append('../')
@@ -219,7 +220,7 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
                                                nprof_override=nprof_override,
                                                zprof_override=zprof_override)
     #TODO: Interpolate from TX -> RX direct peak guess -> genes -> Spline?
-    '''
+
     else:
         bscan_pseudo = bscan_rxList()
         bscan_pseudo.load_sim(fname_pseudo_output)
@@ -235,16 +236,19 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
         fname_rx = config['RECEIVER']['fname_receivers']
         rx_arr = np.genfromtxt(fname_rx, skip_header=1)
         rxRanges = np.unique(rx_arr[:,0])
-
+        zprofile_list = []
         for k in range(len(rxRanges)):
             x_k = rxRanges[k]
             rx_id = []
+            zprofile = []
             for i in range(nTX):
                 for j in range(nRX):
                     z_tx = tx_depths[i]
                     z_rx = rxList[j].z
                     if z_tx == z_rx and rxList[j].x == x_k:
                         rx_id.append(j)
+                        zprofile.append(z_rx)
+            zprofile_list.append(zprofile)
             rx_id_list.append(rx_id)
         bscan_pseudo_npy = bscan_pseudo.bscan_sig
         tx_signal = bscan_pseudo.tx_signal
@@ -252,10 +256,13 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
         tmax = max(tspace)
 
         nprof_guess_list = []
+        zprof_guess_list = []
         for k in range(len(rxRanges)):
             t_peaks_max = np.ones(nTX)
             t_peaks_first = np.ones(nTX)
             R = rxRanges[k]
+            zprof_k = zprofile_list[k]
+
             for i in range(nTX):
                 j = rx_id_list[k][i]
                 sig_pseudodata = bscan_pseudo_npy[i,j]
@@ -270,13 +277,60 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
                 t_peaks_first[i] = tspace_cut[inds[0]]
                 j_max = np.argmax(sig_correl_cut)
                 t_peaks_max[i] = tspace_cut[j_max]
+
             c0 = 0.3
             nprof_first = c0*t_peaks_first/R
             nprof_max = c0*t_peaks_max/R
             nprof_guess_list.append(nprof_first)
             nprof_guess_list.append(nprof_max)
-        
-    '''
+            zprof_guess_list.append(zprof_k)
+            zprof_guess_list.append(zprof_k)
+
+            #TODO: Add Exp Profile Fits!
+
+        genes_from_peak_list = []
+        for i in range(len(nprof_guess_list)):
+            nprof_i = nprof_guess_list[i]
+            zprof_i = zprof_guess_list[i]
+            if max(zspace_genes) > max(zprof_i):
+                zprof_i.append(max(zspace_genes))
+                nprof_i.append(np.random.uniform(1.2, 1.7, 1))
+            nprof_genes = create_profile(zspace_genes, nprof_genes=nprof_i, zprof_genes=zprof_i,
+                                         nprof_override=nprof_override, zprof_override=zprof_override)
+            genes_from_peak_list.append(nprof_genes)
+
+
+        #Initialize First Generation
+        nGuess = len(genes_from_peak_list)
+        genes_start = np.ones((GA_1.nIndividuals, GA_1.nGenes))
+        nprofile_start = np.ones((GA_1.nIndividuals, nSamples))
+
+        nStart = 10000
+        nQuarter = nStart // nGuess
+        gene_pool = []
+
+        fAnalytical = float(config['GA']['fAnalytical'])
+        fFluctuations = float(config['GA']['fFluctuations'])
+        fFlat = float(config['GA']['fFlat'])
+        fSine = float(config['GA']['fSine'])
+        fExp = float(config['GA']['fExp'])
+        for i in range(nGuess):
+            genes_start[i] = genes_from_peak_list[i]
+            nprofile_start[i] = create_profile(zspace_simul, nprof_genes=genes_start[i], zprof_genes=zspace_genes,
+                                               nprof_override=nprof_override, zprof_override=zprof_override)
+        for i in range(nGuess):
+            genes_i = initialize(nStart=nQuarter, nprofile_sampling_mean=genes_from_peak_list[i],
+                                 zprofile_sampling_mean=zspace_genes,
+                                 GA=GA_1, fAnalytical=fAnalytical, fFluctuations=fFluctuations,
+                                 fFlat=fFlat, fSine=fSine, fExp=fExp)
+            for j in range(nQuarter):
+                gene_pool.append(genes_i[j])
+
+        for i in range(nGuess, GA_1.nIndividuals):
+            genes_rand = random.sample(gene_pool)
+            genes_start[i] = genes_rand
+            nprofile_start[i] = create_profile(zspace_simul, nprof_genes=genes_start[i], zprof_genes=zspace_genes,
+                                               nprof_override=nprof_override, zprof_override=zprof_override)
     nStart = 1000
     gene_pool = np.ones((nStart, GA_1.nGenes))
     for i in range(nStart):
