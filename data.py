@@ -100,7 +100,7 @@ def create_rxList_from_file(fname_config):
     config = configparser.ConfigParser()
     config.read(fname_config)
     receiver_config = config['RECEIVER']
-    fname_rx_ranges = str(receiver_config['fname_recivers'])
+    fname_rx_ranges = str(receiver_config['fname_receivers'])
     rxList = []
 
     f_recievers = open(fname_rx_ranges, 'r')
