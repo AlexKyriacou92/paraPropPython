@@ -465,9 +465,7 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
 
     print('Starting Generation Scan:, gen:', ii_gen_complete)
     for ii_gen in range(ii_gen_complete, GA_1.nGenerations):
-        #nJobs = countjobs()
-        nJobs = 0
-        #TODO -> FIx
+        nJobs = countjobs()
         print('Generation', ii_gen, 'Check jobs')
 
         #Check If Any Jobs still running, Cancel if So
