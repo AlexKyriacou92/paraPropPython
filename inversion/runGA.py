@@ -136,6 +136,7 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
     else:
         print('Old PsuedoData')
         fname_pseudo_output = fname_pseudo_external
+
     if fname_nmatrix_external == None:
         fname_nmatrix_output0 = config['OUTPUT']['fname_nmatrix_output']
         fname_nmatrix_output = fname_nmatrix_output0[:-3] + '_' + time_str + '.h5'
@@ -161,11 +162,11 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
         if ii_gen_complete > 0:
             hdf_nmatrix = h5py.File(fname_nmatrix_output, 'r+')
             S_arr = hdf_nmatrix['S_arr']
-            misfit_arr = hdf_nmatrix['misfit_arr']
+            #misfit_arr = hdf_nmatrix['misfit_arr']
             for i in range(0, ii_gen_complete):
                 if np.all(S_arr[i] == 0) == True and np.all(nmatrix_npy[i] == 0) == False:
                     S_arr[i] = nmatrix_npy[i]
-                    misfit_arr[i] = misfit_npy[i]
+                    #misfit_arr[i] = misfit_npy[i]
             hdf_nmatrix.close()
 
     #PSEUDO-DATA
@@ -214,10 +215,8 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
     nRX = bscan_pseudo.nRX
     util.create_memmap(fname_nmatrix_output_misfit_npy, dimensions=(GA_1.nGenerations, GA_1.nGenerations, nTX, nRX))
 
-    #INITIALIZATION
-
-
-    #Generate Noise
+    # INITIALIZATION
+    # Generate Noise
     print('Generate ref-index noise -> create initial generation')
     nSamples = len(zspace_simul)
     genes_start = np.ones((GA_1.nIndividuals, GA_1.nGenes))
@@ -226,7 +225,6 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
 
     if test_mode == True:
         for i in range(GA_1.nIndividuals):
-
             n_noise = np.random.normal(0, dn_offset, GA_1.nGenes)
             genes_start[i] = nprofile_pseudo_genes + n_noise
 
@@ -234,7 +232,7 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
                                                zprof_genes=zspace_genes,
                                                nprof_override=nprof_override,
                                                zprof_override=zprof_override)
-    #TODO: Interpolate from TX -> RX direct peak guess -> genes -> Spline?
+    # TODO: Interpolate from TX -> RX direct peak guess -> genes -> Spline?
 
     else:
         bscan_pseudo = bscan_rxList()
@@ -244,13 +242,13 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
         tx_depths = bscan_pseudo.tx_depths
         rxList = bscan_pseudo.rxList
 
-        #Select Peaks
+        # Select Peaks
         rx_id_list = []
 
-        #RX Ranges From Config File:
+        # RX Ranges From Config File:
         fname_rx = config['RECEIVER']['fname_receivers']
         rx_arr = np.genfromtxt(fname_rx, skip_header=1)
-        rxRanges = np.unique(rx_arr[:,0])
+        rxRanges = np.unique(rx_arr[:, 0])
         zprofile_list = []
         for k in range(len(rxRanges)):
             x_k = rxRanges[k]
@@ -272,7 +270,6 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
 
         nprof_guess_list = []
         zprof_guess_list = []
-        #TODO FINISH TESTING THIS SHIT
         for k in range(len(rxRanges)):
             rx_id_k = rx_id_list[k]
             nRX_k = len(rx_id_k)
@@ -287,12 +284,12 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
             print('Going Through Guess List')
             for i in range(len(rx_id_k)):
                 j = rx_id_k[i]
-                sig_pseudodata = bscan_pseudo_npy[i,j]
+                sig_pseudodata = bscan_pseudo_npy[i, j]
                 sig_correl = abs(correlate(sig_pseudodata, tx_signal.pulse))
                 nLag = len(sig_correl)
                 t_lag = np.linspace(-tmax, tmax, nLag)
                 j_cut = util.findNearest(t_lag, 0)
-                #print(j_cut)
+                # print(j_cut)
                 tspace_cut = t_lag[j_cut:]
                 sig_correl_cut = sig_correl[j_cut:]
 
@@ -309,8 +306,8 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
                 pl.show()
                 '''
             c0 = 0.3
-            nprof_first = c0*t_peaks_first/R
-            nprof_max = c0*t_peaks_max/R
+            nprof_first = c0 * t_peaks_first / R
+            nprof_max = c0 * t_peaks_max / R
             nprof_guess_list.append(nprof_first)
             nprof_guess_list.append(nprof_max)
             zprof_guess_list.append(zprof_k)
@@ -319,7 +316,7 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
             print('nprof_max=', nprof_max, len(nprof_max))
             print('nprof_first=', nprof_first, len(nprof_first))
 
-            #TODO: Add Exp Profile Fits!
+            # TODO: Add Exp Profile Fits!
 
         print('N_Profile List')
         print(nprof_guess_list)
@@ -332,16 +329,16 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
             if max(zspace_genes) > max(zprof_i):
                 print('Append')
                 zprof_i = np.append(zprof_i, max(zspace_genes))
-                nprof_i = np.append(nprof_i, np.random.uniform(1.2,1.7,1))
-            print('len(nprof) = ', len(nprof_i),'len(zprof) = ',  len(zprof_i))
-            #nprof_genes = create_profile(zspace_genes, nprof_genes=nprof_i, zprof_genes=zprof_i,nprof_override=nprof_override, zprof_override=zprof_override)
+                nprof_i = np.append(nprof_i, np.random.uniform(1.2, 1.7, 1))
+            print('len(nprof) = ', len(nprof_i), 'len(zprof) = ', len(zprof_i))
+            # nprof_genes = create_profile(zspace_genes, nprof_genes=nprof_i, zprof_genes=zprof_i,nprof_override=nprof_override, zprof_override=zprof_override)
             print('interpolate')
-            nprof_genes, zprof_genes = util.do_interpolation_same_depth(zprof_in=zprof_i, nprof_in=nprof_i, N=GA_1.nGenes)
+            nprof_genes, zprof_genes = util.do_interpolation_same_depth(zprof_in=zprof_i, nprof_in=nprof_i,
+                                                                        N=GA_1.nGenes)
 
             genes_from_peak_list.append(nprof_genes)
 
-
-        #Initialize First Generation
+        # Initialize First Generation
         nGuess = len(genes_from_peak_list)
         genes_start = np.ones((GA_1.nIndividuals, GA_1.nGenes))
         nprofile_start = np.ones((GA_1.nIndividuals, nSamples))
@@ -377,13 +374,18 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
     for i in range(nStart):
         n_noise = np.random.normal(0, dn_offset, GA_1.nGenes)
         gene_pool[i] = nprofile_pseudo_genes + n_noise
+
+
     if ii_gen_complete == 0:
+        print('Create nmatrix')
         createMatrix2(fname_config=fname_config, n_prof_initial=nprofile_start, genes_initial=genes_start,
                       z_profile= zspace_simul, z_genes=zspace_genes, fname_nmatrix=fname_nmatrix_output,
                       nGenerations=GA_1.nGenerations)
+    else:
+        print('Skip creating nmatrix -> already exists!')
 
     cmd_prefix = 'python runSimulation.py '
-    ii_gen = 0
+    ii_gen = ii_gen_complete
 
     dir_outfiles0 = results_dir + '/outfiles'
     os.system('mkdir ' + dir_outfiles0)
@@ -396,6 +398,8 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
 
     if ii_gen_complete == 0:
         print('Initialize, create first generation')
+        outfile_list = []
+
         for jj_ind in range(GA_1.nIndividuals):
             print('Individual', jj_ind)
             cmd_j = cmd_prefix + ' ' + fname_config + ' ' + fname_pseudo_output + ' ' + fname_nmatrix_output + ' ' + str(ii_gen) + ' ' + str(jj_ind)
@@ -403,10 +407,12 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
                 os.system(cmd_j)
             else:
                 dir_outfiles = dir_outfiles0 + '/' + 'gen' + str(ii_gen)
+                if os.path.isdir(dir_outfiles) == False:
+                    os.system('mkdir ' + dir_outfiles)
                 jobname = job_prefix + str(ii_gen) + '-' + str(jj_ind)
                 sh_file = jobname + '.sh'
                 out_file = dir_outfiles + '/' + jobname + '.out'
-                #outfile_list.append(out_file)
+                outfile_list.append(out_file)
                 make_job(sh_file, out_file, jobname, cmd_j)
                 submit_job(sh_file)
                 os.system('rm -f ' + sh_file)
@@ -422,11 +428,14 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
                     time.sleep(tsleep)
                 else:
                     proceed_bool = True
+                    ii_gen_complete += 1
+    else:
+        print(ii_gen_complete, ' generations already finished, proceed->')
+
     #tend_1st_gen = time.time()
     #duration_1st_gen = tend_1st_gen - tstart_1st_gen
 
     # Wait for jobs to be submitted
-    print('1st generation finished')
     print('next generation:')
 
     S_max = 0
@@ -454,6 +463,7 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
     #max_time = 2 * duration_1st_gen
     t_cycle = 0
 
+    print('Starting Generation Scan:, gen:', ii_gen_complete)
     for ii_gen in range(ii_gen_complete, GA_1.nGenerations):
         #nJobs = countjobs()
         nJobs = 0
@@ -495,7 +505,6 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
 
             print('Set Misfit')
             #print(misfit_arr[ii_gen-1,0,0,0])
-            #TODO: See why this gives me value error
             #misfit_arr[ii_gen - 1, 0, 0, 0] = misfit_matrix_npy[ii_gen - 1, 0, 0,0]
             nmatrix_hdf.close()
 
@@ -510,7 +519,7 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
             S_max = max(S_list)
 
             # Select Genes
-            print(S_list)
+            print('Selecting genes from fitness score list:', S_list)
             n_profile_children_genes = selection(prof_list=nprof_parents, S_list=S_list,
                                                  prof_list_initial=gene_pool,
                                                  f_roulette=GA_1.fRoulette, f_elite=GA_1.fElite,
@@ -567,6 +576,7 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
                 print(parallel_mode)
                 if parallel_mode == True:
                     print('Submit to Cluster')
+                    outfile_list = []
                     # Create Command
                     dir_outfiles = dir_outfiles0 + '/' + 'gen' + str(ii_gen)
                     if os.path.isdir(dir_outfiles) == False:
@@ -575,13 +585,12 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
                     jobname = job_prefix + str(ii_gen) + '-' + str(j)
                     sh_file = jobname + '.sh'
                     out_file = dir_outfiles + '/' + jobname + '.out'
-                    # outfile_list.append(out_file)
+                    outfile_list.append(out_file)
                     make_job(sh_file, out_file, jobname, cmd_j)
                     submit_job(sh_file)
                     # After Jobs are submitted
                     os.system('rm -f ' + sh_file)
                 else:
-                    # TODO: Resource Unavailable Error!! FFS -> Start from Scatch
                     print('Run Directly')
                     os.system(cmd_j)
             print('Jobs running -> Generation: ', ii_gen)
