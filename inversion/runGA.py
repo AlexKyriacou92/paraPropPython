@@ -464,11 +464,9 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
     t_cycle = 0
 
     print('Starting Generation Scan:, gen:', ii_gen_complete)
-    for ii_gen in range(ii_gen_complete, GA_1.nGenerations):
+    while ii_gen < GA_1.nGenerations:
         nJobs = countjobs()
         print('Generation', ii_gen, 'Check jobs')
-
-        #Check If Any Jobs still running, Cancel if So
         '''
         if (nJobs == 0) or (t_cycle > max_time):
             print('Submit Jobs Now \n')
@@ -485,6 +483,7 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
                     kk += 1
                     print(nJobs_2)
         '''
+
         if nJobs == 0:
             # Save Scores from Last Generation from NPY to HDF File
             S_arr_npy = np.load(fname_nmatrix_output_npy, 'r')
@@ -588,9 +587,11 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
                     submit_job(sh_file)
                     # After Jobs are submitted
                     os.system('rm -f ' + sh_file)
+                    time.sleep(0.5)
                 else:
                     print('Run Directly')
                     os.system(cmd_j)
+                    time.sleep(0.5)
             print('Jobs running -> Generation: ', ii_gen)
 
             fname_pseudo_output2 = results_dir + '/' + fname_pseudo_output
@@ -599,6 +600,8 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
             os.system('cp ' + fname_pseudo_output + ' ' + fname_pseudo_output2)
             os.system('cp ' + fname_nmatrix_output + ' ' + fname_nmatrix_output2)
             os.system('cp ' + fname_nmatrix_output_npy + ' ' + fname_nmatrix_output2_npy)
+
+            ii_gen += 1
         else:
             print('Queue of jobs: ', nJobs)
             print('Wait:', tsleep, ' seconds')
