@@ -405,6 +405,7 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
             nprof_best = nprof_parents[jj_best]
 
             print('Highest Score from gen:', ii_gen-1, ', S_max=', S_max, 'ind:', jj_best)
+            print('Lowest misfit: ', ii_gen-1, ' misfit_min=', 1/S_max)
             print('Median Score S_median=', S_med)
             if ii_gen > 2:
                 S_ratio = S_max/max(S_arr[ii_gen-2])
