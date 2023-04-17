@@ -1,6 +1,0 @@
-pathto	nOutput 
-gul_230413_173941	4
-
-fname_psuedo_data	fname_nmatrix
-guliya_pseudo_230413_114218.h5	guliya_nmatrix_230413_143949.h5
-gen	ind	S	fname_out
