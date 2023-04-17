@@ -402,6 +402,8 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
             S_var_list.append(S_var)
             S_med_list.append(S_med)
 
+            nprof_best = nprof_parents[jj_best]
+
             print('Highest Score from gen:', ii_gen-1, ', S_max=', S_max, 'ind:', jj_best)
             print('Median Score S_median=', S_med)
             if ii_gen > 2:
@@ -443,6 +445,31 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
             ax.grid()
             ax.legend()
             pl.savefig(results_dir + '/' + 'S_current.png')
+            pl.close(fig)
+
+            # Plot Ref-Index Profile
+            fig = pl.figure(figsize=(8,8),dpi=120)
+            ax1 = fig.add_subplot(121)
+            ax2 = fig.add_subplot(122)
+
+            ax1.plot(nprof_best, zspace_simul, c='b')
+            ax1.plot(nprofile_pseudo, zspace_simul, c='k')
+            ax1.set_xlabel('Ref Index $n$')
+            ax1.set_ylabel('Depth z [m]')
+            ax1.grid()
+            ax1.set_ylim(16,0)
+
+            ax2.plot(nprof_best-nprofile_pseudo, zspace_simul)
+            ax2.set_xlabel('Ref Index residuals $\Delta n$')
+            ax2.set_ylabel('Depth z [m]')
+            ax2.set_ylim(16,0)
+            ax2.grid()
+
+            dir_plots = dir_outfiles + '/' + 'plots'
+            if os.path.isdir(dir_plots) == False:
+                os.system('mkdir ' + dir_plots)
+            fname_nprof = dir_plots + '/gen_' + str(ii_gen-1) + '_ref_index.png'
+            fig.savefig(fname_nprof)
             pl.close(fig)
 
             print('Writing to log')
