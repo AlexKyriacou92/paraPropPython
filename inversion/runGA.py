@@ -492,7 +492,24 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
             genes_matrix = nmatrix_hdf['genes_matrix']
             nprof_parents = genes_matrix[ii_gen - 1]
             S_max = max(S_list)
+            jj_best = np.argmax(S_arr)
+            t_cycle = 0
+            S_max_list.append(S_max)
+            S_mean = np.mean(S_list)
+            S_var = np.std(S_list)
+            S_med = np.median(S_list)
 
+            S_mean_list.append(S_mean)
+            S_var_list.append(S_var)
+            S_med_list.append(S_med)
+
+            print('Highest Score from gen:', ii_gen-1, ', S_max=', S_max, 'ind:', jj_best)
+            print('Median Score S_median=', S_med)
+            if ii_gen > 2:
+                S_ratio = S_max/max(S_arr[ii_gen-2])
+                S_ratio2 = S_med/np.median(S_arr[ii_gen-2])
+                print('Change of max score from previous:', S_ratio)
+                print('Change of median score from previous:', S_ratio2)
             # Select Genes
             print('Selecting Genes')
             n_profile_children_genes = selection(prof_list=nprof_parents, S_list=S_list,
@@ -500,7 +517,10 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
                                                  f_roulette=GA_1.fRoulette, f_elite=GA_1.fElite,
                                                  f_cross_over=GA_1.fCrossOver, f_immigrant=GA_1.fImmigrant,
                                                  f_mutant=GA_1.fMutation, mutation_thres=mutation_thres)
+            print('Selection complete')
             # Create New Ref-Index Profiles
+            print('')
+            print('Reproducing')
             for j in range(GA_1.nIndividuals):
                 nprof_children_genes_j = n_profile_children_genes[j]  # TODO: Check that x-y size is equal
                 nprof_children_j = create_profile(zspace_simul, nprof_genes=nprof_children_genes_j,
@@ -510,21 +530,11 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
                 n_profile_matrix[ii_gen, j] = nprof_children_j
                 genes_matrix[ii_gen, j] = nprof_children_genes_j
             nmatrix_hdf.close()
-            t_cycle = 0
-            jj_best = np.argmax(S_arr)
-            S_max_list.append(S_max)
-            S_mean = np.mean(S_list)
-            S_var = np.std(S_list)
-            S_med = np.median(S_list)
-
-            S_mean_list.append(S_mean)
-            S_var_list.append(S_var)
-            S_med_list.append(S_med)
-            nmatrix_hdf.close()
-
+            print('Closing nmatrix hdf')
             gens = np.arange(0, ii_gen, 1)
 
             # Make Plots:
+            print('Making Plots')
             fig = pl.figure(figsize=(8, 5), dpi=120)
             ax = fig.add_subplot(111)
             ax.errorbar(gens, S_mean_list, S_var_list, fmt='-o', c='k', label='Mean +/- Variance')
@@ -537,12 +547,14 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
             pl.savefig(results_dir + '/' + 'S_current.png')
             pl.close(fig)
 
+            print('Writing to log')
             line = str(ii_gen) + '\t' + str(S_max) + '\t' + str(S_mean) + '\t' + str(S_var) + '\t' + str(S_med) + '\n'
             f_log = open(fname_log, 'a')
             f_log.write(line)
             f_log.close()
 
             # Submit Jobs:
+            print('')
             print('Run Jobs:')
             for j in range(GA_1.nIndividuals):
                 print('Individual ', j)
@@ -570,10 +582,13 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
                     print('Run Directly')
                     os.system(cmd_j)
                     time.sleep(0.5)
-            print('Jobs running -> Generation: ', ii_gen)
+            if parallel_mode == True:
+                print('All jobs submitted -> Generation: ', ii_gen)
+
             fname_pseudo_output2 = results_dir + '/' + fname_pseudo_output
             fname_nmatrix_output2 = results_dir + '/' + fname_nmatrix_output
             fname_nmatrix_output2_npy = fname_nmatrix_output2[:-3] + '.npy'
+            print('Copying all data to dir: ', results_dir)
             os.system('cp ' + fname_pseudo_output + ' ' + fname_pseudo_output2)
             os.system('cp ' + fname_nmatrix_output + ' ' + fname_nmatrix_output2)
             os.system('cp ' + fname_nmatrix_output_npy + ' ' + fname_nmatrix_output2_npy)
