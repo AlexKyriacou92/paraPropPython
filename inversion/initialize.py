@@ -185,9 +185,7 @@ def create_profile(zprof_out, nprof_genes, zprof_genes, nprof_override, zprof_ov
     ii_cut = findNearest(zprof_out, zmax_1)
     # zprof_1 = zprof_genes[:ii_cut]
     nDepths_1 = ii_cut
-    print('initilize')
-    print('nDeptsh1= ', nDepths_1, 'ii_cut=', ii_cut, 'zmax_1=', zmax_1, 'zprof_out=', zprof_out)
-    print('stop')
+
     nprof_1, zprof_1 = do_interpolation_same_depth(zprof_in=zprof_override, nprof_in=nprof_override, N=nDepths_1) #Something Set Wrong
     '''
     nprof_out[:ii_cut] = nprof_1
