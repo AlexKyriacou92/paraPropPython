@@ -28,84 +28,9 @@ from scipy.signal import correlate
 
 import matplotlib.pyplot as pl
 
-if len(sys.argv) == 2:
-    fname_config = sys.argv[1]
-    fname_pseudo_external_str = 'None'
-    fname_nmatrix_external_str = 'None'
-    test_mode_str = 'False'
-    parallel_mode_str = 'True'
-elif len(sys.argv) == 3:
-    fname_config = sys.argv[1]
-    fname_pseudo_external_str = sys.argv[2]
-    fname_nmatrix_external_str = 'None'
-    test_mode_str = 'False'
-    parallel_mode_str = 'True'
-
-elif len(sys.argv) == 4:
-    fname_config = sys.argv[1]
-    fname_pseudo_external_str = sys.argv[2]
-    fname_nmatrix_external_str = sys.argv[3]
-    test_mode_str = 'False'
-    parallel_mode_str = 'True'
-
-elif len(sys.argv) == 5:
-    fname_config = sys.argv[1]
-    fname_pseudo_external_str = sys.argv[2]
-    fname_nmatrix_external_str = sys.argv[3]
-    test_mode_str = sys.argv[4]
-    parallel_mode_str = 'True'
-elif len(sys.argv) == 6:
-    fname_config = sys.argv[1]
-    fname_pseudo_external_str = sys.argv[2]
-    fname_nmatrix_external_str = sys.argv[3]
-    test_mode_str = sys.argv[4]
-    parallel_mode_str = sys.argv[5]
-else:
-    print('error! wrong arg number:', len(sys.argv))
-    sys.exit()
-
-if test_mode_str == 'True':
-    test_mode = True
-elif test_mode_str == 'False':
-    test_mode = False
-else:
-    test_mode = False
-
-if parallel_mode_str == 'True':
-    parallel_mode = True
-elif parallel_mode_str == 'False':
-    parallel_mode = False
-else:
-    parallel_mode = False
-
-#Check if PseudoData Exists
-if fname_pseudo_external_str == 'None':
-    fname_pseudo_external = None
-else:
-    if os.path.isfile(fname_pseudo_external_str) == False:
-        fname_pseudo_external = None
-        print('Warning, Pseudodata File:', fname_pseudo_external_str, 'does not exist -> creating new one')
-    else:
-        fname_pseudo_external = fname_pseudo_external_str
-
-#Check if nMatrix Exists
-if fname_nmatrix_external_str == 'None':
-    fname_nmatrix_external = None
-else:
-    if os.path.isfile(fname_nmatrix_external_str) == False:
-        fname_nmatrix_external = None
-        print('Warning, nmatrix file', fname_nmatrix_external_str, 'does not exist -> creating new one')
-        print('nmatrix attempeted:', fname_nmatrix_external_str)
-        #sys.exit()
-    else:
-        print('Using old nmatrix')
-        fname_nmatrix_external = fname_nmatrix_external_str
-
-def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = None, test_mode=False, parallel_mode=True):
+def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = None, test_mode = False, parallel_mode = True):
     #Initialization
     print('start')
-    start = time.time()
-
     #Load Simulation Config
     print('load simulation config')
     config = configparser.ConfigParser()
@@ -201,8 +126,10 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
                                      nprof_override=nprof_override,
                                      zprof_override=zprof_override)
     fname_nprofile_pseudo_txt = results_dir+'/nprofile_pseudo.txt'
-    util.save_profile_to_txtfile(zprof=zspace_simul, nprof=nprofile_pseudo, fname=fname_nprofile_pseudo_txt)
+
     if ii_gen_complete == 0:
+        util.save_profile_to_txtfile(zprof=zspace_simul, nprof=nprofile_pseudo, fname=fname_nprofile_pseudo_txt)
+
         if fname_pseudo_external == None:
             print('Make PsuedoData')
             depth_scan_from_txt(fname_config, fname_nprofile=fname_nprofile_pseudo_txt, fname_out=fname_pseudo_output)
@@ -232,8 +159,11 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
                                                zprof_genes=zspace_genes,
                                                nprof_override=nprof_override,
                                                zprof_override=zprof_override)
-    # TODO: Interpolate from TX -> RX direct peak guess -> genes -> Spline?
-
+        nStart = 1000
+        gene_pool = np.ones((nStart, GA_1.nGenes))
+        for i in range(nStart):
+            n_noise = np.random.normal(0, dn_offset, GA_1.nGenes)
+            gene_pool[i] = nprofile_pseudo_genes + n_noise
     else:
         bscan_pseudo = bscan_rxList()
         bscan_pseudo.load_sim(fname_pseudo_output)
@@ -278,10 +208,6 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
             t_peaks_first = np.ones(nRX_k)
             R = rxRanges[k]
             zprof_k = zprofile_list[k]
-            print('zprof=', zprof_k, len(zprof_k))
-            print('rx_id=', rx_id_k, len(rx_id_k))
-            print('')
-            print('Going Through Guess List')
             for i in range(len(rx_id_k)):
                 j = rx_id_k[i]
                 sig_pseudodata = bscan_pseudo_npy[i, j]
@@ -297,14 +223,7 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
                 t_peaks_first[i] = tspace_cut[inds[0]]
                 j_max = np.argmax(sig_correl_cut)
                 t_peaks_max[i] = tspace_cut[j_max]
-                print(t_peaks_first[i], t_peaks_max[i])
-                '''
-                fig = pl.figure(figsize=(8,5),dpi=120)
-                ax = fig.add_subplot(111)
-                ax.plot(tspace_cut, sig_correl_cut)
-                ax.grid()
-                pl.show()
-                '''
+
             c0 = 0.3
             nprof_first = c0 * t_peaks_first / R
             nprof_max = c0 * t_peaks_max / R
@@ -312,30 +231,17 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
             nprof_guess_list.append(nprof_max)
             zprof_guess_list.append(zprof_k)
             zprof_guess_list.append(zprof_k)
-            print('zprof_k', zprof_k, len(zprof_k))
-            print('nprof_max=', nprof_max, len(nprof_max))
-            print('nprof_first=', nprof_first, len(nprof_first))
 
-            # TODO: Add Exp Profile Fits!
-
-        print('N_Profile List')
         print(nprof_guess_list)
         genes_from_peak_list = []
         for i in range(len(nprof_guess_list)):
             nprof_i = nprof_guess_list[i]
             zprof_i = zprof_guess_list[i]
-            print('Check If GUesses overlap with genes!')
-            print('len(nprof) = ', len(nprof_i), 'len(zprof)=', len(zprof_i))
             if max(zspace_genes) > max(zprof_i):
-                print('Append')
                 zprof_i = np.append(zprof_i, max(zspace_genes))
                 nprof_i = np.append(nprof_i, np.random.uniform(1.2, 1.7, 1))
-            print('len(nprof) = ', len(nprof_i), 'len(zprof) = ', len(zprof_i))
-            # nprof_genes = create_profile(zspace_genes, nprof_genes=nprof_i, zprof_genes=zprof_i,nprof_override=nprof_override, zprof_override=zprof_override)
-            print('interpolate')
             nprof_genes, zprof_genes = util.do_interpolation_same_depth(zprof_in=zprof_i, nprof_in=nprof_i,
                                                                         N=GA_1.nGenes)
-
             genes_from_peak_list.append(nprof_genes)
 
         # Initialize First Generation
@@ -369,11 +275,6 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
             genes_start[i] = genes_rand[0]
             nprofile_start[i] = create_profile(zspace_simul, nprof_genes=genes_start[i], zprof_genes=zspace_genes,
                                                nprof_override=nprof_override, zprof_override=zprof_override)
-    nStart = 1000
-    gene_pool = np.ones((nStart, GA_1.nGenes))
-    for i in range(nStart):
-        n_noise = np.random.normal(0, dn_offset, GA_1.nGenes)
-        gene_pool[i] = nprofile_pseudo_genes + n_noise
 
 
     if ii_gen_complete == 0:
@@ -432,8 +333,7 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
     else:
         print(ii_gen_complete, ' generations already finished, proceed->')
 
-    #tend_1st_gen = time.time()
-    #duration_1st_gen = tend_1st_gen - tstart_1st_gen
+
 
     # Wait for jobs to be submitted
     print('next generation:')
@@ -475,14 +375,13 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
             # Save Scores from Last Generation from NPY to HDF File
             S_arr_npy = np.load(fname_nmatrix_output_npy, 'r')
             #misfit_matrix_npy = np.load(fname_nmatrix_output_misfit_npy, 'r')
-            print('Checking that Values were saved, True or False?', np.all(S_arr_npy == 0))
-            print('S_list, gen = ', ii_gen - 1, '\n', S_arr_npy[ii_gen - 1])
+            S_list = S_arr_npy[ii_gen-1]
+
+            print('S_list, gen = ', ii_gen - 1, '\n', S_list)
             nmatrix_hdf = h5py.File(fname_nmatrix_output, 'r+')
             S_arr = nmatrix_hdf['S_arr']
             #misfit_arr = nmatrix_hdf['misfit_arr']
             print('Set S')
-            print(S_arr_npy[ii_gen-1], S_arr_npy[ii_gen])
-            S_list = S_arr_npy[ii_gen-1]
             S_arr[ii_gen - 1] = S_list
 
             #print(misfit_arr[ii_gen-1,0,0,0])
@@ -519,7 +418,6 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
                                                  f_mutant=GA_1.fMutation, mutation_thres=mutation_thres)
             print('Selection complete')
             # Create New Ref-Index Profiles
-            print('')
             print('Reproducing')
             for j in range(GA_1.nIndividuals):
                 nprof_children_genes_j = n_profile_children_genes[j]  # TODO: Check that x-y size is equal
@@ -554,7 +452,6 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
             f_log.close()
 
             # Submit Jobs:
-            print('')
             print('Run Jobs:')
             for j in range(GA_1.nIndividuals):
                 print('Individual ', j)
@@ -593,6 +490,7 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
             os.system('cp ' + fname_nmatrix_output + ' ' + fname_nmatrix_output2)
             os.system('cp ' + fname_nmatrix_output_npy + ' ' + fname_nmatrix_output2_npy)
             ii_gen += 1
+            print('')
         else:
             print('Queue of jobs: ', nJobs)
             print('Wait:', tsleep, ' seconds')
@@ -602,7 +500,76 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
             print('')
             time.sleep(tsleep)
 
+if len(sys.argv) == 2:
+    fname_config = sys.argv[1]
+    fname_pseudo_external_str = 'None'
+    fname_nmatrix_external_str = 'None'
+    test_mode_str = 'False'
+    parallel_mode_str = 'True'
+elif len(sys.argv) == 3:
+    fname_config = sys.argv[1]
+    fname_pseudo_external_str = sys.argv[2]
+    fname_nmatrix_external_str = 'None'
+    test_mode_str = 'False'
+    parallel_mode_str = 'True'
+elif len(sys.argv) == 4:
+    fname_config = sys.argv[1]
+    fname_pseudo_external_str = sys.argv[2]
+    fname_nmatrix_external_str = sys.argv[3]
+    test_mode_str = 'False'
+    parallel_mode_str = 'True'
+elif len(sys.argv) == 5:
+    fname_config = sys.argv[1]
+    fname_pseudo_external_str = sys.argv[2]
+    fname_nmatrix_external_str = sys.argv[3]
+    test_mode_str = sys.argv[4]
+    parallel_mode_str = 'True'
+elif len(sys.argv) == 6:
+    fname_config = sys.argv[1]
+    fname_pseudo_external_str = sys.argv[2]
+    fname_nmatrix_external_str = sys.argv[3]
+    test_mode_str = sys.argv[4]
+    parallel_mode_str = sys.argv[5]
+else:
+    print('error! wrong arg number:', len(sys.argv))
+    sys.exit()
 
+if test_mode_str == 'True':
+    test_mode = True
+elif test_mode_str == 'False':
+    test_mode = False
+else:
+    test_mode = False
+
+if parallel_mode_str == 'True':
+    parallel_mode = True
+elif parallel_mode_str == 'False':
+    parallel_mode = False
+else:
+    parallel_mode = False
+
+#Check if PseudoData Exists
+if fname_pseudo_external_str == 'None':
+    fname_pseudo_external = None
+else:
+    if os.path.isfile(fname_pseudo_external_str) == False:
+        fname_pseudo_external = None
+        print('Warning, Pseudodata File:', fname_pseudo_external_str, 'does not exist -> creating new one')
+    else:
+        fname_pseudo_external = fname_pseudo_external_str
+
+#Check if nMatrix Exists
+if fname_nmatrix_external_str == 'None':
+    fname_nmatrix_external = None
+else:
+    if os.path.isfile(fname_nmatrix_external_str) == False:
+        fname_nmatrix_external = None
+        print('Warning, nmatrix file', fname_nmatrix_external_str, 'does not exist -> creating new one')
+        print('nmatrix attempeted:', fname_nmatrix_external_str)
+        #sys.exit()
+    else:
+        print('Using old nmatrix')
+        fname_nmatrix_external = fname_nmatrix_external_str
 
 if __name__ == '__main__':
     print('Run GA')
