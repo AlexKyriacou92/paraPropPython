@@ -463,60 +463,38 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
     #max_time = 2 * duration_1st_gen
     t_cycle = 0
 
-    print('Starting Generation Scan:, gen:', ii_gen_complete)
+    print('Starting Generation Scan:, gen:', ii_gen)
     while ii_gen < GA_1.nGenerations:
         nJobs = countjobs()
-        print('Generation', ii_gen, 'Check jobs')
-        '''
-        if (nJobs == 0) or (t_cycle > max_time):
-            print('Submit Jobs Now \n')
-            if t_cycle > max_time and nJobs > 0:
-                kk = 1
-                nJobs_2 = countjobs()
-                while nJobs_2 > 0 and kk <= 10:
-                    print('Processes still running, N = ', nJobs)
-                    print('Running kill command')
-                    os.system('python kill-jobs.py')
-                    print('Wait')
-                    time.sleep(tsleep)
-                    nJobs_2 = countjobs()
-                    kk += 1
-                    print(nJobs_2)
-        '''
-
+        print('Check jobs')
+        print('')
         if nJobs == 0:
+            print('Generation: ', ii_gen-1, ' complete')
+
+            print('Save scores')
             # Save Scores from Last Generation from NPY to HDF File
             S_arr_npy = np.load(fname_nmatrix_output_npy, 'r')
-            misfit_matrix_npy = np.load(fname_nmatrix_output_misfit_npy, 'r')
-            print('True or False?', np.all(S_arr_npy == 0))
-            #TODO: Why am I selecting the wrong fitness values?????
-            print(misfit_matrix_npy[ii_gen - 1])
+            #misfit_matrix_npy = np.load(fname_nmatrix_output_misfit_npy, 'r')
+            print('Checking that Values were saved, True or False?', np.all(S_arr_npy == 0))
             print('S_list, gen = ', ii_gen - 1, '\n', S_arr_npy[ii_gen - 1])
             nmatrix_hdf = h5py.File(fname_nmatrix_output, 'r+')
-            S_arr_last = nmatrix_hdf['S_arr']
-            misfit_arr = nmatrix_hdf['misfit_arr']
-            print('ii_gen=', ii_gen, S_arr_last, misfit_arr)
+            S_arr = nmatrix_hdf['S_arr']
+            #misfit_arr = nmatrix_hdf['misfit_arr']
             print('Set S')
             print(S_arr_npy[ii_gen-1], S_arr_npy[ii_gen])
-            S_arr_last[ii_gen - 1] = S_arr_npy[ii_gen - 1]
+            S_list = S_arr_npy[ii_gen-1]
+            S_arr[ii_gen - 1] = S_list
 
-            print('Set Misfit')
             #print(misfit_arr[ii_gen-1,0,0,0])
             #misfit_arr[ii_gen - 1, 0, 0, 0] = misfit_matrix_npy[ii_gen - 1, 0, 0,0]
-            nmatrix_hdf.close()
 
-            # Apply GA Selection
-            print('Applying Selection Routines')
-            nmatrix_hdf = h5py.File(fname_nmatrix_output, 'r+')
-            S_arr = np.array(nmatrix_hdf['S_arr'])
             n_profile_matrix = nmatrix_hdf['n_profile_matrix']
             genes_matrix = nmatrix_hdf['genes_matrix']
             nprof_parents = genes_matrix[ii_gen - 1]
-            S_list = np.array(S_arr[ii_gen - 1])
             S_max = max(S_list)
 
             # Select Genes
-            print('Selecting genes from fitness score list:', S_list)
+            print('Selecting Genes')
             n_profile_children_genes = selection(prof_list=nprof_parents, S_list=S_list,
                                                  prof_list_initial=gene_pool,
                                                  f_roulette=GA_1.fRoulette, f_elite=GA_1.fElite,
@@ -593,14 +571,12 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
                     os.system(cmd_j)
                     time.sleep(0.5)
             print('Jobs running -> Generation: ', ii_gen)
-
             fname_pseudo_output2 = results_dir + '/' + fname_pseudo_output
             fname_nmatrix_output2 = results_dir + '/' + fname_nmatrix_output
             fname_nmatrix_output2_npy = fname_nmatrix_output2[:-3] + '.npy'
             os.system('cp ' + fname_pseudo_output + ' ' + fname_pseudo_output2)
             os.system('cp ' + fname_nmatrix_output + ' ' + fname_nmatrix_output2)
             os.system('cp ' + fname_nmatrix_output_npy + ' ' + fname_nmatrix_output2_npy)
-
             ii_gen += 1
         else:
             print('Queue of jobs: ', nJobs)
