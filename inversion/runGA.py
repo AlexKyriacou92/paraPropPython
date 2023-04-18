@@ -70,8 +70,7 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
         fname_nmatrix_output_npy = fname_nmatrix_output[:-3] + '.npy'
         fname_nmatrix_output_misfit_npy = fname_nmatrix_output[:-3] + '_misfit.npy'
 
-        util.create_memmap(fname_nmatrix_output_npy, dimensions=(GA_1.nGenerations, GA_1.nIndividuals),
-                           data_type='float')
+        #util.create_memmap(fname_nmatrix_output_npy, dimensions=(GA_1.nGenerations, GA_1.nIndividuals, nTX, nRX), data_type='float')
     else:
         print('Old Nmatrix')
         fname_nmatrix_output = fname_nmatrix_external
@@ -79,7 +78,7 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
         fname_nmatrix_output_misfit_npy = fname_nmatrix_output[:-3] + '_misfit.npy'
 
         nmatrix_npy = np.load(fname_nmatrix_output_npy,'r')
-        misfit_npy = np.load(fname_nmatrix_output_misfit_npy, 'r')
+        #misfit_npy = np.load(fname_nmatrix_output_misfit_npy, 'r')
         ii_gen_complete = 0
         for i in range(len(nmatrix_npy)):
             if np.all(nmatrix_npy[i] == 0) == False:
@@ -143,7 +142,7 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
     bscan_pseudo.load_sim(fname_pseudo_output)
     nTX = bscan_pseudo.nTX
     nRX = bscan_pseudo.nRX
-    util.create_memmap(fname_nmatrix_output_misfit_npy, dimensions=(GA_1.nGenerations, GA_1.nGenerations, nTX, nRX))
+    #util.create_memmap(fname_nmatrix_output_misfit_npy, dimensions=(GA_1.nGenerations, GA_1.nGenerations, nTX, nRX))
 
     # INITIALIZATION
     # Generate Noise
