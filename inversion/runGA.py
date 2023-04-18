@@ -85,14 +85,14 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
             if np.all(nmatrix_npy[i] == 0) == False:
                 ii_gen_complete += 1
         if ii_gen_complete > 0:
-            hdf_nmatrix = h5py.File(fname_nmatrix_output, 'r+')
-            S_arr = hdf_nmatrix['S_arr']
-            #misfit_arr = hdf_nmatrix['misfit_arr']
+            nmatrix_hdf = h5py.File(fname_nmatrix_output, 'r+')
+            S_arr = nmatrix_hdf['S_arr']
+            #misfit_arr = nmatrix_hdf['misfit_arr']
             for i in range(0, ii_gen_complete):
                 if np.all(S_arr[i] == 0) == True and np.all(nmatrix_npy[i] == 0) == False:
                     S_arr[i] = nmatrix_npy[i]
                     #misfit_arr[i] = misfit_npy[i]
-            hdf_nmatrix.close()
+            nmatrix_hdf.close()
 
     #PSEUDO-DATA
     fname_override = config['Override']['fname_override']
@@ -132,7 +132,10 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
 
         if fname_pseudo_external == None:
             print('Make PsuedoData')
+            tstart_pseudo = time.time()
             depth_scan_from_txt(fname_config, fname_nprofile=fname_nprofile_pseudo_txt, fname_out=fname_pseudo_output)
+            tend_pseudo = time.time()
+            duration_pseudo = tend_pseudo - tstart_pseudo
         else:
             print('PseudoData already exists -> proceed')
 
@@ -282,6 +285,10 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
         createMatrix2(fname_config=fname_config, n_prof_initial=nprofile_start, genes_initial=genes_start,
                       z_profile= zspace_simul, z_genes=zspace_genes, fname_nmatrix=fname_nmatrix_output,
                       nGenerations=GA_1.nGenerations)
+        
+        nmatrix_hdf = h5py.File(fname_nmatrix_output, 'r+')
+        nmatrix_hdf.attrs['duration'] = duration_pseudo
+        nmatrix_hdf.close()
     else:
         print('Skip creating nmatrix -> already exists!')
 
@@ -359,8 +366,12 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
     fout.write(fname_pseudo_output + '\t' + fname_nmatrix_output + '\n')
     fout.write('gen\tind\tS\tfname_out\n')
     fout.close()
+
+    nmatrix_hdf = h5py.File(fname_nmatrix_output, 'r')
+    duration_sim = float(nmatrix_hdf['duration'])
+    nmatrix_hdf.close()
     tsleep = 10.
-    #max_time = 2 * duration_1st_gen
+    max_time = 4 * duration_sim
     t_cycle = 0
 
     print('Starting Generation Scan:, gen:', ii_gen)
