@@ -58,7 +58,8 @@ if os.path.isdir(path2plots) == False:
 
 for i in range(nGenerations_complete):
     S_max = max(S_arr[i])
-    ii_max = np.argmax(S_arr)
+    ii_max = np.argmax(S_arr[i])
+    print('gen:', i, 'S_max =', S_max, 'ind:', ii_max)
     n_profile_max = n_profile_matrix[i, ii_max]
     n_residuals_max = n_profile_max - n_profile_pseudo_interp
 
@@ -77,6 +78,8 @@ for i in range(nGenerations_complete):
 
     ax2.plot(n_residuals_max, z_profile, label='Residuals, Best Score')
     ax2.grid()
+    ax2.set_ylim(16,0)
+    ax2.set_xlim(-0.3, 0.3)
     ax2.set_xlabel('Ref Index Residuals $\Delta n$')
     ax2.legend()
 
