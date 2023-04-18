@@ -284,10 +284,11 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
         createMatrix2(fname_config=fname_config, n_prof_initial=nprofile_start, genes_initial=genes_start,
                       z_profile= zspace_simul, z_genes=zspace_genes, fname_nmatrix=fname_nmatrix_output,
                       nGenerations=GA_1.nGenerations)
-        
+        '''
         nmatrix_hdf = h5py.File(fname_nmatrix_output, 'r+')
         nmatrix_hdf.attrs['duration'] = duration_pseudo
         nmatrix_hdf.close()
+        '''
     else:
         print('Skip creating nmatrix -> already exists!')
 
@@ -365,10 +366,12 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
     fout.write(fname_pseudo_output + '\t' + fname_nmatrix_output + '\n')
     fout.write('gen\tind\tS\tfname_out\n')
     fout.close()
-
-    nmatrix_hdf = h5py.File(fname_nmatrix_output, 'r')
+    '''
+    matrix_hdf = h5py.File(fname_nmatrix_output, 'r')
     duration_sim = float(nmatrix_hdf['duration'])
     nmatrix_hdf.close()
+    '''
+    duration = 10 * 60.
     tsleep = 10.
     max_time = 4 * duration_sim
     t_cycle = 0
