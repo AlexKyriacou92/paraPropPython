@@ -70,7 +70,7 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
         fname_nmatrix_output_npy = fname_nmatrix_output[:-3] + '.npy'
         fname_nmatrix_output_misfit_npy = fname_nmatrix_output[:-3] + '_misfit.npy'
 
-        util.create_memmap(fname_nmatrix_output_npy, dimensions=(GA_1.nGenerations, GA_1.nIndividuals, nTX, nRX), data_type='float')
+        util.create_memmap(fname_nmatrix_output_npy, dimensions=(GA_1.nGenerations, GA_1.nIndividuals), data_type='float')
     else:
         print('Old Nmatrix')
         fname_nmatrix_output = fname_nmatrix_external
