@@ -448,7 +448,9 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
             gens = np.arange(0, ii_gen, 1)
 
             # Make Plots:
+            '''
             print('Making Plots')
+        
             fig = pl.figure(figsize=(8, 5), dpi=120)
             ax = fig.add_subplot(111)
             ax.errorbar(gens, S_mean_list, S_var_list, fmt='-o', c='k', label='Mean +/- Variance')
@@ -485,7 +487,7 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
             fname_nprof = dir_plots + '/gen_' + str(ii_gen-1) + '_ref_index.png'
             fig.savefig(fname_nprof)
             pl.close(fig)
-
+            '''
             print('Writing to log')
             line = str(ii_gen) + '\t' + str(S_max) + '\t' + str(S_mean) + '\t' + str(S_var) + '\t' + str(S_med) + '\n'
             f_log = open(fname_log, 'a')
