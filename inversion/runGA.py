@@ -404,7 +404,7 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
             genes_matrix = nmatrix_hdf['genes_matrix']
             nprof_parents = genes_matrix[ii_gen - 1]
             S_max = max(S_list)
-            jj_best = np.argmax(S_arr)
+            jj_best = np.argmax(S_list)
             t_cycle = 0
             S_max_list.append(S_max)
             S_mean = np.mean(S_list)
