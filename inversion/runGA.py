@@ -371,7 +371,7 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
     duration_sim = float(nmatrix_hdf['duration'])
     nmatrix_hdf.close()
     '''
-    duration = 10 * 60.
+    duration_sim = 10 * 60.
     tsleep = 10.
     max_time = 4 * duration_sim
     t_cycle = 0
