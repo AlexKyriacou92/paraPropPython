@@ -294,6 +294,22 @@ class bscan_rxList: #This one is a nTx x nRx dimension bscan
         ascan = self.bscan_sig[txNum, rxNum]
         return ascan
 
+    def get_ascan_from_depth(self, z_tx, x_rx, z_rx):
+        txNum = util.findNearest(self.tx_depths, z_tx)
+        rxNum = 0
+        rxList = self.rxList
+        for i in range(len(rxList)):
+            rx_i = rxList[i]
+            if rx_i.x == x_rx and rx_i.z == z_rx:
+                rxNum = i
+                break
+        rx_select = rxList[rxNum]
+        print(rx_select.x, rx_select.z)
+        ascan = self.bscan_sig[txNum, rxNum]
+        return ascan
+
+
+
     def bscan_parallel(self, xRx):
         self.bscan_plot = np.zeros((self.nTX, self.tx_signal.nSamples), dtype='complex')
         #ii_rx_x = util.findNearest(self.rx_ranges, xRx)
