@@ -14,7 +14,7 @@ Trasnmitter acts as the source for the radio emission that is observed at the re
 class tx_signal:
     def __init__(self, frequency, bandwidth, t_centre, dt, tmax, amplitude = 1, noise_amplitude = 0, freqMin=None, freqMax=None):
         self.amplitude = amplitude
-        self.frequency = frequency
+        self.frequency = frequency # Central Frequency
         self.bandwidth = bandwidth
         self.t_centre = t_centre
         self.dt = dt
