@@ -149,7 +149,7 @@ def selection(prof_list, S_list, prof_list_initial, f_roulette=0.75, f_elite=0.0
         S_parents.append(S_list_t[j])
     #np.unique()
     parents_unique = []
-    inds_parents_unique = np.unique(S_parents, return_index=True)
+    inds_parents_unique = np.unique(S_parents, return_index=True)[1]
     nUnique = len(inds_parents_unique)
     for i in range(nUnique):
         i_unique = inds_parents_unique[i]
