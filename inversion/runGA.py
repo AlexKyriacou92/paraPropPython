@@ -92,8 +92,8 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
                     S_arr[i] = nmatrix_npy[i]
                     #misfit_arr[i] = misfit_npy[i]
             nmatrix_hdf.close()
-
     #PSEUDO-DATA
+
     fname_override = config['Override']['fname_override']
     nprof_override, zprof_override = util.get_profile_from_file(fname_override)
 
@@ -293,7 +293,6 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
         print('Skip creating nmatrix -> already exists!')
 
     cmd_prefix = 'python runSimulation.py '
-    ii_gen = ii_gen_complete
 
     dir_outfiles0 = results_dir + '/outfiles'
     os.system('mkdir ' + dir_outfiles0)
@@ -336,11 +335,12 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
                     time.sleep(tsleep)
                 else:
                     proceed_bool = True
-                    ii_gen_complete += 1
+        ii_gen_complete += 1
     else:
         print(ii_gen_complete, ' generations already finished, proceed->')
 
 
+    ii_gen = ii_gen_complete
 
     # Wait for jobs to be submitted
     print('next generation:')

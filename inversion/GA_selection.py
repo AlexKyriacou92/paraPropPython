@@ -46,8 +46,19 @@ def roulette(prof_list, S_list, nOutput):
             ii += 1
     return profile_output_list, S_output_list
 
+'''
+def roulette_id(prof_list, S_list, nOutput):
+    nIndividuals = len(S_list)
+    ii = 1
 
-def tournament(prof_list, S_list, nOutput):
+    profile_output_list = []
+    S_output_list = []
+    id_list = []
+    jj_rand = random.shuffle()
+    return profile_output_list, S_output_list, id_list
+'''
+
+def tournament(prof_list, S_list, nOutput, nSubgroup=10):
     nIndividuals = len(S_list)
     inds = np.array(S_list).argsort()
     random.shuffle(inds)
@@ -58,16 +69,20 @@ def tournament(prof_list, S_list, nOutput):
     prof_list_tournament = prof_list[inds]
 
     # Subdivide into groups for tournament
-    nSubgroup = int(float(nIndividuals) / float(nOutput))
+    #nSubgroup = int(float(nIndividuals) / float(nOutput))
 
     profile_output_list = []
     S_output_list = []
+    print('nOutput', nOutput)
+    print('nSubgroup', nSubgroup)
 
     # Loop over each subgroup -> Select the best member and append to output list
     for i in range(nOutput):
-        jj_min = i * nSubgroup
-        jj_max = (i + 1) * nSubgroup - 1
+        jj_min = 0
+        jj_max = nSubgroup-1
         S_list_subgroup = S_list_tournament[jj_min:jj_max]
+        print('i output:', i)
+        print('min:', jj_min, 'max:', jj_max)
         prof_list_subgroup = prof_list_tournament[jj_min:jj_max]
 
         # Select Best Member
@@ -77,6 +92,12 @@ def tournament(prof_list, S_list, nOutput):
 
         profile_output_list.append(prof_best)
         S_output_list.append(S_best)
+        inds = np.array(S_list).argsort()
+        random.shuffle(inds)
+
+        # Shuffle the list of fitness variables and profile list
+        S_list_tournament = S_list[inds]
+
     return profile_output_list, S_output_list
 
 def rand_operator(f_cross_over, f_mutation):
@@ -117,13 +138,23 @@ def selection(prof_list, S_list, prof_list_initial, f_roulette=0.75, f_elite=0.0
     print('Roulette')
     roulette_list, S_list_r = roulette(prof_list, S_list, nR)
     print('Tournament')
-
+    print(nT)
     tournament_list, S_list_t = tournament(prof_list, S_list, nT)
-    print()
+    S_parents = []
     for i in range(nR):
         parent_list.append(roulette_list[i])
+        S_parents.append(S_list_r[i])
     for j in range(nT):
         parent_list.append(tournament_list[j])
+        S_parents.append(S_list_t[j])
+    #np.unique()
+    parents_unique = []
+    inds_parents_unique = np.unique(S_parents, return_index=True)
+    nUnique = len(inds_parents_unique)
+    for i in range(nUnique):
+        i_unique = inds_parents_unique[i]
+        parents_unique.append(parent_list[i_unique])
+
     new_generation = []
     for i in range(nElite):
         new_generation.append(prof_list_elite[i])
@@ -135,7 +166,7 @@ def selection(prof_list, S_list, prof_list_initial, f_roulette=0.75, f_elite=0.0
         i_operator = rand_operator(f_cross_over, f_mutant)  # TODO: Change this operator
         if i_operator == 0:  # Cross Breeding
             print('Cross-Breed')
-            p_list = random.sample(parent_list, 2)
+            p_list = random.sample(parents_unique, 2) #Random Sample ->
             p1 = p_list[0]
             p2 = p_list[1]
             prof_c = cross_breed2(p1, p2)
