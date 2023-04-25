@@ -73,16 +73,16 @@ def tournament(prof_list, S_list, nOutput, nSubgroup=10):
 
     profile_output_list = []
     S_output_list = []
-    print('nOutput', nOutput)
-    print('nSubgroup', nSubgroup)
+    #print('nOutput', nOutput)
+    #print('nSubgroup', nSubgroup)
 
     # Loop over each subgroup -> Select the best member and append to output list
     for i in range(nOutput):
         jj_min = 0
         jj_max = nSubgroup-1
         S_list_subgroup = S_list_tournament[jj_min:jj_max]
-        print('i output:', i)
-        print('min:', jj_min, 'max:', jj_max)
+        #print('i output:', i)
+        #print('min:', jj_min, 'max:', jj_max)
         prof_list_subgroup = prof_list_tournament[jj_min:jj_max]
 
         # Select Best Member
