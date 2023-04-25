@@ -17,7 +17,7 @@ from transmitter import tx_signal
 from data import create_sim, create_rxList_from_file, create_transmitter_array, create_hdf_FT
 from data import create_tx_signal, bscan, bscan_rxList, create_hdf_bscan
 from plotting_functions import compare_ascans
-
+from objective_functions import misfit_function_ij
 
 path2data = sys.argv[1]
 path2sim = sys.argv[2]
@@ -30,5 +30,9 @@ bscan_data.load_sim(fname=path2data)
 bscan_sim = bscan_rxList()
 bscan_sim.load_sim(fname=path2sim)
 
+fname_save = 'plots/'
 compare_ascans(bscan_data=bscan_data, bscan_sim=bscan_sim,
-             z_tx=z_tx, x_rx=x_rx, z_rx=z_rx, mode_plot='pulse', tmin=80, tmax=200)
+             z_tx=z_tx, x_rx=x_rx, z_rx=z_rx, mode_plot='envelope', tmin=80, tmax=300, path2plot=fname_save)
+m_ij = misfit_function_ij(bscan_data.get_ascan_from_depth(z_tx, x_rx, z_rx), bscan_sim.get_ascan_from_depth(z_tx, x_rx, z_rx),
+                          bscan_sim.tspace)
+print(m_ij, 1/m_ij)

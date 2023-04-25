@@ -87,10 +87,12 @@ nprof_error = []
 nprof_list = []
 S_max_list = []
 genes_list = []
+j_ind_list = []
 for i in range(nGenerations-1):
     S_max = max(S_arr[i])
     S_max_list.append(S_max)
     ii_max = np.argmax(S_arr[i])
+    j_ind_list.append(ii_max)
     print('gen:', i, 'S_max =', S_max, 'ind:', ii_max)
     n_profile_max = n_profile_matrix[i, ii_max][1:-1]
     n_residuals_max = n_profile_max - n_profile_pseudo_interp
@@ -212,9 +214,72 @@ fig = pl.figure(figsize=(5,8),dpi=120)
 ax = fig.add_subplot(111)
 ax.plot(n_prof_best, z_profile,c='b')
 dz_err = 0.2
-ax.errorbar(genes_best, z_genes, dz_err*np.ones(nGenes), xerr=n_prof_err*np.ones(nGenes),color='c')
-ax.plot(n_profile_pseudo, z_profile_pseudo,c='k')
+plot_label = 'Best Profile \n Generation: ' + str(i_select) + ' ind: ' + str(j_ind_list[i_select])
+ax.set_title(plot_label)
+ax.errorbar(genes_best, z_genes, dz_err*np.ones(nGenes), xerr=n_prof_err*np.ones(nGenes),color='c',label='$\Delta n = $' + str(round(n_prof_err,3)))
+#ax.plot(n_profile_pseudo, z_profile_pseudo,c='k')
 ax.grid()
 ax.set_xlim(1.2,1.8)
 ax.set_ylim(16,0)
+ax.set_ylabel('Depth z [m]')
+ax.set_xlabel('Ref Index n')
+ax.legend()
+fig.savefig(path2plots + '/' + 'n_best.png')
+pl.close(fig)
+#pl.show()
+
+fig = pl.figure(figsize=(5,8),dpi=120)
+ax = fig.add_subplot(111)
+ax.plot(n_prof_best**2, z_profile,c='b',label='Reconstruction (interpolation)')
+dz_err = 0.2
+plot_label = 'Best Profile \n Generation: ' + str(i_select) + ' ind: ' + str(j_ind_list[i_select])
+ax.set_title(plot_label)
+ax.errorbar(genes_best**2, z_genes, dz_err*np.ones(nGenes), xerr=4*n_prof_err*np.ones(nGenes), fmt='o',
+            color='c',label='$\Delta \epsilon_{r} = $' + str(round(4*n_prof_err,3)) + ' (95% CL)')
+ax.plot(n_profile_pseudo**2, z_profile_pseudo,c='k',label='Input Ref Index Model')
+ax.grid()
+ax.set_xlim(0.9,3.3)
+ax.set_ylim(16,-2)
+ax.set_ylabel('Depth z [m]')
+ax.set_xlabel('Permittivity $\epsilon_{r}$')
+ax.legend()
+fig.savefig(path2plots + '/' + 'eps_best.png')
+pl.close(fig)
+
+'''
+dx = 0.1
+x_space = np.arange(0, 50, dx)
+nX = len(x_space)
+nDepths = len(z_profile)
+dz = 0.05
+z_space = np.arange(-10, 15+dz, dz)
+nZ = len(z_space)
+eps_matrix_2d = np.ones((nZ, nX))
+for i in range(nX):
+    i_min = util.findNearest(z_space, dz) + 1
+    eps_matrix_2d[i_min:, i] = n_prof_best**2
+
+    z_shift = np.random.uniform(-1, 1, 1)
+    i_shift = int(z_shift/dz)
+    if i_shift > 0:
+        eps_1d =  np.roll(n_prof_best**2, i_shift)
+        eps_matrix_2d[i_min:,i] = eps_1d
+        eps_matrix_2d[:i_shift,i] = 1.0
+    elif i_shift < 0:
+        eps_1d = np.roll(n_prof_best**2, i_shift)
+        eps_1d[:i_shift] = 1.0
+        eps_matrix_2d[i_min:,i] = eps_1d
+        eps_matrix_2d[-i_shift:, i] = n_prof_best[-1]**2
+    else:
+        eps_1d = n_prof_best**2
+        eps_1d = eps_1d[-i_shift:] = max(n_prof_best**2)
+        eps_matrix_2d[i_min:,i] = eps_1d
+
+import cmasher as cmr
+
+fig = pl.figure(figsize=(8,5),dpi=120)
+ax = fig.add_subplot(111)
+ax.imshow(eps_matrix_2d, aspect='auto', extent=(0, 50,max(z_space), min(z_space)),cmap=cmr.arctic)
+ax.set_ylim(max(z_space), min(z_space))
 pl.show()
+'''

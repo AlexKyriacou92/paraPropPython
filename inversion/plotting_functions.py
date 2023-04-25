@@ -9,6 +9,7 @@ from matplotlib import pyplot as pl
 from scipy.signal import correlate
 
 from makeDepthScan import depth_scan_from_hdf
+from objective_functions import misfit_function_ij
 
 sys.path.append('../')
 
@@ -43,6 +44,7 @@ def plot_ascan(bscan_sim, z_tx, x_rx, z_rx, tmin=None, tmax=None, mode_plot = 'p
         sig_sim_correl = abs(sig_sim_correl[j_cut:])
         ax.plot(tspace_cut, sig_sim_correl, c='b', label='Simulation', alpha=0.8)
 
+
     ax.grid()
     ax.legend()
     ax.set_ylabel('Amplitude A [u]')
@@ -73,6 +75,10 @@ def compare_ascans(bscan_data, bscan_sim, z_tx, x_rx, z_rx, tmin=None, tmax=None
 
     fig_label = '$f_{central}$ = ' + str(tx_sig.frequency*1e3) + ' MHz B = ' + str(tx_sig.bandwidth*1e3) + ' MHz \n'
     fig_label += '$z_{tx} = $ ' + str(z_tx) + ' m, $R = $ ' + str(x_rx) + ' m $z_{rx} = $ ' + str(z_rx) + ' m'
+    m_ij = misfit_function_ij(ascan_data, ascan_sim, tspace)
+    m_ij0 = misfit_function_ij(ascan_data, np.roll(ascan_data, 3), tspace)
+    # print(m_ij0)
+    fig_label += '\n$m_{ij} =$ ' + str(round(m_ij, 2)) + '$s_{ij} = $' + str(round(1 / m_ij, 5))
     ax.set_title(fig_label)
 
     if mode_plot == 'pulse':
@@ -92,6 +98,11 @@ def compare_ascans(bscan_data, bscan_sim, z_tx, x_rx, z_rx, tmin=None, tmax=None
         sig_data_correl = abs(sig_data_correl[j_cut:])
         ax.plot(tspace_cut, sig_data_correl, c='r', label='PseudoData')
         ax.plot(tspace_cut, sig_sim_correl, c='b', label='Simulation',alpha=0.8)
+    elif mode_plot == 'envelope':
+        E_data = np.sqrt(ascan_data.real**2 + ascan_data.imag**2)
+        E_sim = np.sqrt(ascan_sim.real**2 + ascan_sim.imag**2)
+        ax.plot(tspace, E_data, label='PseudoData', c='r')
+        ax.plot(tspace, E_sim, label='Simulation', c='b', alpha=0.8)
 
     ax.grid()
     ax.legend()
