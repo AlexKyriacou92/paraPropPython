@@ -306,6 +306,7 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
     if ii_gen_complete == 0:
         print('Initialize, create first generation')
         outfile_list = []
+        ii_gen = ii_gen_complete
 
         for jj_ind in range(GA_1.nIndividuals):
             print('Individual', jj_ind)
