@@ -513,6 +513,13 @@ def do_interpolation_same_depth(zprof_in, nprof_in, N):
     nprof_out[1:-1] = f_interp(zprof_out[1:-1])
     return nprof_out, zprof_out
 
+def do_interpolation_spline(zprof_in, nprof_in, dz_out):
+    zprof_out = np.arange(min(zprof_in), max(zprof_in) + dz_out, dz_out)
+    spi = scipy.interpolate.UnivariateSpline(zprof_in, nprof_in, s=0)
+    nprof_out = spi(zprof_out)
+    return nprof_out, zprof_out
+
+
 def smooth_padding(z_vec, n_vec, dz):
     z_max = max(z_vec)
     z_min = min(z_vec)
