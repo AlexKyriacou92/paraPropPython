@@ -1,4 +1,5 @@
 import os.path
+import random
 import sys
 import numpy as np
 import time
@@ -88,7 +89,7 @@ nprof_list = []
 S_max_list = []
 genes_list = []
 j_ind_list = []
-for i in range(nGenerations-1):
+for i in range(nGenerations_complete):
     S_max = max(S_arr[i])
     S_max_list.append(S_max)
     ii_max = np.argmax(S_arr[i])
@@ -102,8 +103,6 @@ for i in range(nGenerations-1):
     genes_residuals = n_genes - n_truth_genes
     nprof_list.append(n_profile_max)
 
-
-    '''    
     fig = pl.figure(figsize=(10,8), dpi=100)
     ax1 = fig.add_subplot(121)
     ax2 = fig.add_subplot(122)
@@ -111,6 +110,11 @@ for i in range(nGenerations-1):
     ax1.plot(n_profile_max, z_profile,c='b', label='Best Score')
     ax1.plot(n_profile_pseudo_interp, z_profile,c='k', label='Truth')
     ax1.scatter(n_genes, z_genes, c='c', label='Genes')
+    ii_rand = np.random.randint(0, nIndividuals-1, 1)[0]
+    print(ii_rand)
+    n_profile_rand = n_profile_matrix[i, ii_rand][1:-1]
+
+    ax1.plot(n_profile_rand, z_profile,c='r')
     ax1.scatter(n_truth_genes, z_genes, c='k')
     ax1.grid()
     ax1.set_xlabel('Ref Index n')
@@ -131,10 +135,10 @@ for i in range(nGenerations-1):
     fname_plot = path2plots + '/' + 'ref_index_gen' + str(i).zfill(3) + '_plot.png'
     fig.savefig(fname_plot)
     pl.close(fig)
-    '''
+
     print('')
 
-    '''
+
     fig = pl.figure(figsize=(10, 8), dpi=100)
     ax1 = fig.add_subplot(121)
     ax2 = fig.add_subplot(122)
@@ -199,7 +203,7 @@ for i in range(nGenerations-1):
     fname_plot = path2plots + '/' + 'dndz_gen' + str(i).zfill(3) + '_plot.png'
     fig.savefig(fname_plot)
     pl.close(fig)
-    '''
+
 
     print(np.mean(genes_residuals)*100, np.std(genes_residuals)*100)
     nprof_error.append(np.std(genes_residuals))

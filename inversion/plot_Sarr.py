@@ -149,28 +149,50 @@ ax.set_ylabel('Misfit')
 pl.show()
 '''
 i_select = 1
+S_nprof_list = []
+n_truth_genes = np.ones(nGenes)
+bscan_pseudo = bscan_rxList()
+print(type(pseudo_data))
+bscan_pseudo.load_sim(pseudo_data)
+n_prof_pseudo = bscan_pseudo.n_profile
+z_prof_pseudo = bscan_pseudo.z_profile
+S_list_all = []
+for j in range(nGenes):
+    j_truth = util.findNearest(z_prof_pseudo, z_genes[j])
+    n_truth_genes[j] = n_prof_pseudo[j_truth]
+S_nprof_max = []
+gen_num = []
+jj_best_nprof = []
 for i_select in range(nGenerations):
     n_genes_gen = genes_arr[i_select]
     n_prof_list = []
     z_list = []
     nDepths = len(n_genes_gen[i_select])
+    S_nprof_gen = np.zeros(nIndividuals)
 
-    bscan_pseudo = bscan_rxList()
-    print(type(pseudo_data))
-    bscan_pseudo.load_sim(pseudo_data)
-    n_prof_pseudo = bscan_pseudo.n_profile
-    z_prof_pseudo = bscan_pseudo.z_profile
     for i in range(len(n_genes_gen)):
         genes_ind = n_genes_gen[i]
+        delta_genes = (genes_ind - n_truth_genes)**2
+        Chi_genes = sum(delta_genes)
+        S_nprof = 1/Chi_genes
+        S_nprof_gen[i] = S_nprof
+        if S_arr[i_select, i] != 0:
+            S_nprof_list.append(S_nprof)
+            S_list_all.append(S_arr[i_select, i])
+
+            if S_arr[i_select, i] == S_max_list[i_select]:
+                S_nprof_max.append(S_nprof)
+                gen_num.append(float(i_select))
         for j in range(nDepths):
             n_prof_list.append(genes_ind[j])
             z_list.append(-z_genes[j])
+    jj_best_nprof.append(np.argmax(S_nprof_gen))
+    '''
     fig = pl.figure(figsize=(5,8))
     ax = fig.add_subplot(111)
     h = ax.hist2d(n_prof_list, z_list, bins=[40, 2*nDepths], range=[[1.2,1.8],[-15,-1.5]],
                   cmap='viridis_r',vmin=1, vmax=80,norm=mpl.colors.LogNorm())
     #ax.scatter(n_prof_list, z_list, c='b')
-
     fig.colorbar(h[3], ax=ax)
     ax.set_title('Gen = ' + str(i_select))
     ax.plot(n_prof_pseudo, -1*z_prof_pseudo, c='c')
@@ -192,3 +214,54 @@ for i_select in range(nGenerations):
     ax.set_xlim(1.2,1.8)
     fig.savefig(parent_dir + '/' + 'nprof_scatter' + str(i_select).zfill(3) + '.png')
     pl.close(fig)
+    '''
+corr_S = np.corrcoef(S_nprof_list, S_list_all)
+print(corr_S)
+corr_S = np.corrcoef(S_nprof_list, np.array(S_list_all)**2)
+print(corr_S)
+S_list_all_sq = np.array(S_list_all)**2
+S_nprof_list = np.array(S_nprof_list)
+m, c = np.polyfit(S_nprof_list, S_list_all_sq, 1)
+gen_num = np.array(gen_num)
+gen_rel = gen_num/float(nGenerations)
+import matplotlib.cm as cm
+import matplotlib as mpl
+
+
+norm = mpl.colors.Normalize(vmin=0, vmax=float(nGenerations))
+cmap = cm.viridis
+#c_arr = color_map_color(gen_num, vmin=0, vmax=float(nGenerations))
+c_arr = []
+
+x_space = np.linspace(min(S_nprof_list), max(S_nprof_list), 100)
+fig = pl.figure(figsize=(8,5),dpi=120)
+ax = fig.add_subplot(111)
+ax.scatter(S_nprof_list, np.array(S_list_all)**2,c='c',s=5)
+ax.plot(S_nprof_max, np.array(S_max_list)**2,c='b')
+
+sc = ax.scatter(S_nprof_max, np.array(S_max_list)**2,c=cmap(gen_rel))
+fig.colorbar(sc)
+ax.plot(x_space, m*x_space + c, label='Correlation, R = ' + str(round(corr_S[0,1],2)),c='k')
+ax.set_xlabel('Profile Fitness Score $S_{n}^{2}$')
+ax.set_ylabel('Waveform Fitness Score $S_{A}$')
+ax.grid()
+ax.legend()
+fig.savefig(parent_dir + '/S_correlation.png')
+pl.close(fig)
+
+ii_best_nprof = np.argmax(S_nprof_max)
+ii_best_wvf = np.argmax(S_max_list)
+jj_best_wvf = np.argmax(S_arr[ii_best_wvf])
+
+fig = pl.figure(figsize=(5,8),dpi=120)
+ax = fig.add_subplot(111)
+ax.plot(n_prof_pseudo, z_prof_pseudo,c='k')
+
+ax.plot(n_profile_matrix[ii_best_nprof, jj_best_nprof[ii_best_nprof]][1:-1], z_profile,c='g',label='N-Prof Best Match')
+ax.plot(n_profile_matrix[ii_best_wvf, jj_best_wvf][1:-1], z_profile,c='b',label='Wvf Best Match')
+
+ax.grid()
+ax.set_ylim(16,0)
+ax.set_xlim(1.2,1.8)
+ax.legend()
+pl.show()
