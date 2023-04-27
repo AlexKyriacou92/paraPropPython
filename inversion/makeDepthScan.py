@@ -114,7 +114,7 @@ def depth_scan_from_hdf(fname_config, fname_n_matrix, ii_generation, jj_select, 
 
     # Set up Simulation Output Files
     print('set up output files')
-    fitness_mode = config['INPUT']['Fitness']
+    fitness_mode = config['GA']['Fitness']
 
     bscan_npy = depth_scan(fname_config=fname_config, n_profile=n_profile_ij, z_profile=z_profile_ij, fname_out=fname_out)
 
