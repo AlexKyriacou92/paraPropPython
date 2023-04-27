@@ -131,7 +131,7 @@ def depth_scan_from_hdf(fname_config, fname_n_matrix, ii_generation, jj_select, 
             for j in range(nReceivers):
                 m_ij = misfit_function_ij(sig_data=bscan_pseudo.get_ascan(i,j),
                                        sig_sim=bscan_npy[i,j],
-                                       tspace=tspace, mode=fitness_mode)
+                                       tspace=tspace, mode=fitness_mode, tmin=100, tmax=300) #TODO: Add ability to change tmin and tmax
                 if os.path.isfile(fname_misfit_npy) == True:
                     misfit_arr[ii_generation, jj_select, i, j] = m_ij
                 misfit_total += m_ij
