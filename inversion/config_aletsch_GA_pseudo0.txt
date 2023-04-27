@@ -34,15 +34,15 @@ maxSource = 15.0
 dTX = 2.5
 
 [RECEIVER]
-fname_recivers = rx_list.txt
+fname_receivers = rx_list.txt
 noise = 1e-5
 
 [GA]
 nGenerations = 10
 nIndividuals = 10
 nGenes = 28
-fRoulette = 0.7
-fTournament = 0.3
+fRoulette = 0.0
+fTournament = 1.0
 fMutation = 0.3
 fImmigration = 0.1
 fElite = 0.05
@@ -53,7 +53,7 @@ fSine = 0.05
 fExp = 0.1
 mutation_thres = 0.95
 Weighting = True
-Fitness = Difference
+Fitness = Envelope
 S_cutoff = 5e7
 minDepth = 1.5
 maxDepth = 15
