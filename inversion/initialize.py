@@ -22,16 +22,24 @@ import util
 import configparser
 #TODO: Test This
 
+'''
+B = 1.0
+C = 0.01
+D = 0.5
+E = 1.0
+low_cut = 0.5
+'''
+def exp_profile(z, a, b, c):
+    return a + b * np.exp(c * z)
+
+A = 0.05
 B = 1.0
 C = 0.01
 D = 0.5
 E = 1.0
 low_cut = 0.5
 
-def exp_profile(z, a, b, c):
-    return a + b * np.exp(c * z)
-
-def makeRandomDensityVector(z, a=0.6, b=B, c=C, d=D, e=E, low_cut=low_cut):
+def makeRandomDensityVector(z, a=A, b=B, c=C, d=D, e=E, low_cut=low_cut):
     """make a vector of random density fluctuations. This is currently used with the Taylor Dome n(z) profile.
     the density fluctuations are on the order of a few percent of the density."""
     dz = abs(z[1] - z[0])
@@ -64,21 +72,6 @@ def initalize_from_fluctuations(n_profile_mean, z_profile_mean, N):
             n_prof_j[i] = n_profile_i
         n_prof_list.append(n_prof_j)
     return n_prof_list
-#TODO: Save these to h5 file matrix
-
-A = 0.2
-B = 1.0
-C = 0.01
-D = 0.5
-E = 1.0
-low_cut = 0.5
-
-def makeRandomDensityVector(z, a=A, b=B, c=C, d=D, e=E, low_cut=low_cut):
-    """make a vector of random density fluctuations. This is currently used with the Taylor Dome n(z) profile.
-    the density fluctuations are on the order of a few percent of the density."""
-    dz = abs(z[1] - z[0])
-    ranVec = util.lowpassFilter(dz, low_cut, (a / (b + (z * c))) * (e*np.random.random_sample(len(z)) - d))
-    return ranVec
 
 def initialize(nStart, nprofile_sampling_mean, zprofile_sampling_mean, GA, fAnalytical, fFluctuations, fFlat, fSine, fExp):
     n_prof_pool = []

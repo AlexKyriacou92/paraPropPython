@@ -95,7 +95,7 @@ def misfit_function_ij0(sig_data, sig_sim, tspace, tmin=None, tmax=None, mode='W
     #Calculate Misfit
     chi_out = np.zeros(nCut)
     chi_sum = np.zeros(nCut)
-    if mode == 'Waveform':
+    if mode == 'Envelope':
         chi_local = 0
         j = 0
         for i in range(ii_min,ii_max):
@@ -109,6 +109,15 @@ def misfit_function_ij0(sig_data, sig_sim, tspace, tmin=None, tmax=None, mode='W
             chi_sum[j] = chi_local
             j+=1
             #chi_local += abs(sig_data[i] - sig_sim[i])**2 * dt
+    elif mode == 'Waveform':
+        chi_local = 0
+        j = 0
+        for i in range(ii_min,ii_max):
+            chi_local_i = abs(sig_data[i] - sig_sim[i])**2 * dt
+            chi_local += chi_local_i
+            chi_out[j] = chi_local_i
+            chi_sum[j] = chi_local
+            j += 1
     return chi_local, chi_out, t_out, chi_sum
 
 
