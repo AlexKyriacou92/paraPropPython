@@ -279,14 +279,15 @@ def compare_ascans3(bscan_data, bscan_sim, z_tx, x_rx, z_rx, tmin=None, tmax=Non
     zprof_sim = bscan_sim.z_profile.real
     nprof_data = bscan_data.n_profile
     zprof_data = bscan_data.z_profile.real
-    ax2.plot(nprof_sim, zprof_sim,c='b')
-    ax2.plot(nprof_data, zprof_data,c='r')
+    ax2.plot(nprof_sim, zprof_sim,c='b',label='Simulation')
+    ax2.plot(nprof_data, zprof_data,c='r',label='Data')
     ax2.axhline(0,c='k')
     ax2.grid()
     ax2.set_xlim(1.2,1.8)
     ax2.set_ylim(max(zprof_sim)+1,-1)
     ax2.set_xlabel('Ref Index')
     ax2.set_ylabel('Depth Z [m]')
+    ax2.legend()
 
     tx_depths = bscan_sim.tx_depths
     tx_ranges = np.zeros(len(tx_depths))

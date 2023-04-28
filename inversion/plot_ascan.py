@@ -17,7 +17,7 @@ from receiver import receiver as rx
 from transmitter import tx_signal
 from data import create_sim, create_rxList_from_file, create_transmitter_array, create_hdf_FT
 from data import create_tx_signal, bscan, bscan_rxList, create_hdf_bscan
-from plotting_functions import compare_ascans, compare_ascans2
+from plotting_functions import compare_ascans, compare_ascans2, compare_ascans3
 from objective_functions import misfit_function_ij, misfit_function_ij0
 
 path2data = sys.argv[1]
@@ -57,9 +57,10 @@ sig_auto = abs(cc(ascan_data, ascan_data))
 ascan_shift = 1*np.roll(ascan_data, int(t_shift/bscan_data.dt))
 
 path2plots = parent_dir + '/plots/'
-compare_ascans(bscan_data=bscan_data, bscan_sim=bscan_sim,z_tx=z_tx, x_rx=x_rx, z_rx=z_rx, mode_plot='pulse', tmin=80, tmax=280, path2plot=path2plots)
+#compare_ascans(bscan_data=bscan_data, bscan_sim=bscan_sim,z_tx=z_tx, x_rx=x_rx, z_rx=z_rx, mode_plot='pulse', tmin=80, tmax=280, path2plot=path2plots)
+#compare_ascans2(bscan_data=bscan_data, bscan_sim=bscan_sim,z_tx=z_tx, x_rx=x_rx, z_rx=z_rx, mode_plot='pulse', tmin=80, tmax=280, path2plot=path2plots)
+compare_ascans3(bscan_data=bscan_data, bscan_sim=bscan_sim,z_tx=z_tx, x_rx=x_rx, z_rx=z_rx, mode_plot='pulse', tmin=80, tmax=280, path2plot=path2plots)
 
-compare_ascans2(bscan_data=bscan_data, bscan_sim=bscan_sim,z_tx=z_tx, x_rx=x_rx, z_rx=z_rx, mode_plot='pulse', tmin=80, tmax=280, path2plot=path2plots)
 m_ij = misfit_function_ij(ascan_data, ascan_sim,
                           tspace)
 print(m_ij, 1/m_ij)
@@ -68,6 +69,7 @@ print('Simulation x Data')
 chi_time = misfit_function_ij(ascan_data, ascan_sim,tspace, mode='Correlation')
 
 
+'''
 fig = pl.figure(figsize=(10,15), dpi=100)
 ax1 = fig.add_subplot(311)
 ax2 = fig.add_subplot(312)
@@ -115,3 +117,4 @@ ax3.set_xlim(-400,400)
 ax1.legend()
 ax3.grid()
 pl.show()
+'''
