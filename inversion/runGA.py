@@ -284,11 +284,6 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
         createMatrix2(fname_config=fname_config, n_prof_initial=nprofile_start, genes_initial=genes_start,
                       z_profile= zspace_simul, z_genes=zspace_genes, fname_nmatrix=fname_nmatrix_output,
                       nGenerations=GA_1.nGenerations)
-        '''
-        nmatrix_hdf = h5py.File(fname_nmatrix_output, 'r+')
-        nmatrix_hdf.attrs['duration'] = duration_pseudo
-        nmatrix_hdf.close()
-        '''
     else:
         print('Skip creating nmatrix -> already exists!')
 
@@ -446,49 +441,7 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
                 genes_matrix[ii_gen, j] = nprof_children_genes_j
             nmatrix_hdf.close()
             print('Closing nmatrix hdf')
-            gens = np.arange(0, ii_gen, 1)
 
-            # Make Plots:
-            '''
-            print('Making Plots')
-        
-            fig = pl.figure(figsize=(8, 5), dpi=120)
-            ax = fig.add_subplot(111)
-            ax.errorbar(gens, S_mean_list, S_var_list, fmt='-o', c='k', label='Mean +/- Variance')
-            ax.plot(gens, S_max_list, c='b', label='Best Score')
-            ax.plot(gens, S_med_list, c='r', label='Median')
-            ax.set_xlabel('Generation')
-            ax.set_ylabel(r'Fitness Score $S$')
-            ax.grid()
-            ax.legend()
-            pl.savefig(results_dir + '/' + 'S_current.png')
-            pl.close(fig)
-
-            # Plot Ref-Index Profile
-            fig = pl.figure(figsize=(8,8),dpi=120)
-            ax1 = fig.add_subplot(121)
-            ax2 = fig.add_subplot(122)
-
-            ax1.plot(nprof_best, zspace_simul, c='b')
-            ax1.plot(nprofile_pseudo, zspace_simul, c='k')
-            ax1.set_xlabel('Ref Index $n$')
-            ax1.set_ylabel('Depth z [m]')
-            ax1.grid()
-            ax1.set_ylim(16,0)
-
-            ax2.plot(nprof_best-nprofile_pseudo, zspace_simul)
-            ax2.set_xlabel('Ref Index residuals $\Delta n$')
-            ax2.set_ylabel('Depth z [m]')
-            ax2.set_ylim(16,0)
-            ax2.grid()
-
-            dir_plots = dir_outfiles + '/' + 'plots'
-            if os.path.isdir(dir_plots) == False:
-                os.system('mkdir ' + dir_plots)
-            fname_nprof = dir_plots + '/gen_' + str(ii_gen-1) + '_ref_index.png'
-            fig.savefig(fname_nprof)
-            pl.close(fig)
-            '''
             print('Writing to log')
             line = str(ii_gen) + '\t' + str(S_max) + '\t' + str(S_mean) + '\t' + str(S_var) + '\t' + str(S_med) + '\n'
             f_log = open(fname_log, 'a')
