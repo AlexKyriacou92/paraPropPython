@@ -245,6 +245,25 @@ def create_memmap(file, dimensions, data_type ='complex'):
     return A
 
 class bscan_rxList: #This one is a nTx x nRx dimension bscan
+    def setup_from_config(self, fname_config, n_profile = None, z_profile = None, bscan_npy = None):
+        self.sim = create_sim(fname_config)
+        self.rxList = create_rxList_from_file(fname_config)
+        self.tx_signal = create_tx_signal(fname_config)
+        self.tx_depths = create_transmitter_array(fname_config)
+        if n_profile != None:
+            self.n_profile = n_profile
+        if z_profile != None:
+            self.z_profile = z_profile
+        if bscan_npy != None:
+            self.bscan_sig = bscan_npy
+
+    def set_nprofile(self, n_profile, z_profile):
+        self.n_profile = n_profile
+        self.z_profile = z_profile
+
+    def set_bscan_sig(self, bscan_npy):
+        self.bscan_sig = bscan_npy
+
     def load_sim(self, fname):
         input_hdf = h5py.File(fname, 'r')
         self.fname = fname
