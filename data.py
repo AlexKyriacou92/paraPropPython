@@ -257,6 +257,19 @@ class bscan_rxList: #This one is a nTx x nRx dimension bscan
         if bscan_npy != None:
             self.bscan_sig = bscan_npy
 
+        self.iceDepth = self.sim.iceDepth
+        self.iceLength = self.sim.iceLength
+        self.airHeight = self.sim.airHeight
+        self.dx = self.sim.dx
+        self.dz = self.sim.dz
+
+        self.tspace = self.tx_signal.tspace
+        self.nSamples = self.tx_signal.nSamples
+        self.dt = self.tx_signal.dt
+
+        self.nRX = len(self.rxList)
+        self.nTX = len(self.tx_depths)
+
     def set_nprofile(self, n_profile, z_profile):
         self.n_profile = n_profile
         self.z_profile = z_profile
