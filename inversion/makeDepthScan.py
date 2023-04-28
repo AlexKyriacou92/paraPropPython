@@ -142,8 +142,8 @@ def depth_scan_from_hdf(fname_config, fname_n_matrix, ii_generation, jj_select, 
         S_arr_out = np.load(fname_n_matrix_npy, 'r+')
         S_arr_out[ii_generation, jj_select] = S_corr #WRITE TO NPY FILE
 
-'''
-def depth_scan_from_hdf_data(fname_config, fname_n_matrix, ii_generation, jj_select, fname_data = None, fname_out=None):
+
+def depth_scan_from_hdf_data(fname_config, fname_n_matrix, ii_generation, jj_select, fname_data, fname_out=None):
     n_matrix_hdf = h5py.File(fname_n_matrix,'r') #The matrix holding n_profiles
     fname_n_matrix_npy = fname_n_matrix[:-3] + '.npy'
     fname_misfit_npy = fname_n_matrix[:-3] + '_misfit.npy'
@@ -153,8 +153,55 @@ def depth_scan_from_hdf_data(fname_config, fname_n_matrix, ii_generation, jj_sel
     n_matrix_hdf.close()
 
     bscan_npy = depth_scan(fname_config=fname_config, n_profile=n_profile_ij, z_profile=z_profile_ij, fname_out=fname_out)
-    #TODO Finish
-'''
+    bscan_sim = bscan_rxList()
+    bscan_sim.setup_from_config(fname_config=fname_config, n_profile=n_profile_ij, z_profile=z_profile_ij, bscan_npy=bscan_npy)
+    nSamples = bscan_sim.nSamples
+    rxList = bscan_sim.rxList
+    freq_min = bscan_sim.tx_signal.freqMin
+    freq_max = bscan_sim.tx_signal.freqMax
+
+    hdf_data = h5py.File(fname_data, 'r')
+    fftArray = np.array(hdf_data['fftArray'])
+    freqList = np.array(hdf_data['freqList']) / 1e9 #Note FT Data is defined in s/Hz, while paraProp uses ns/GHz
+    rxDepths = np.array(hdf_data['rxDepths'])
+    rxRanges = np.array(hdf_data['rxRanges'])
+    tspace_data = np.array(hdf_data['tspace']) * 1e9 #Note FT Data is defined in s/Hz, while paraProp uses ns/GHz
+    txDepths = np.array(hdf_data['txDepths'])
+    hdf_data.close()
+    nMeasurements = len(fftArray)
+
+    R_data = np.unique(rxRanges)
+    print(R_data)
+    config = configparser.ConfigParser()
+    config.read(fname_config)
+    fitness_mode = config['GA']['Fitness']
+
+    #TODO: Add Ability to Select Frequency
+    bscan_arr_sim = np.zeros((nMeasurements, nSamples))
+    for i in range(nMeasurements):
+        #freq_i = freqList[i]
+        #if freq_i >= freq_min and freq_i <= freq_max:
+        xRx_data = rxRanges[i]
+        zTx_data = txDepths[i]
+        zRx_data = rxDepths[i]
+
+        ascan_sim = bscan_sim.get_ascan_from_depth(z_tx=zTx_data, x_rx=xRx_data, z_rx=zRx_data)
+        bscan_arr_sim[i] = ascan_sim
+
+    Chi_total = 0
+    for i in range(nMeasurements):
+        #TODO: Ensure Equal Array Sizes
+        #TODO: Calculate Misfit between Data and Simul
+        ascan_data = fftArray[i]
+
+        chi_ij = misfit_function_ij(ascan_data, ascan_sim, tspace_data, mode=fitness_mode) #TODO Test
+        Chi_total += chi_ij
+    Chi_total /= float(nMeasurements)
+    S_corr = 1/Chi_total
+
+    print('S=', S_corr)
+    S_arr_out = np.load(fname_n_matrix_npy, 'r+')
+    S_arr_out[ii_generation, jj_select] = S_corr #WRITE TO NPY FILE
 
 def ascan_from_hdf(fname_config, fname_n_matrix, ii_generation, jj_select, z_tx, x_rx, z_rx):
     n_matrix_hdf = h5py.File(fname_n_matrix,'r') #The matrix holding n_profiles
