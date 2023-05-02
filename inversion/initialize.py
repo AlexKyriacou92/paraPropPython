@@ -86,14 +86,15 @@ def initialize(nStart, nprofile_sampling_mean, zprofile_sampling_mean, GA, fAnal
 
     ii = 1
     jj = 1
-    while ii < nAnalytical + 1:
-        if (np.any(nprof_analytical[jj] > 1.8) == True) or (np.any(nprof_analytical[jj] < 1.0) == True):
-            pass
-            jj += 1
-        else:
-            n_prof_pool.append(nprof_analytical[jj])
-            ii += 1
-            jj += 1
+    if nAnalytical > 0:
+        while ii < nAnalytical + 1:
+            if (np.any(nprof_analytical[jj] > 1.8) == True) or (np.any(nprof_analytical[jj] < 1.0) == True):
+                pass
+                jj += 1
+            else:
+                n_prof_pool.append(nprof_analytical[jj])
+                ii += 1
+                jj += 1
     ii = 1
     jj = 1
     '''
@@ -101,14 +102,15 @@ def initialize(nStart, nprofile_sampling_mean, zprofile_sampling_mean, GA, fAnal
     for i in range(nFluctuations):
         n_prof_pool.append(nprof_flucations[i])
     '''
-    while ii < nFluctuations + 1:
-        if (np.any(nprof_flucations[jj] > 1.8) == True) or (np.any(nprof_flucations[jj] < 1.0) == True):
-            pass
-            jj += 1
-        else:
-            n_prof_pool.append(nprof_flucations[jj])
-            ii += 1
-            jj += 1
+    if nFluctuations > 0:
+        while ii < nFluctuations + 1:
+            if (np.any(nprof_flucations[jj] > 1.8) == True) or (np.any(nprof_flucations[jj] < 1.0) == True):
+                pass
+                jj += 1
+            else:
+                n_prof_pool.append(nprof_flucations[jj])
+                ii += 1
+                jj += 1
 
     ii = 1
     while ii < nFlat + 1:
