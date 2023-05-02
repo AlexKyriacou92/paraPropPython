@@ -86,6 +86,8 @@ def initialize(nStart, nprofile_sampling_mean, zprofile_sampling_mean, GA, fAnal
 
     ii = 1
     jj = 1
+    nAnalytical_missing = 0
+    nAnalytical2 = 0
     if nAnalytical > 0:
         while ii < nAnalytical + 1:
             #print('analytical', len(nprof_analytical), nprof_analytical)
@@ -97,7 +99,10 @@ def initialize(nStart, nprofile_sampling_mean, zprofile_sampling_mean, GA, fAnal
                     n_prof_pool.append(nprof_analytical[jj])
                     ii += 1
                     jj += 1
+                    nAnalytical2 += 1
             else:
+                nAnalytical_missing = nAnalytical - nAnalytical2
+                print('missing analytical: ', nAnalytical_missing)
                 break
 
     ii = 1
@@ -107,6 +112,8 @@ def initialize(nStart, nprofile_sampling_mean, zprofile_sampling_mean, GA, fAnal
     for i in range(nFluctuations):
         n_prof_pool.append(nprof_flucations[i])
     '''
+    nFluctuations_missing = 0
+    nFluctuations2 = 0
     if nFluctuations > 0:
         while ii < nFluctuations + 1:
             if jj < len(nprof_flucations):
@@ -115,9 +122,12 @@ def initialize(nStart, nprofile_sampling_mean, zprofile_sampling_mean, GA, fAnal
                     jj += 1
                 else:
                     n_prof_pool.append(nprof_flucations[jj])
+                    nFluctuations2 += 1
                     ii += 1
                     jj += 1
             else:
+                nFluctuations_missing = nFluctuations - nFluctuations2
+                print('missing fluctuations:', nFluctuations_missing)
                 break
 
     ii = 1
@@ -157,6 +167,22 @@ def initialize(nStart, nprofile_sampling_mean, zprofile_sampling_mean, GA, fAnal
         else:
             n_prof_pool.append(n_prof_exp)
             ii += 1
+    nMissing = nFluctuations_missing + nAnalytical_missing
+    if nMissing > 0:
+        ii = 1
+        while ii < nExp + 1:
+            A = 1.78
+            n0_rand = random.gauss(1.4, 0.05)
+            B_rand = n0_rand - A
+            C_mean = -0.04
+            C_dev = 0.03
+            C_rand = random.uniform(C_mean-C_dev, C_mean+C_dev)
+            n_prof_exp = exp_profile(zprofile_sampling_mean, A, B_rand, C_rand)
+            if (np.any(n_prof_exp < 1.0) == True) or (np.any(n_prof_exp>1.8) == True):
+                pass
+            else:
+                n_prof_pool.append(n_prof_exp)
+                ii += 1
     random.shuffle(n_prof_pool)
     return n_prof_pool
 
