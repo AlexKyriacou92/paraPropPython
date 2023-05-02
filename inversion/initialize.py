@@ -81,8 +81,8 @@ def initialize(nStart, nprofile_sampling_mean, zprofile_sampling_mean, GA, fAnal
     nSine = int(fSine * nStart)
     nExp = int(fExp * nStart)
 
-    nprof_analytical = initialize_from_analytical(nprofile_sampling_mean, 0.08 * np.ones(GA.nGenes), 10 * nAnalytical)
-    nprof_flucations = initalize_from_fluctuations(nprofile_sampling_mean, zprofile_sampling_mean, 10 * nFluctuations)
+    nprof_analytical = initialize_from_analytical(nprofile_sampling_mean, 0.08 * np.ones(GA.nGenes), 50 * nAnalytical)
+    nprof_flucations = initalize_from_fluctuations(nprofile_sampling_mean, zprofile_sampling_mean, 50 * nFluctuations)
 
     ii = 1
     jj = 1
