@@ -88,6 +88,7 @@ def initialize(nStart, nprofile_sampling_mean, zprofile_sampling_mean, GA, fAnal
     jj = 1
     if nAnalytical > 0:
         while ii < nAnalytical + 1:
+            print('analytical', len(nprof_analytical), nprof_analytical)
             if (np.any(nprof_analytical[jj] > 1.8) == True) or (np.any(nprof_analytical[jj] < 1.0) == True):
                 pass
                 jj += 1
