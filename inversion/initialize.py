@@ -109,13 +109,16 @@ def initialize(nStart, nprofile_sampling_mean, zprofile_sampling_mean, GA, fAnal
     '''
     if nFluctuations > 0:
         while ii < nFluctuations + 1:
-            if (np.any(nprof_flucations[jj] > 1.8) == True) or (np.any(nprof_flucations[jj] < 1.0) == True):
-                pass
-                jj += 1
+            if jj < len(nprof_flucations):
+                if (np.any(nprof_flucations[jj] > 1.8) == True) or (np.any(nprof_flucations[jj] < 1.0) == True):
+                    pass
+                    jj += 1
+                else:
+                    n_prof_pool.append(nprof_flucations[jj])
+                    ii += 1
+                    jj += 1
             else:
-                n_prof_pool.append(nprof_flucations[jj])
-                ii += 1
-                jj += 1
+                break
 
     ii = 1
     while ii < nFlat + 1:
