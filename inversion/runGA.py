@@ -269,7 +269,7 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
                                  zprofile_sampling_mean=zspace_genes,
                                  GA=GA_1, fAnalytical=fAnalytical, fFluctuations=fFluctuations,
                                  fFlat=fFlat, fSine=fSine, fExp=fExp)
-            for j in range(nQuarter):
+            for j in range(len(genes_i)):
                 gene_pool.append(genes_i[j])
 
         for i in range(nGuess, GA_1.nIndividuals):
