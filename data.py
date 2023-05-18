@@ -250,12 +250,12 @@ class bscan_rxList: #This one is a nTx x nRx dimension bscan
         self.rxList = create_rxList_from_file(fname_config)
         self.tx_signal = create_tx_signal(fname_config)
         self.tx_depths = create_transmitter_array(fname_config)
-        if n_profile != None:
-            self.n_profile = n_profile
-        if z_profile != None:
-            self.z_profile = z_profile
-        if bscan_npy != None:
-            self.bscan_sig = bscan_npy
+        #if n_profile != None:
+        self.n_profile = n_profile
+        #if z_profile != None:
+        self.z_profile = z_profile
+        #if bscan_npy != None:
+        self.bscan_sig = bscan_npy
 
         self.iceDepth = self.sim.iceDepth
         self.iceLength = self.sim.iceLength
@@ -451,3 +451,39 @@ class bscan:
         for i in range(self.nRx_x):
             self.bscan_plot[i] = self.bscan_sig[ii_z, i, ii_z, :]
         return self.bscan_plot
+
+class bscan_FT:
+    def load_from_hdf(self, fname):
+        hdf_data = h5py.File(fname,'r')
+        self.fname = fname
+        self.fftArray = np.array(hdf_data['fftArray'])
+        self.freqList = np.array(hdf_data['freqList']) / 1e9 #Note FT Data is defined in s/Hz, while paraProp uses ns/GHz
+        self.rxDepths = np.array(hdf_data['rxDepths'])
+        self.rxRanges = np.array(hdf_data['rxRanges'])
+        self.tspace = np.array(hdf_data['tspace']) * 1e9 #Note FT Data is defined in s/Hz, while paraProp uses ns/GHz
+        self.txDepths = np.array(hdf_data['txDepths'])
+        self.dt = abs(self.tspace[1] - self.tspace[0])
+        hdf_data.close()
+
+        self.nData = len(self.fftArray)
+
+    def get_ascan(self, z_tx, x_rx, z_rx, tol=0.05):
+        ascan_data = None
+        for i in range(self.nData):
+            z_tx_i = self.txDepths[i]
+            x_rx_i = self.rxRanges[i]
+            z_rx_i = self.rxDepths[i]
+
+            dz_tx = abs(z_tx_i - z_tx)
+            dx_rx = abs(x_rx_i - x_rx)
+            dz_rx = abs(z_rx_i - z_rx)
+            if dz_tx < tol and dx_rx < tol and dx_rx < tol:
+                ascan_data = self.fftArray[i]
+                break
+        '''
+        if ascan_data == None:
+            print('error, no matrching data found')
+        else:
+            print('match found')
+        '''
+        return ascan_data

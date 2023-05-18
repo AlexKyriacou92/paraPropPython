@@ -36,6 +36,6 @@ else:
     sys.exit()
 #=======================
 
-depth_scan_from_hdf(fname_config=fname_config, fname_n_matrix=fname_n_matrix,
+depth_scan_from_hdf_data(fname_config=fname_config, fname_n_matrix=fname_n_matrix,
                     ii_generation=ii_generation, jj_select=jj_select,
                     fname_data = fname_data, fname_out=fname_out)
