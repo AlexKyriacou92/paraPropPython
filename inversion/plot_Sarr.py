@@ -48,7 +48,7 @@ parent_dir = os.path.dirname(fname_nmatrix)
 cwd = str(os.getcwd())
 print(cwd)
 import subprocess
-output = str(subprocess.check_output("ls " + parent_dir + "/*pseudo*", shell=True))[2:-3:]
+output = str(subprocess.check_output("ls " + parent_dir + "/*pseudo*h5", shell=True))[2:-3:]
 print(output)
 pseudo_data = cwd + '/' + output
 print(pseudo_data)
