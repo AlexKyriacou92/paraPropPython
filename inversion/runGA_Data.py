@@ -152,7 +152,7 @@ def main(fname_config, fname_data, fname_nmatrix_external = None, test_mode = Fa
                 fft_peaks.append(fft_i[jj])
                 t_peaks.append(tspace_data[jj])
             t_peak_first = t_peaks[0]
-            k_max = np.armgax(fft_peaks)
+            k_max = np.argmax(fft_peaks)
             t_peak_max = t_peaks[k_max]
             n_first = 0.3 * t_peak_first / R
             n_max = 0.3 * t_peak_max / R
