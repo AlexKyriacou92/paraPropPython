@@ -219,8 +219,8 @@ def ascan_from_hdf(fname_config, fname_n_matrix, ii_generation, jj_select, z_tx,
 
 def depth_scan_IR(fname_config, n_profile, z_profile, fname_out=None):
     tx_signal = create_tx_signal_from_file(fname_config)
-    #tx_signal.get_gausspulse()
-    #tx_signal.add_gaussian_noise()
+    tx_signal.get_gausspulse()
+    tx_signal.add_gaussian_noise()
     rxList0 = create_rxList_from_file(fname_config)
     tx_depths = create_transmitter_array(fname_config)
 

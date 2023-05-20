@@ -50,6 +50,31 @@ def create_tx_signal(fname_config):
                   noise_amplitude=float(config['RECEIVER']['noise']))
     return sig_tx
 
+def create_tx_signal_from_file(fname_config):
+    config = configparser.ConfigParser()
+    config.read(fname_config)
+    signal_config = config['TX_SIGNAL']
+    fname_tx = signal_config['fname_tx_signal']
+
+    tspace_list = []
+    tx_sig_pulse_list = []
+    with open(fname_tx) as fin:
+        for line in fin:
+            cols = line.split()
+            ti = float(cols[0])
+            tx_sig_i = float(cols[1])
+            tspace_list.append(ti)
+            tx_sig_pulse_list.append(tx_sig_i)
+    tspace = np.array(tspace_list)
+    tx_pulse = np.array(tx_sig_pulse_list)
+    sig_tx = tx_signal(amplitude=float(signal_config['amplitude']), frequency=float(signal_config['freq_centre']),
+                  bandwidth=float(signal_config['bandwidth']), t_centre=float(signal_config['t_centre']),
+                  tmax=float(signal_config['t_max']), dt=float(signal_config['dt']),
+                  freqMin=float(signal_config['freqMin']), freqMax=float(signal_config['freqMax']),
+                  noise_amplitude=float(config['RECEIVER']['noise']))
+    sig_tx.set_pulse(tx_pulse, tspace)
+    return sig_tx
+
 def create_receiver_array(fname_config):
     '''
         Defines receiver array

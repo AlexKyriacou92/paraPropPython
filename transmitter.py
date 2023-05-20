@@ -45,14 +45,6 @@ class tx_signal:
         else:
             self.freqMin = freqMin
         '''
-    def set_pulse(self, sigVec):
-        if len(sigVec) == self.nSamples:
-            self.pulse = sigVec
-            return self.pulse
-        else:
-            print('error, signal vector must have the same dimensions, pulse is set to zero')
-            self.pulse = np.zeros(self.nSamples)
-            return self.pulse
 
     def get_gausspulse_complex(self, suppression = -60):
         frac_bandwidth = self.bandwidth / self.frequency
@@ -78,6 +70,17 @@ class tx_signal:
 
     def get_spectrum(self): #NOTE: pulse must be defined before
         return self.spectrum
+    
+    def set_pulse(self, pulse_data, tspace_pulse):
+        self.pulse = pulse_data
+        self.spectrum = np.fft.fft(self.pulse)
+        self.dt = abs(tspace_pulse[1] - tspace_pulse[0])
+        self.fsample = 1/self.dt
+        self.freq_nyq = 1/(2*self.dt)
+        self.tmax = max(tspace_pulse)
+        self.nSamples = len(pulse_data)
+        self.tspace = tspace_pulse
+        self.freq_space = np.fft.fftfreq(self.nSamples, self.dt)
 
     def do_impulse_response(self, IR, IR_freq):
         spectrum_shift = np.fft.fftshift(self.spectrum)
@@ -102,6 +105,7 @@ class tx_signal:
 
         return self.pulse
 
+
     def add_gaussian_noise(self):
         nSamples = len(self.spectrum)
         noise_amplitude = self.noise_amplitude
@@ -112,9 +116,24 @@ class tx_signal:
 
     #TODO -> Add Data Defined Noise Spectrum
     #TODO: White Noise?
+
+
 '''
 class transmitter:
     def __init__(self, z, xO = 0):
         self.xO = xO
         self.z = z
+'''
+
+# ==========================================
+
+''''
+def set_pulse(self, sigVec):
+    if len(sigVec) == self.nSamples:
+        self.pulse = sigVec
+        return self.pulse
+    else:
+        print('error, signal vector must have the same dimensions, pulse is set to zero')
+        self.pulse = np.zeros(self.nSamples)
+        return self.pulse
 '''
