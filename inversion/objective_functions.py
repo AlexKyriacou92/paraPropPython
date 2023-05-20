@@ -33,7 +33,7 @@ def misfit_function_ij2(sig_data, sig_sim, tspace, tmin=None, tmax=None, mode='W
 def misfit_function_ij(sig_data, sig_sim, tspace, tmin=None, tmax=None, mode='Envelope'):
     dt = abs(tspace[1] - tspace[0])
     nSamples = len(tspace)
-
+    chi_local = 0
     # Set Cuts
     if tmin != None and tmax != None:
         ii_min = util.findNearest(tspace, tmin)
