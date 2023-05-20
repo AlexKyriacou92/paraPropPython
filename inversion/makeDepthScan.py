@@ -193,7 +193,7 @@ def depth_scan_from_hdf_data(fname_config, fname_n_matrix, ii_generation, jj_sel
         #TODO: Ensure Equal Array Sizes
         #TODO: Calculate Misfit between Data and Simul
         ascan_data = fftArray[i]
-
+        ascan_sim = bscan_arr_sim[i]
         chi_ij = misfit_function_ij(ascan_data, ascan_sim, tspace_data, mode=fitness_mode) #TODO Test
         Chi_total += chi_ij
     Chi_total /= float(nMeasurements)
@@ -371,7 +371,7 @@ def depth_scan_from_hdf_data_IR(fname_config, fname_n_matrix, ii_generation, jj_
         #TODO: Ensure Equal Array Sizes
         #TODO: Calculate Misfit between Data and Simul
         ascan_data = fftArray[i]
-
+        ascan_sim = bscan_arr_sim[i]
         chi_ij = misfit_function_ij(ascan_data, ascan_sim, tspace_data, mode=fitness_mode) #TODO Test
         Chi_total += chi_ij
     Chi_total /= float(nMeasurements)
