@@ -374,6 +374,21 @@ class bscan_rxList: #This one is a nTx x nRx dimension bscan
             self.bscan_plot[i] = self.bscan_sig[i, i, :]
         return self.bscan_plot
 
+    def bscan_rx_fixed(self, zRx):
+        self.bscan_plot = np.zeros((self.nTX, self.tx_signal.nSamples), dtype='complex')
+        ii_rx_z = util.findNearest(self.tx_depths, zRx)
+
+        for i in range(self.nTX):
+            self.bscan_plot[i] = self.bscan_sig[i, ii_rx_z, :]
+        return self.bscan_plot
+
+    def bscan_tx_fixed(self, zTx):
+        self.bscan_plot = np.zeros((self.nTX, self.tx_signal.nSamples), dtype='complex')
+        ii_z = util.findNearest(self.tx_depths, zTx)
+
+        for i in range(self.nTX):
+            self.bscan_plot[i] = self.bscan_sig[ii_z, i, :]
+        return self.bscan_plot
 
 class bscan:
     def load_sim(self, fname):
@@ -488,9 +503,9 @@ class bscan_FT:
         self.tspace = np.array(hdf_data['tspace']) * 1e9 #Note FT Data is defined in s/Hz, while paraProp uses ns/GHz
         self.txDepths = np.array(hdf_data['txDepths'])
         self.dt = abs(self.tspace[1] - self.tspace[0])
-        hdf_data.close()
-
+        self.nSamples = len(self.fftArray[0])
         self.nData = len(self.fftArray)
+        hdf_data.close()
 
     def get_ascan(self, z_tx, x_rx, z_rx, tol=0.05):
         ascan_data = None
