@@ -336,6 +336,8 @@ def depth_scan_from_hdf_data_IR(fname_config, fname_n_matrix, ii_generation, jj_
     bscan_npy = depth_scan_IR(fname_config=fname_config, n_profile=n_profile_ij, z_profile=z_profile_ij, fname_out=fname_out)
     bscan_sim = bscan_rxList()
     bscan_sim.setup_from_config(fname_config=fname_config, n_profile=n_profile_ij, z_profile=z_profile_ij, bscan_npy=bscan_npy)
+    tx_signal = create_tx_signal_from_file(fname_config)
+
     nSamples = bscan_sim.nSamples
     rxList = bscan_sim.rxList
     freq_min = bscan_sim.tx_signal.freqMin
@@ -370,8 +372,8 @@ def depth_scan_from_hdf_data_IR(fname_config, fname_n_matrix, ii_generation, jj_
         bscan_arr_sim[i] = ascan_sim
 
     Chi_total = 0
-    tx_sig = bscan_sim.tx_signal
-    tx_pulse = bscan_sim.tx_signal.pulse
+
+    tx_pulse = tx_signal.pulse
     ii_max = np.argmax(abs(tx_pulse))
     for i in range(nMeasurements):
         #TODO: Ensure Equal Array Sizes
