@@ -178,6 +178,9 @@ def depth_scan_from_hdf_data(fname_config, fname_n_matrix, ii_generation, jj_sel
 
     #TODO: Add Ability to Select Frequency
     bscan_arr_sim = np.zeros((nMeasurements, nSamples))
+    tx_signal = bscan_sim.tx_signal
+    tx_pulse = abs(tx_signal.pulse)
+    ii_max = np.argmax(tx_pulse)
     for i in range(nMeasurements):
         #freq_i = freqList[i]
         #if freq_i >= freq_min and freq_i <= freq_max:
@@ -186,8 +189,8 @@ def depth_scan_from_hdf_data(fname_config, fname_n_matrix, ii_generation, jj_sel
         zRx_data = rxDepths[i]
 
         ascan_sim = bscan_sim.get_ascan_from_depth(z_tx=zTx_data, x_rx=xRx_data, z_rx=zRx_data)
+        ascan_sim = np.roll(ascan_sim, -ii_max)
         bscan_arr_sim[i] = ascan_sim
-
     Chi_total = 0
     for i in range(nMeasurements):
         #TODO: Ensure Equal Array Sizes
