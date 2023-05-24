@@ -367,11 +367,15 @@ def depth_scan_from_hdf_data_IR(fname_config, fname_n_matrix, ii_generation, jj_
         bscan_arr_sim[i] = ascan_sim
 
     Chi_total = 0
+    tx_sig = bscan_sim.tx_signal
+    tx_pulse = bscan_sim.tx_signal.pulse
+    ii_max = np.argmax(abs(tx_pulse))
     for i in range(nMeasurements):
         #TODO: Ensure Equal Array Sizes
         #TODO: Calculate Misfit between Data and Simul
         ascan_data = fftArray[i]
         ascan_sim = bscan_arr_sim[i]
+        ascan_sim = np.roll(ascan_sim, -ii_max) #adjust for delay of pulse
         chi_ij = misfit_function_ij(ascan_data, ascan_sim, tspace_data, mode=fitness_mode) #TODO Test
         Chi_total += chi_ij
     Chi_total /= float(nMeasurements)
