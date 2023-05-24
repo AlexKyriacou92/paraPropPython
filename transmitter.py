@@ -81,6 +81,7 @@ class tx_signal:
         self.nSamples = len(pulse_data)
         self.tspace = tspace_pulse
         self.freq_space = np.fft.fftfreq(self.nSamples, self.dt)
+        return self.pulse
 
     def do_impulse_response(self, IR, IR_freq):
         spectrum_shift = np.fft.fftshift(self.spectrum)

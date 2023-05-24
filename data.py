@@ -374,6 +374,12 @@ class bscan_rxList: #This one is a nTx x nRx dimension bscan
             self.bscan_plot[i] = self.bscan_sig[i, i, :]
         return self.bscan_plot
 
+    def bscan_parallel2(self, xRx):
+        nSamples = len(self.bscan_sig[0,0,:])
+        self.bscan_plot = np.zeros((self.nTX, nSamples), dtype='complex')
+        for i in range(self.nTX):
+            self.bscan_plot[i] = self.bscan_sig[i, i, :]
+        return self.bscan_plot
     def bscan_rx_fixed(self, zRx):
         self.bscan_plot = np.zeros((self.nTX, self.tx_signal.nSamples), dtype='complex')
         ii_rx_z = util.findNearest(self.tx_depths, zRx)
@@ -465,6 +471,7 @@ class bscan:
         for i in range(self.nTX):
             self.bscan_plot[i] = self.bscan_sig[i, ii_rx_x, i, :]
         return self.bscan_plot
+
 
     def bscan_tx_fixed(self, zTx, xRx):
         self.bscan_plot = np.zeros((self.nTX, self.tx_signal.nSamples), dtype='complex')
