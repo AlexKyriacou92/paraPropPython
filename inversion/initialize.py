@@ -195,7 +195,11 @@ def create_profile(zprof_out, nprof_genes, zprof_genes, nprof_override = None, z
     zprof_out : Depth Values of Output Profile
     nprof_genes :
     """
-    if nprof_override != None and zprof_override != None:
+    if nprof_override is None and zprof_override is None:
+        print(len(nprof_genes), len(zprof_genes))
+        spi = scipy.interpolate.UnivariateSpline(zprof_genes, nprof_genes, s=0)
+        nprof_out = spi(zprof_out)
+    else:
         dz = zprof_out[1] - zprof_out[0]
         nDepths = len(zprof_out)
         nprof_out = np.ones(nDepths)
@@ -234,7 +238,4 @@ def create_profile(zprof_out, nprof_genes, zprof_genes, nprof_override = None, z
                 #print(zprof_2[j],nprof_2[j])
         spi_2 = scipy.interpolate.UnivariateSpline(zprof_list, nprof_list,s=0)
         nprof_out = spi_2(zprof_out)
-    else:
-        spi = scipy.interpolate.UnivariateSpline(zprof_genes, nprof_genes, s=0)
-        nprof_out = spi(zprof_out)
     return nprof_out
