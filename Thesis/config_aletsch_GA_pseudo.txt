@@ -1,0 +1,63 @@
+[INPUT]
+sim_mode = pseudo
+fname_pseudodata = share/guliya.txt
+fname_data = Field-Test-data.h5
+fname_sample = start_profiles/aletsch_glacier_1.txt
+prefix = gul
+comment = newGA_direct
+
+[OUTPUT]
+fname_pseudo_output = guliya_pseudo.h5
+fname_nmatrix_output = guliya_nmatrix.h5
+
+[GEOMETRY]
+iceDepth = 15.0
+iceLength = 50.0
+dx = 1.0
+dz = 0.05
+airHeight = 10.
+
+[TX_SIGNAL]
+amplitude = 1.0
+freq_centre = 1.8
+bandwidth = 0.2
+t_centre = 10.0
+t_max = 600.0
+dt = 0.2
+freqMin = 1.5
+freqMax = 2.1
+noise = 1e-5
+
+[TRANSMITTER]
+minSource = 1.0
+maxSource = 15.0
+dTX = 0.5
+
+[RECEIVER]
+fname_receivers = rx_list.txt
+noise = 1e-5
+
+[GA]
+nGenerations = 10
+nIndividuals = 10
+nGenes = 28
+fRoulette = 0.7
+fTournament = 0.3
+fMutation = 0.3
+fImmigration = 0.1
+fElite = 0.05
+fAnalytical = 0.4
+fFluctuations = 0.4
+fFlat = 0.05
+fSine = 0.05
+fExp = 0.1
+mutation_thres = 0.95
+Weighting = True
+Fitness = Difference
+S_cutoff = 5e7
+minDepth = 1.5
+maxDepth = 15
+
+[Override]
+fname_override = share/aletsch/n_prof_PS.txt
+

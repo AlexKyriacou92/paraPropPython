@@ -16,8 +16,6 @@ epsilon0 = 8.85e-12 #Permittivity of Free Space
 mu0 = 4*pi*1e-7 #Permeability of Free Space
 c0 = 1./sqrt(epsilon0*mu0) #Speed of Light in Vacuum
 
-
-
 #==================================================================
 #Utility Functions
 #==================================================================
@@ -113,6 +111,7 @@ sigma_sinter = sigma_from_p(P_sinter, sigma_III_snow)
 #print('Type III, sinter ice P = 0.4', sigma_sinter)
 #print('Type III snow, P = 0', sigma_III_snow)
 #print('Type III Snow, P = 0.9', sigma_pure_snow)
+freq_test = 5e9
 eps_i_sinter = cond2eps_im(sigma_sinter, freq_test)
 eps_sinter = 2.2 + 1j*eps_i_sinter
 m_sinter = eps2m(eps_sinter)
