@@ -95,7 +95,7 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
     #PSEUDO-DATA
 
     fname_override = config['Override']['fname_override']
-    if fname_override == None:
+    if fname_override == 'None':
         nprof_override = None
         zprof_override = None
     else:
