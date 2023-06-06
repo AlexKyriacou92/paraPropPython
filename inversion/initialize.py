@@ -235,7 +235,6 @@ def create_profile(zprof_out, nprof_genes, zprof_genes, nprof_override = None, z
         spi_2 = scipy.interpolate.UnivariateSpline(zprof_list, nprof_list,s=0)
         nprof_out = spi_2(zprof_out)
     else:
-        #sp = csaps.UnivariateCubicSmoothingSpline(zprof_genes, nprof_genes, smooth=0.85)
         spi = scipy.interpolate.UnivariateSpline(zprof_genes, nprof_genes, s=0)
         nprof_out = spi(zprof_out)
     return nprof_out
