@@ -187,7 +187,7 @@ def initialize(nStart, nprofile_sampling_mean, zprofile_sampling_mean, GA, fAnal
     return n_prof_pool
 
 
-def create_profile(zprof_out, nprof_genes, zprof_genes, nprof_override, zprof_override):
+def create_profile(zprof_out, nprof_genes, zprof_genes, nprof_override = None, zprof_override = None):
     """
     This functions creates ref-index profiles in GA
     -It combines a smoothing algorithm for the Evolving Genes
@@ -195,43 +195,47 @@ def create_profile(zprof_out, nprof_genes, zprof_genes, nprof_override, zprof_ov
     zprof_out : Depth Values of Output Profile
     nprof_genes :
     """
-    dz = zprof_out[1] - zprof_out[0]
-    nDepths = len(zprof_out)
-    nprof_out = np.ones(nDepths)
+    if nprof_override != None and zprof_override != None:
+        dz = zprof_out[1] - zprof_out[0]
+        nDepths = len(zprof_out)
+        nprof_out = np.ones(nDepths)
 
-    zmin_2 = min(zprof_genes)
-    zmax_2 = max(zprof_genes)
-    ii_min2 = findNearest(zprof_out, zmin_2)
+        zmin_2 = min(zprof_genes)
+        zmax_2 = max(zprof_genes)
+        ii_min2 = findNearest(zprof_out, zmin_2)
 
-    #sp = csaps.UnivariateCubicSmoothingSpline(zprof_genes, nprof_genes, smooth=0.85)
-    spi = scipy.interpolate.UnivariateSpline(zprof_genes, nprof_genes, s=0)
-    zprof_2 = zprof_out[ii_min2:]
-    nprof_2 = spi(zprof_2)
+        #sp = csaps.UnivariateCubicSmoothingSpline(zprof_genes, nprof_genes, smooth=0.85)
+        spi = scipy.interpolate.UnivariateSpline(zprof_genes, nprof_genes, s=0)
+        zprof_2 = zprof_out[ii_min2:]
+        nprof_2 = spi(zprof_2)
 
-    nprof_out[ii_min2:] = nprof_2
+        nprof_out[ii_min2:] = nprof_2
 
-    zmax_1 = max(zprof_override)
-    ii_cut = findNearest(zprof_out, zmax_1)
-    # zprof_1 = zprof_genes[:ii_cut]
-    nDepths_1 = ii_cut
+        zmax_1 = max(zprof_override)
+        ii_cut = findNearest(zprof_out, zmax_1)
+        # zprof_1 = zprof_genes[:ii_cut]
+        nDepths_1 = ii_cut
 
-    nprof_1, zprof_1 = do_interpolation_same_depth(zprof_in=zprof_override, nprof_in=nprof_override, N=nDepths_1) #Something Set Wrong
-    '''
-    nprof_out[:ii_cut] = nprof_1
-    spi_2 = scipy.interpolate.UnivariateSpline(zprof_out, nprof_out, s=0)
-    nprof_out = spi_2(zprof_out)
-    '''
-    nprof_list = []
-    zprof_list = []
-    for i in range(len(zprof_1)):
-        nprof_list.append(nprof_1[i])
-        zprof_list.append(zprof_1[i])
-    for j in range(len(zprof_2)):
-        if zprof_2[j] > max(zprof_1):
-            nprof_list.append(nprof_2[j])
-            zprof_list.append(zprof_2[j])
-            #print(zprof_2[j],nprof_2[j])
-    spi_2 = scipy.interpolate.UnivariateSpline(zprof_list, nprof_list,s=0)
-    nprof_out = spi_2(zprof_out)
-
+        nprof_1, zprof_1 = do_interpolation_same_depth(zprof_in=zprof_override, nprof_in=nprof_override, N=nDepths_1) #Something Set Wrong
+        '''
+        nprof_out[:ii_cut] = nprof_1
+        spi_2 = scipy.interpolate.UnivariateSpline(zprof_out, nprof_out, s=0)
+        nprof_out = spi_2(zprof_out)
+        '''
+        nprof_list = []
+        zprof_list = []
+        for i in range(len(zprof_1)):
+            nprof_list.append(nprof_1[i])
+            zprof_list.append(zprof_1[i])
+        for j in range(len(zprof_2)):
+            if zprof_2[j] > max(zprof_1):
+                nprof_list.append(nprof_2[j])
+                zprof_list.append(zprof_2[j])
+                #print(zprof_2[j],nprof_2[j])
+        spi_2 = scipy.interpolate.UnivariateSpline(zprof_list, nprof_list,s=0)
+        nprof_out = spi_2(zprof_out)
+    else:
+        #sp = csaps.UnivariateCubicSmoothingSpline(zprof_genes, nprof_genes, smooth=0.85)
+        spi = scipy.interpolate.UnivariateSpline(zprof_genes, nprof_genes, s=0)
+        nprof_out = spi(zprof_out)
     return nprof_out
