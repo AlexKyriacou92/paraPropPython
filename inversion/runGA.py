@@ -95,8 +95,11 @@ def main(fname_config, fname_pseudo_external = None, fname_nmatrix_external = No
     #PSEUDO-DATA
 
     fname_override = config['Override']['fname_override']
-    nprof_override, zprof_override = util.get_profile_from_file(fname_override)
-
+    if fname_override == None:
+        nprof_override = None
+        zprof_override = None
+    else:
+        nprof_override, zprof_override = util.get_profile_from_file(fname_override)
     mutation_thres = float(config['GA']['mutation_thres'])
 
     zMin_genes = float(config['GA']['minDepth'])
