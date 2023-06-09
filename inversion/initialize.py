@@ -59,14 +59,14 @@ def initialize_from_analytical(n_profile_mean, n_profile_std, N):
         n_prof_list.append(n_prof_j)
     return n_prof_list
 
-def initalize_from_fluctuations(n_profile_mean, z_profile_mean, N):
+def initalize_from_fluctuations(n_profile_mean, z_profile_mean, N, A0=0.05):
     nDepths = len(n_profile_mean)
 
     n_prof_list = []
 
     for j in range(N):
         n_prof_j = np.ones(nDepths)
-        rand_vec = makeRandomDensityVector(z_profile_mean)
+        rand_vec = makeRandomDensityVector(z_profile_mean,a=A0)
         for i in range(nDepths):
             n_profile_i = n_profile_mean[i] + rand_vec[i]
             n_prof_j[i] = n_profile_i
@@ -82,7 +82,7 @@ def initialize(nStart, nprofile_sampling_mean, zprofile_sampling_mean, GA, fAnal
     nExp = int(fExp * nStart)
 
     nprof_analytical = initialize_from_analytical(nprofile_sampling_mean, 0.08 * np.ones(GA.nGenes), 50 * nAnalytical)
-    nprof_flucations = initalize_from_fluctuations(nprofile_sampling_mean, zprofile_sampling_mean, 50 * nFluctuations)
+    nprof_flucations = initalize_from_fluctuations(nprofile_sampling_mean, zprofile_sampling_mean, 50 * nFluctuations,A0=0.05)
 
     ii = 1
     jj = 1
