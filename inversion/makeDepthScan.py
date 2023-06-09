@@ -122,20 +122,28 @@ def depth_scan_from_hdf(fname_config, fname_n_matrix, ii_generation, jj_select, 
         bscan_pseudo = bscan_rxList()
         bscan_pseudo.load_sim(fname_pseudo)
         tspace = bscan_pseudo.tspace
+        tx_depths = bscan_pseudo.tx_depths
+        rxList = bscan_pseudo.rxList
         nDepths = len(bscan_npy)
         nReceivers = len(bscan_npy[0])
         if os.path.isfile(fname_misfit_npy) == True:
             misfit_arr = np.load(fname_misfit_npy,'r+')
         misfit_total = 0
+        nData = 0
         for i in range(nDepths):
+            z_tx = tx_depths[i]
             for j in range(nReceivers):
-                m_ij = misfit_function_ij(sig_data=bscan_pseudo.get_ascan(i,j),
+                #RESTRICT FRANCHISE
+                rx_j = rxList[j]
+                if z_tx == rx_j.z or rx_j.z == 1 or z_tx == 1:
+                    m_ij = misfit_function_ij(sig_data=bscan_pseudo.get_ascan(i,j),
                                        sig_sim=bscan_npy[i,j],
                                        tspace=tspace, mode=fitness_mode, tmin=100, tmax=300) #TODO: Add ability to change tmin and tmax
-                if os.path.isfile(fname_misfit_npy) == True:
-                    misfit_arr[ii_generation, jj_select, i, j] = m_ij
-                misfit_total += m_ij
-        misfit_total /= (2. * float(nDepths)*float(nReceivers))
+                    nData += 1
+                    if os.path.isfile(fname_misfit_npy) == True:
+                        misfit_arr[ii_generation, jj_select, i, j] = m_ij
+                    misfit_total += m_ij
+        misfit_total /= float(nData)
         #print('Misfit total:', misfit_total, misfit_arr[ii_generation, jj_select])
         S_corr = 1/misfit_total
         print('S=', S_corr)
