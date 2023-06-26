@@ -135,7 +135,7 @@ def depth_scan_from_hdf(fname_config, fname_n_matrix, ii_generation, jj_select, 
             for j in range(nReceivers):
                 #RESTRICT FRANCHISE
                 rx_j = rxList[j]
-                if z_tx == rx_j.z or rx_j.z == 1 or z_tx == 1:
+                if z_tx == rx_j.z or rx_j.z == 0 or z_tx == 14:
                     m_ij = misfit_function_ij(sig_data=bscan_pseudo.get_ascan(i,j),
                                        sig_sim=bscan_npy[i,j],
                                        tspace=tspace, mode=fitness_mode, tmin=100, tmax=300) #TODO: Add ability to change tmin and tmax
