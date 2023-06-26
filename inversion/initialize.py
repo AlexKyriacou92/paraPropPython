@@ -187,7 +187,7 @@ def initialize(nStart, nprofile_sampling_mean, zprofile_sampling_mean, GA, fAnal
     return n_prof_pool
 
 
-def create_profile(zprof_out, nprof_genes, zprof_genes, nprof_override = None, zprof_override = None):
+def create_profile(zprof_out, nprof_genes, zprof_genes, nprof_override = None, zprof_override = None, interpolation_mode = 'spline'):
     """
     This functions creates ref-index profiles in GA
     -It combines a smoothing algorithm for the Evolving Genes
@@ -197,8 +197,11 @@ def create_profile(zprof_out, nprof_genes, zprof_genes, nprof_override = None, z
     """
     if nprof_override is None and zprof_override is None:
         print(len(nprof_genes), len(zprof_genes))
-        spi = scipy.interpolate.UnivariateSpline(zprof_genes, nprof_genes, s=0)
-        nprof_out = spi(zprof_out)
+        if interpolation_mode == 'spline':
+            spi = scipy.interpolate.UnivariateSpline(zprof_genes, nprof_genes, s=0)
+            nprof_out = spi(zprof_out)
+        elif interpolation_mode == 'linear':
+            nprof_out = np.interp(zprof_out, zprof_genes, nprof_genes)
     else:
         dz = zprof_out[1] - zprof_out[0]
         nDepths = len(zprof_out)
@@ -207,14 +210,14 @@ def create_profile(zprof_out, nprof_genes, zprof_genes, nprof_override = None, z
         zmin_2 = min(zprof_genes)
         zmax_2 = max(zprof_genes)
         ii_min2 = findNearest(zprof_out, zmin_2)
-
         #sp = csaps.UnivariateCubicSmoothingSpline(zprof_genes, nprof_genes, smooth=0.85)
-        spi = scipy.interpolate.UnivariateSpline(zprof_genes, nprof_genes, s=0)
         zprof_2 = zprof_out[ii_min2:]
-        nprof_2 = spi(zprof_2)
-
+        if interpolation_mode == 'spline':
+            spi = scipy.interpolate.UnivariateSpline(zprof_genes, nprof_genes, s=0)
+            nprof_2 = spi(zprof_2)
+        elif interpolation_mode == 'linear':
+            nprof_2 = np.interp(zprof_2, zprof_genes, nprof_genes)
         nprof_out[ii_min2:] = nprof_2
-
         zmax_1 = max(zprof_override)
         ii_cut = findNearest(zprof_out, zmax_1)
         # zprof_1 = zprof_genes[:ii_cut]
@@ -236,6 +239,9 @@ def create_profile(zprof_out, nprof_genes, zprof_genes, nprof_override = None, z
                 nprof_list.append(nprof_2[j])
                 zprof_list.append(zprof_2[j])
                 #print(zprof_2[j],nprof_2[j])
-        spi_2 = scipy.interpolate.UnivariateSpline(zprof_list, nprof_list,s=0)
-        nprof_out = spi_2(zprof_out)
+        if interpolation_mode == 'spline':
+            spi_2 = scipy.interpolate.UnivariateSpline(zprof_list, nprof_list,s=0)
+            nprof_out = spi_2(zprof_out)
+        elif interpolation_mode == 'linear':
+            nprof_out = np.interp(zprof_out, zprof_list, nprof_list)
     return nprof_out
