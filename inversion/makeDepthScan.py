@@ -409,3 +409,70 @@ def ascan_from_hdf_IR(fname_config, fname_n_matrix, ii_generation, jj_select, z_
 
     return ascan(fname_config=fname_config, n_profile = n_profile_ij, z_profile = z_profile_ij,
                  z_tx=z_tx, x_rx=x_rx, z_rx=z_rx)
+
+
+#====================================================
+# SMOOTHING FUNCTIONS
+#___________________________________________________
+
+
+def depth_scan_impulse_smooth(fname_config, n_profile, z_profile, fname_out=None):
+    tx_signal = create_tx_signal(fname_config)
+    tx_signal.set_impulse()
+    f_centre = tx_signal.frequency
+    bandwidth = tx_signal.bandwidth
+    fmin = f_centre - bandwidth/2
+    fmax = f_centre + bandwidth/2
+    tx_signal.apply_bandpass(fmin=fmin, fmax=fmax)
+    tx_signal.add_gaussian_noise()
+    rxList0 = create_rxList_from_file(fname_config)
+    tx_depths = create_transmitter_array(fname_config)
+
+    nDepths = len(tx_depths)
+    nReceivers = len(rxList0)
+
+    bscan_npy = np.zeros((nDepths, nReceivers, tx_signal.nSamples), dtype='complex')
+
+    print('Running tx scan')
+    for i in range(nDepths):
+        tstart = time.time()
+        sourceDepth = tx_depths[i]
+        print('z = ', sourceDepth)
+
+        rxList = rxList0
+
+        sim = create_sim(fname_config)
+        sim.set_n(nVec=n_profile, zVec=z_profile)  # Set Refractive Index Profile
+        sim.set_dipole_source_profile(tx_signal.frequency, sourceDepth)  # Set Source Profile
+        sim.set_td_source_signal(tx_signal.pulse, tx_signal.dt)  # Set transmitted signal
+        print('solving PE')
+        sim.do_solver_smooth(rxList, ant_length=1.0, freqMin=tx_signal.freqMin, freqMax=tx_signal.freqMax)
+        #sim.do_solver_smooth()
+        print('complete')
+        tend = time.time()
+        for j in range(nReceivers):
+            rx_j = rxList[j]
+            rx_j.add_gaussian_noise(noise_amplitude=rx_j.noise_amplitude)
+            bscan_npy[i, j] = rx_j.get_signal()
+
+        if i == 0 and fname_out != None:
+            hdf_output = create_hdf_FT(fname=fname_out, sim=sim,
+                                       tx_signal=tx_signal, tx_depths=tx_depths, rxList=rxList)
+
+        duration_s = (tend - tstart)
+        duration = datetime.timedelta(seconds=duration_s)
+        remainder_s = duration_s * (nDepths - (i + 1))
+        remainder = datetime.timedelta(seconds=remainder_s)
+
+        completed = round(float(i + 1) / float(nDepths) * 100, 2)
+        print(completed, ' % completed, duration:', duration)
+        print('remaining steps', nDepths - (i + 1), '\nremaining time:', remainder, '\n')
+        now = datetime.datetime.now()
+        tstamp_now = now.timestamp()
+        end_time = datetime.datetime.fromtimestamp(tstamp_now + remainder_s)
+        print('completion at:', end_time)
+        print('')
+    if fname_out != None:
+        hdf_output.create_dataset('bscan_sig', data=bscan_npy)
+        hdf_output.close()
+    return bscan_npy
