@@ -716,7 +716,7 @@ class paraProp:
             freq_ints = np.arange(ii_min, ii_max, 1, dtype='int')
 
         for j in freq_ints:
-            #print(abs(j/len(self.freq))*200,  '%', abs(self.freq[j]*1e3))
+            #print(round(abs(j/len(self.freq))*200,2),  '%', abs(self.freq[j]*1e3))
 
             if (self.freq[j] == 0): continue
             u_plus = 2 * self.A[j] * self.source * self.filt * self.freq[j]
@@ -736,11 +736,27 @@ class paraProp:
 
                 u_plus_i = u_plus # Record starting reduced field -> in case we need to calculate
                 dn = self.n[i,:] - self.n[i - 1,:]
+                #print'n=',self.n[i])
                 if dn.any() > 0:
+                    #print'transmit')
                     u_plus *= util.transmission_coefficient(self.n[i], self.n[i-1])
+                #print'u',np.any(np.isnan(u_plus)==True))
+                #print'alpha', np.any(np.isnan(alpha_plus)==True),'FFT(u)', np.any(np.isnan(util.doFFT(u_plus))==True))
                 u_plus = alpha_plus * (util.doFFT(u_plus))
+                #print'u',np.any(np.isnan(u_plus)==True))
+
                 u_plus = beta_plus[i] * (util.doIFFT(u_plus))
+                #print'u',np.any(np.isnan(u_plus)==True))
+
                 u_plus = self.filt * u_plus
+                #print'u',np.any(np.isnan(u_plus)==True))
+                #sys.exit()
+                #printi, 'x=', self.x[i], 'f=', self.freq[j],'\n', u_plus)
+                #print'n',np.any(np.isnan(self.n[i])==True))
+                #print's',np.any(np.isnan(self.source)==True))
+
+                #print('s',np.any(np.isnan(self.source)==True))
+
                 delta_x_plus = self.dx * i
                 self.field_plus[i] = u_plus[self.fNum1:-self.fNum2] / (
                         np.sqrt(delta_x_plus) * np.exp(-1.j * self.k0[j] * delta_x_plus))
@@ -890,7 +906,7 @@ class paraProp:
                 u_plus = alpha_plus * (util.doFFT(u_plus))
                 u_plus = beta_plus[i] * (util.doIFFT(u_plus))
                 u_plus = self.filt * u_plus
-
+                #print(i, 'x=', self.x[i], 'f=', self.freq[j], u_plus)
                 delta_x_plus = self.dx * i
                 self.field_plus[i] = u_plus[self.fNum1:-self.fNum2] / (
                         np.sqrt(delta_x_plus) * np.exp(-1.j * self.k0[j] * delta_x_plus))

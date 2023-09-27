@@ -77,14 +77,18 @@ class tx_signal:
         return self.pulse
 
     def get_spectrum(self): #NOTE: pulse must be defined before
-        return self.spectrum
+        return np.fft.fftshift(self.spectrum)
 
-    def apply_bandpass(self, fmin = self.freqMin, fmax = self.freqMax, order=3):
+    def get_freq_space(self):
+        return np.fft.fftshift(self.freq_space)
+
+    def apply_bandpass(self, fmin, fmax, order=3):
         self.pulse = util.butterBandpassFilter(data=self.pulse,
                                                lowcut=fmin,
                                                highcut=fmax,
                                                fs=1/self.dt,
                                                order=order)
+        self.spectrum = np.fft.fft(self.pulse)
         return self.pulse
 
     def set_pulse(self, pulse_data, tspace_pulse):
@@ -206,14 +210,33 @@ class tx_signal:
 
         return self.pulse
 
+    def hilbert_transform(self):
+        tx_sig_r = self.pulse.real
+        tx_sig_i = util.hilbertTransform(tx_sig_r)
+        tx_sig_c = tx_sig_r + 1j*tx_sig_i
+        self.pulse = tx_sig_c
+        self.spectrum = np.fft.fft(tx_sig_r)
+        return self.pulse
+
     def add_gaussian_noise(self):
         nSamples = len(self.spectrum)
-        noise_amplitude = self.noise_amplitude
+        noise_amplitude = self.noise_amplitude*max(abs(self.spectrum))
         if noise_amplitude > 0:
-            self.noise = noise_amplitude*np.random.normal(0, noise_amplitude, nSamples)
+            self.noise = np.random.normal(noise_amplitude, noise_amplitude/np.sqrt(noise_amplitude), nSamples)# * float(nSamples)
+            #self.noise += util.hilbertTransform(np.random.normal(noise_amplitude, noise_amplitude, nSamples))# * float(nSamples)
             self.spectrum += self.noise
             self.pulse = np.fft.ifft(self.spectrum)
-
+            #self.pulse += self.noise
+            #self.spectrum = np.fft.fft(self.pulse)
+    def add_white_noise(self):
+        nSamples = len(self.spectrum)
+        noise_amplitude = self.noise_amplitude*max(abs(self.spectrum))
+        if noise_amplitude > 0:
+            self.noise = noise_amplitude * np.random.uniform(0,1, nSamples)# * float(nSamples)
+            self.spectrum += self.noise
+            self.pulse = np.fft.ifft(self.spectrum)
+            #self.pulse += self.noise
+            #self.spectrum = np.fft.fft(self.pulse)
     #TODO -> Add Data Defined Noise Spectrum
     #TODO: White Noise?
 

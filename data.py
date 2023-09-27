@@ -4,7 +4,7 @@ from transmitter import tx_signal
 from receiver import receiver as rx
 import numpy as np
 from numpy.lib.format import open_memmap
-
+import peakutils as pku
 import util
 import os
 from matplotlib import pyplot as pl
@@ -26,6 +26,19 @@ def create_sim(fname_config): #Creates Simulation from config file using parser
                        dx=float(geometry['dx']), dz=float(geometry['dz']),
                        airHeight=float(geometry['airHeight']))
     return sim
+
+def get_IR_from_config(fname_config, antenna='TX'):
+    config = configparser.ConfigParser()
+    config.read(fname_config)
+    if antenna == 'TX':
+        signal_config = config['TX_SIGNAL']
+        fname_IR = signal_config['fname_IR']
+        IR, IR_freq = util.get_IR_from_file(fname_IR)
+    elif antenna == 'RX':
+        receiver_config = config['RECEIVER']
+        fname_IR = receiver_config['fname_IR']
+        IR, IR_freq = util.get_IR_from_file(fname_IR)
+    return IR, IR_freq
 
 def create_tx_signal(fname_config):
     '''
@@ -351,6 +364,32 @@ class bscan_rxList: #This one is a nTx x nRx dimension bscan
         ascan = self.bscan_sig[txNum, rxNum]
         return ascan
 
+    def get_peak(self, txNum, rxNum, mode='Max', thres0=0.1):
+        ascan = abs(self.bscan_sig[txNum, rxNum])
+        if mode == 'Max':
+            ii_max = np.argmax(ascan)
+            tpeak = self.tspace[ii_max]
+            amp_peak = ascan[ii_max]
+        elif mode == 'First':
+            ii_peaks = pku.indexes(ascan, thres=thres0)
+            ii_first = ii_peaks[0]
+            tpeak = self.tspace[ii_first]
+            amp_peak = ascan[ii_first]
+        elif mode == 'All':
+            ii_peaks = pku.indexes(ascan, thres=thres0)
+            nPeaks = len(ii_peaks)
+            tPeaks = np.zeros(nPeaks)
+            AmpPeaks = np.zeros(nPeaks)
+            for i in range(nPeaks):
+                tPeaks[i] = self.tspace[ii_peaks[i]]
+                AmpPeaks[i] = ascan[ii_peaks[i]]
+            return tPeaks, AmpPeaks
+        else:
+            ii_max = np.argmax(ascan)
+            tpeak = self.tspace[ii_max]
+            amp_peak = ascan[ii_max]
+        return tpeak, amp_peak
+
     def get_ascan_from_depth(self, z_tx, x_rx, z_rx):
         txNum = util.findNearest(self.tx_depths, z_tx)
         rxNum = 0
@@ -361,11 +400,26 @@ class bscan_rxList: #This one is a nTx x nRx dimension bscan
                 rxNum = i
                 break
         rx_select = rxList[rxNum]
-        print(rx_select.x, rx_select.z)
+        #print(rx_select.x, rx_select.z)
         ascan = self.bscan_sig[txNum, rxNum]
         return ascan
 
-
+    def get_spectrum_from_depth(self, z_tx, x_rx, z_rx):
+        txNum = util.findNearest(self.tx_depths, z_tx)
+        rxNum = 0
+        rxList = self.rxList
+        nRX = self.nRX
+        for i in range(nRX):
+            rx_i = self.rxList[i]
+            if rx_i.x == x_rx and rx_i.z == z_rx:
+                rxNum = i
+        rx_select = rxList[rxNum]
+        #print(rx_select.x, rx_select.z)
+        ascan = self.bscan_sig[txNum, rxNum]
+        ascan_fft = np.fft.rfft(ascan)
+        ascan_fft /= float(self.nSamples)
+        freq_space = np.fft.rfftfreq(self.nSamples, self.dt)
+        return ascan_fft, freq_space
 
     def bscan_parallel(self, xRx):
         self.bscan_plot = np.zeros((self.nTX, self.tx_signal.nSamples), dtype='complex')
@@ -524,7 +578,7 @@ class bscan_FT:
             dz_tx = abs(z_tx_i - z_tx)
             dx_rx = abs(x_rx_i - x_rx)
             dz_rx = abs(z_rx_i - z_rx)
-            if dz_tx < tol and dx_rx < tol and dx_rx < tol:
+            if dz_tx < tol and dx_rx < tol and dz_rx < tol:
                 ascan_data = self.fftArray[i]
                 break
         '''
