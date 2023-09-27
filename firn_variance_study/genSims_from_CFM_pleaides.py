@@ -43,7 +43,13 @@ dir_sim_path = dir_sim + '/'
 
 fname_CFM_list = 'CFM_sim_list.txt'
 fout_list = open(fname_CFM_list,'w')
-for i in range(nProfiles):
+
+if len(sys.argv) > 1:
+    nProfiles_sim = int(sys.argv[1])
+else:
+    nProfiles_sim = nProfiles
+
+for i in range(nProfiles_sim):
     jobname = dir_sim_path + 'sim_2CFM_' + str(i).zfill(3)
     fname_out0 ='sim_2CFM_' + str(i).zfill(3) + '.h5'
     fname_out = dir_sim_path + fname_out0
