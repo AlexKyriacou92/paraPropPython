@@ -35,6 +35,11 @@ nprof_mat = np.array(nprofile_hdf.get('n_profile_matrix'))
 zprof_mat = np.array(nprofile_hdf.get('z_profile'))
 sim0 = create_sim(fname_config)
 dz = sim0.dz
-zprof_data = np.arange(min(zprof_mat), max(zprof_mat), dz)
+zprof_data = np.arange(min(zprof_mat), sim0.iceDepth, dz)
 nprof_data = np.interp(zprof_data, zprof_mat, nprof_mat[ii_select]).real
+
+if np.any(np.isnan(nprof_data) == True) == True:
+    print('error, undefined values of ref index array!')
+    sys.exit(-1)
+
 depth_scan_impulse_smooth(fname_config=fname_config, n_profile=nprof_data, z_profile=zprof_data, fname_out=fname_out)
