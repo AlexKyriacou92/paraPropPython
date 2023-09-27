@@ -229,7 +229,7 @@ def doIFFT(V):
     return np.fft.ifft(V)
 
 def hilbertTransform(V):
-    return np.imag(sig.hilbert(V));
+    return np.imag(sig.hilbert(V))
 
 
 # ff=doFFT(V);
@@ -471,6 +471,12 @@ def get_profile_from_file(fname):
     z_profile = profile_data[:,0]
     n_profile = profile_data[:,1]
     return n_profile, z_profile
+
+def get_IR_from_file(fname):
+    profile_data = np.genfromtxt(fname)
+    freq_data = profile_data[:,0]
+    IR_data = profile_data[:,1]
+    return IR_data, freq_data
 
 def get_profile_from_file_cut(fname, zmin, zmax):
     profile_data = np.genfromtxt(fname)
