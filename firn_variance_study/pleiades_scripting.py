@@ -7,7 +7,7 @@ from random import randint, uniform
 import random
 from scipy.interpolate import interp1d
 import subprocess
-from GA_operators import flat_mutation, gaussian_mutation, clone, cross_breed
+#from GA_operators import flat_mutation, gaussian_mutation, clone, cross_breed
 import sys
 
 #Cluster Settings
