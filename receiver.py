@@ -251,7 +251,7 @@ class receiver:
                 self.IR_positive[i] = 0
                 self.IR_negative[j_neg] = 0
             elif freq_plus <= IR_fmax and freq_plus >= IR_fmin:
-                print('reset')
+                #print('reset')
                 k_pos = util.findNearest(self.IR_freq, freq_plus)
                 self.IR_positive[i] = self.IR_data[k_pos]
                 self.IR_negative[j_neg] = self.IR_data[k_pos]
