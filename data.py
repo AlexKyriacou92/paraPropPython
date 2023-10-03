@@ -164,11 +164,23 @@ def create_transmitter_array(fname_config):
     config = configparser.ConfigParser()
     config.read(fname_config)
     transmitter_config = config['TRANSMITTER']
+    fname_tx_depths = str(transmitter_config['fname_transmitters'])
+    tx_depths = []
+    with open(fname_tx_depths, 'r') as f_in:
+        for line in f_in:
+            cols = line.split()
+            tx_depths.append(float(cols[0]))
+    tx_depths = np.array(tx_depths)
+    return tx_depths
+
+def create_transmitter_array_from_file(fname_config):
+    config = configparser.ConfigParser()
+    config.read(fname_config)
+    transmitter_config = config['TRANSMITTER']
     tx_depths = np.arange(float(transmitter_config['minSource']),
                           float(transmitter_config['maxSource']) + float(transmitter_config['dTX']),
                           float(transmitter_config['dTX']))
     return tx_depths
-
 def create_hdf_bscan(fname, sim, tx_signal, tx_depths, rx_ranges, rx_depths, comment=""):
     '''
     Creates a HDF (fname.h5) file that saves the simulation data -> dimensions, pulse data, receiver configuration
@@ -394,15 +406,30 @@ class bscan_rxList: #This one is a nTx x nRx dimension bscan
         txNum = util.findNearest(self.tx_depths, z_tx)
         rxNum = 0
         rxList = self.rxList
-        for i in range(len(rxList)):
-            rx_i = rxList[i]
-            if rx_i.x == x_rx and rx_i.z == z_rx:
-                rxNum = i
-                break
-        rx_select = rxList[rxNum]
+        range_tot = []
+        nRx = len(rxList)
+        for i in range(nRx):
+            ri = np.sqrt((x_rx - self.rxList[i].x)**2 + (z_rx - self.rxList[i].z)**2)
+            range_tot.append(ri)
+        rxNum = util.findNearest(range_tot, 0)
+        #rx_select = rxList[rxNum]
         #print(rx_select.x, rx_select.z)
         ascan = self.bscan_sig[txNum, rxNum]
         return ascan
+
+    def get_actual_position(self, z_tx, x_rx, z_rx):
+        txNum = util.findNearest(self.tx_depths, z_tx)
+        rxNum = 0
+        rxList = self.rxList
+
+        nRx = len(rxList)
+        range_tot = []
+        for i in range(nRx):
+            ri = np.sqrt((x_rx - self.rxList[i].x)**2 + (z_rx - self.rxList[i].z)**2)
+            range_tot.append(ri)
+        rxNum = util.findNearest(range_tot, 0)
+        rx_select = rxList[rxNum]
+        return self.tx_depths[txNum], rx_select.x, rx_select.z
 
     def get_spectrum_from_depth(self, z_tx, x_rx, z_rx):
         txNum = util.findNearest(self.tx_depths, z_tx)
