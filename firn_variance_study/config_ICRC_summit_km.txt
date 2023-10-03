@@ -6,7 +6,7 @@ prefix = summit
 
 [GEOMETRY]
 iceDepth = 250.0
-iceLength = 1000.0
+iceLength = 250.0
 dx = 1.0
 dz = 0.1
 airHeight = 10.0
@@ -27,6 +27,6 @@ fname_transmitters = tx_list.txt
 fname_IR = eff_l_vpol_antenna_RNO_G.txt
 
 [RECEIVER]
-fname_receivers = rx_list.txt
+fname_receivers = rx_list_deep.txt
 noise = 1e-5
 fname_IR = eff_l_vpol_antenna_RNO_G.txt
