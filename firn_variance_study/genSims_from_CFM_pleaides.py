@@ -18,8 +18,19 @@ from data import create_sim, create_rxList_from_file, create_tx_signal, create_t
 from data import create_hdf_bscan, bscan_rxList, create_hdf_FT
 import util
 
+def get_dates(fname_in):
+    with  h5py.File(fname_in, 'r') as input_hdf:
+        data_matrix = np.array(input_hdf['density'])
+    date_arr = data_matrix[1:,0]
+    return date_arr
+
 fname_config = 'config_ICRC_summit_km.txt'
 fname_nprofile = 'nProf_CFM_deep.h5'
+fname_CFM = 'CFMresults.hdf5'
+
+date_arr = get_dates(fname_CFM)
+
+
 nprofile_hdf = h5py.File(fname_nprofile, 'r')
 nprof_mat = np.array(nprofile_hdf.get('n_profile_matrix'))
 zprof_mat = np.array(nprofile_hdf.get('z_profile'))
@@ -43,13 +54,26 @@ dir_sim_path = dir_sim + '/'
 
 fname_CFM_list = 'CFM_sim_list.txt'
 fout_list = open(fname_CFM_list,'w')
-
+'''
 if len(sys.argv) > 1:
     nProfiles_sim = int(sys.argv[1])
 else:
     nProfiles_sim = nProfiles
-
-for i in range(nProfiles_sim):
+year_list = np.arange(start_year, end_year, 1)
+'''
+#start_year = int(date_arr[0])
+start_year = 2011
+end_year = int(date_arr[-1]) + 1
+year_list = np.arange(start_year, end_year, 1)
+year_id_list = []
+print(year_list)
+nYears = len(year_list)
+fname_list = []
+n_matrix_yr = np.ones((nYears, nDepths))
+for i in range(nYears):
+    jj = util.findNearest(date_arr, year_list[i])
+nProfiles_sim = nYears
+for i in year_id_list:
     jobname = dir_sim_path + 'sim_2CFM_' + str(i).zfill(3)
     fname_out0 ='sim_2CFM_' + str(i).zfill(3) + '.h5'
     fname_out = dir_sim_path + fname_out0
