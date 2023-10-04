@@ -18,8 +18,8 @@ from data import create_sim, create_rxList_from_file, create_tx_signal, create_t
 from data import create_hdf_bscan, bscan_rxList, create_hdf_FT
 import util
 
-fname_config = 'config_ICRC_summit.txt'
-fname_nprofile = 'nProf_CFM.h5'
+fname_config = 'config_ICRC_summit_km.txt'
+fname_nprofile = 'nProf_CFM_deep.h5'
 nprofile_hdf = h5py.File(fname_nprofile, 'r')
 nprof_mat = np.array(nprofile_hdf.get('n_profile_matrix'))
 zprof_mat = np.array(nprofile_hdf.get('z_profile'))
