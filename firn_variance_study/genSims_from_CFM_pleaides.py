@@ -72,8 +72,10 @@ fname_list = []
 n_matrix_yr = np.ones((nYears, nDepths))
 for i in range(nYears):
     jj = util.findNearest(date_arr, year_list[i])
+    year_id_list.append(jj)
 nProfiles_sim = nYears
 for i in year_id_list:
+    print(i)
     jobname = dir_sim_path + 'sim_2CFM_' + str(i).zfill(3)
     fname_out0 ='sim_2CFM_' + str(i).zfill(3) + '.h5'
     fname_out = dir_sim_path + fname_out0
