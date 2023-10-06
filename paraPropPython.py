@@ -3,6 +3,7 @@
 
 import util
 import math as m
+from math import pi
 import numpy as np
 from inspect import signature
 from scipy.interpolate import interp1d
@@ -113,14 +114,21 @@ class paraProp:
       
     
     ### ice profile functions ###
-    def set_n(self, nVal=None, nVec=None, nFunc=None, nAir=1.0003, zVec=[]):
+    def set_n(self,  nVal=None, nVec=[], nFunc=None, nAir=1.0003, zVec=[], interpolation='padding'):
         """
-        set the index of refraction profile of the simualtion
-        
-        future implementation plans:
-            - complex index of refraction
-        
-        Parameters
+        Function which sets 2D refractive index profile n(x,z) of simulation domain
+
+        You may define the ref-index profile with a 1D analytical function nFunc,
+        or a 1D vector nVec (which may be data defined). For a range independent profile, we take z >= 0 as being
+        below the surface (ice) and z < 0 as being above the surface (air/vacuum).
+        You can also define a constant profile with nVal
+        and the profile will assume uniformity over range x
+        Otherwise, you may use a 2D nVec -> where the ref-index as a function of x and z is defined elsewhere and beforehand
+
+        Note on uneven or 'rough' surfaces -> at the moment, this can be implemented with a 2D nVec directly
+        Alternatively, you set a 1D ref-index profile as a first step, in the second step you can adjust this profile
+        to a changing elevation
+         Parameters
         ----------
         nVal : float
             Postcondition: n(z>=0, x>=0) = nVal
@@ -134,132 +142,255 @@ class paraProp:
         nAir : float
             index of refraction of air
             Postcondition: n(z<0) = nAir
-        """    
+        zVec : a 1D array of depth positions (needed for data defined ref-index profiles)
+        zVec : 1 1D array of range positions
+        """
         self.n = np.ones((self.zNumFull, self.xNum), dtype='complex')
-        
-        if nVal != None:
-            for i in range(self.zNumFull):
-                if self.zFull[i] >= 0:
-                    self.n[i,:] = nVal
-                else:
-                    self.n[i,:] = nAir
-        
-        elif nVal == None and nFunc == None:
-            if len(nVec.shape) == 1:
-                if len(zVec) != 0:
-                    dz_vec = abs(zVec[1] - zVec[0])
-                    zmax = zVec[-1]
-                    zmin = zVec[0]
-                    if dz_vec == self.dz:
-                        a = 0
-                        nzNum = len(nVec)
-                        for i in range(self.zNumFull):
-                            if self.zFull[i] >= 0:
-                                if self.zFull[i] >= zmin and self.zFull[i] <= zmax:
-                                    ai = a if a < nzNum else -1
-                                    self.n[i, :] = nVec[ai]
-                                    a += 1
-                                elif self.zFull[i] < zmin:
-                                    self.n[i,:] = nVec[0]
-                                elif self.zFull[i] > zmax:
-                                    self.n[i,:] = nVec[-1]
-                            else:
-                                self.n[i,:] = nAir
-                    elif dz_vec > self.dz:
-                        n_interp = interp1d(zVec, nVec)
-                        for i in range(self.zNumFull):
-                            if self.zFull[i] >= 0:
-                                if self.zFull[i] >= zmin and self.zFull[i] <= zmax:
-                                    self.n[i,:] = n_interp(self.zFull[i])
-                                elif self.zFull[i] < zmin:
-                                    self.n[i,:] = nVec[0]
-                                elif self.zFull[i] > zmax:
-                                    self.n[i,:] = nVec[-1]
-                            else:
-                                self.n[i,:] = nAir
-                    elif dz_vec < self.dz:
-                        for i in range(self.zNumFull):
-                            if self.zFull[i] >= 0:
-                                if self.zFull[i] >= zmin and self.zFull[i] <= zmax:
-                                    jj = util.findNearest(zVec, self.zFull[i])
-                                    self.n[i,:] = nVec[jj]
-                                elif self.zFull[i] < zmin:
-                                    self.n[i, :] = nVec[0]
-                                elif self.zFull[i] > zmax:
-                                    self.n[i, :] = nVec[-1]
-                            else:
-                                self.n[i, :] = nAir
-                else:
-                    a = 0
-                    nzNum = len(nVec)  # TODO: was originally nNum -> changed to nzNum
-                    for i in range(self.zNumFull):
-                        if self.zFull[i] >= 0:
-                            ai = a if a < nzNum else -1
-                            self.n[i, :] = nVec[ai]
-                            a += 1
-                        else:
-                            self.n[i, :] = nAir
 
-            elif len(nVec.shape) == 2: 
-                a = 0
-                b = 0
-                nzNum = len(nVec[:,0])
-                nxNum = len(nVec[0,:])
-                for i in range(self.zNumFull):
-                    for j in range(self.xNum):
-                        if self.zFull[i] >= 0:
-                            ai = a if a < nzNum else -1
-                            bi = b if b < nxNum else -1
-                            self.n[i,j] = nVec[ai,bi]
-                            a += 1
-                            b += 1
-                        else:
-                            self.n[i,j] = nAir
-         
+        if nVal != None:
+            ix_cut = util.findNearest(self.zFull, 0)
+            self.n[ix_cut:,:] = nVal
+            self.n[:ix_cut, :] = nAir
         elif nFunc != None:
+            ix_min = 0
+            ix_cut = util.findNearest(self.zFull, 0)
+            self.n[:ix_cut, :] = nAir
             sig = signature(nFunc)
             numParams = len(sig.parameters)
             if numParams == 1:
-                for i in range(self.zNumFull):
-                    if self.zFull[i] >= 0:
-                        z = self.zFull[i] if self.zFull[i] <= self.iceDepth else self.iceDepth
-                        self.n[i,:] = nFunc(z)
+                for i in range(ix_cut, self.zNumFull):
+                    if self.zFull[i] <= self.iceDepth:
+                        z = self.zFull[i]
                     else:
-                        self.n[i,:] = nAir
-            elif numParams >= 2:
-                for i in range(self.zNumFull):
+                        z = self.iceDepth
+                    self.n[i, :] = nFunc(z)
+            elif numParams == 2:
+                for i in range(ix_cut, self.zNumFull):
+                    if self.zFull[i] <= self.iceDepth:
+                        z = self.zFull[i]
+                    else:
+                        z = self.iceDepth
                     for j in range(self.xNum):
-                        if self.zFull[i] >= 0:
-                            z = self.zFull[i] if self.zFull[i] <= self.iceDepth else self.iceDepth
-                            x = self.x[j]
-                            self.n[i,j] = nFunc(z,x)
+                        x = self.x[j]
+                        self.n[i,j] = nFunc(z,x)
+        elif nFunc == None and nVal == None: #Add Smoothing Function
+            if len(nVec.shape) == 1:
+                ix_cut = util.findNearest(self.zFull, 0)
+                ix_min = util.findNearest(self.zFull, min(zVec))
+                ix_max = util.findNearest(self.zFull, max(zVec))
+                self.n[:ix_cut, :] = nAir
+
+                if len(zVec) != 0:
+                    dz_vec = abs(zVec[1] - zVec[0])
+                    z_min = min(zVec)
+                    z_max = max(zVec)
+                    if dz_vec == self.dz:
+                        i_zero = util.findNearest(self.zFull, 0)
+                        if z_min > 0:
+                            print(ix_min, ix_max)
+                            for j in range(self.xNum):
+                                self.n[i_zero:ix_min,j] = nVec[0]
+                                self.n[ix_max:,j] = nVec[-1]
+                                for i in range(ix_min, ix_max):
+                                    i_vec = util.findNearest(zVec, self.zFull[i])
+                                    self.n[i,j] = nVec[i_vec]
                         else:
-                            self.n[i,j] = nAir
-                            
-        ### set reference index of refraction ###
-        self.n0 = self.at_depth(self.n[:,0], self.refDepth)
-        self.n = np.transpose(self.n) 
-        
-    def get_n(self, x=None, z=None):
-        """
-        gets index of refraction profile of simulation
-        
-        Returns
-        -------
-        2-d float array
-        """
-        if x == None and z == None:
-            return np.transpose(self.n[:,self.fNum1:-self.fNum2])
-        elif x == None and z != None:
-            ii = util.findNearest(self.zFull, z)
-            return self.n[:,ii]
-        elif z == None and x != None:
-            ii = util.findNearest(self.x, x)
-            return self.n[ii,self.fNum1:-self.fNum2]
+                            for j in range(self.xNum):
+                                self.n[i_zero:, j] = nVec[0]
+                                self.n[ix_max:, j] = nVec[-1]
+                                for i in range(i_zero, ix_max):
+                                    i_vec = util.findNearest(zVec, self.zFull[i])
+                                    self.n[i, j] = nVec[i_vec]
+                    elif dz_vec > self.dz:
+                        zVec_new = np.arange(min(zVec), max(zVec) + self.dz, self.dz)
+                        nVec_new = np.ones(len(zVec_new), dtype='complex')
+                        if interpolation == 'padding':
+                            nVec_new, zVec_2 = util.smooth_padding(z_vec=zVec, n_vec=nVec, dz=self.dz)
+                            print(nVec_new)
+                            print(zVec_2)
+                        else:
+                            f_interp = interp1d(zVec, nVec)
+                            nVec_new[0] = nVec[0]
+                            nVec_new[-1] = nVec[-1]
+                            nVec_new[1:-1] = f_interp(zVec_new[1:-1])
+                        for i in range(ix_cut, ix_max):
+                            z = self.zFull[i]
+                            i_vec = util.findNearest(zVec_new, z)
+                            self.n[i,:] = nVec_new[i_vec]
+                        self.n[ix_max:,:] = nVec_new[-1]
+                        self.n[ix_cut:ix_min,:] = nVec_new[0]
+                    elif dz_vec < self.dz:
+                        zVec_new = np.arange(min(zVec), max(zVec) + self.dz, self.dz)
+                        nVec_new = np.ones(len(zVec_new), dtype='complex')
+                        f_interp = interp1d(zVec, nVec)
+                        nVec_new[0] = nVec[0]
+                        nVec_new[-1] = nVec[-1]
+                        nVec_new[1:-1] = f_interp(zVec_new[1:-1])
+                        for i in range(ix_cut, ix_max):
+                            z = self.zFull[i]
+                            i_vec = util.findNearest(zVec_new, z)
+                            self.n[i,:] = nVec_new[i_vec]
+                        self.n[ix_max:, :] = nVec_new[-1]
+                        self.n[ix_cut:ix_min, :] = nVec_new[0]
+                elif len(nVec) == self.zNumFull:
+                    for j in range(self.xNum):
+                        self.n[:,j] = nVec
+                else:
+                    print('error! nVec must have the same length as the simulation domain depth+height')
+                    return -1
+            elif len(nVec.shape) == 2:
+                zNumVec = len(nVec)
+                xNumVec = len(nVec[0])
+                if zNumVec == self.zNumFull and xNumVec == self.xNum:
+                    for i in range(self.zNumFull):
+                        for j in range(self.xNum):
+                            self.n[i, j] = nVec[i, j]
+                else:
+                    print('error! the nVec must be set to be equal to be equal to the shape of ref-index domain matrix sim.n')
         else:
-            ii_x = util.findNearest(self.x, x)
-            ii_z = util.findNearest(self.zFull, z)
-            return self.n[ii_x, ii_z]
+            print('error! you must choose between nFunc, nVal and nVec')
+            return -1
+        ### set reference index of refraction ###
+        self.n0 = self.at_depth(self.n[:, 0], self.refDepth)
+        self.n = np.transpose(self.n)
+
+    def set_DEM(self, surf_val = None, func_DEM=None, vec_DEM = [], xVec= [], nAir=1.0003, mode = 'shift', interpolation='padding'):
+        #NOTE set_n MUST BE SET BEFORE
+        nFlat = np.transpose(self.n)
+        nNew = np.ones((self.zNumFull, self.xNum))
+        self.DEM = np.zeros(self.xNum)
+        if surf_val != None:
+            i_shift = int(surf_val/self.dz)
+            if i_shift > 0:
+                if mode == 'shift':
+                    for j in range(self.xNum):
+                        nNew[:,j] = np.roll(nFlat[:,j], i_shift)
+                        nNew[:i_shift,j] = nAir
+                elif mode == 'cutting':
+                    ix_flat = util.findNearest(self.zFull,0)
+                    for j in range(self.xNum):
+                        nNew[:i_shift, j] = nAir
+                        nNew[i_shift:, j] = nFlat[ix_flat:-i_shift,j]
+                else:
+                    print('error! mode should be set to: shift or cutting, no effect made')
+            elif i_shift < 0:
+                if mode == 'shift':
+                    for j in range(self.xNum):
+                        nNew[:,j] = np.roll(nFlat[:,j], i_shift)
+                        nNew[:i_shift, j] = nFlat[-1, j]
+                elif mode == 'cutting':
+                    i_cut = util.findNearest(self.zFull, surf_val)
+                    for j in range(self.xNum):
+                        nNew[:, j] = np.roll(nFlat[:, j], i_shift)
+                        nNew[:i_cut,j] = nFlat[-1,j]
+                else:
+                    print('error! mode should be set to: shift or cutting, no effect made')
+        elif func_DEM != None:
+            if mode == 'shift':
+                for j in range(self.xNum):
+                    z_shift = func_DEM(self.x[j])
+                    self.DEM[j] = z_shift
+                    i_shift = int(z_shift/self.dz)
+                    nNew[:,j] = np.roll(nFlat[:,j], i_shift)
+                    if z_shift > 0:
+                        nNew[:i_shift,j] = nAir
+                    elif z_shift < 0:
+                        nNew[i_shift:,j] = nFlat[-1,j]
+            elif mode == 'cutting':
+                for j in range(self.xNum):
+                    z_shift = func_DEM(self.x[j])
+                    self.DEM[j] = z_shift
+                    if z_shift > 0:
+                        i_cut = util.findNearest(self.zFull, z_shift)
+                        nNew[:i_cut, j] = nAir
+                        nNew[i_cut:, j] = nFlat[i_cut:, j]
+            else:
+                print('error! mode should be set to: shift or cutting, no effect made')
+        elif func_DEM == None and surf_val == None:
+            vecNum = len(vec_DEM)
+            if vecNum > 0:
+                if vecNum == self.xNum:
+                    for j in range(self.xNum):
+                        z_shift = vec_DEM[j]
+                        self.DEM[j] = z_shift
+                        #i_shift_full = util.findNearest(self.zFull, z_shift)
+                        i_shift = int(z_shift/self.dz)
+                        if mode == 'shift':
+                            if i_shift == 0:
+                                nNew[:,j] = nFlat[:,j]
+                                #print(nNew[:,j])
+                            else:
+                                nNew[:,j] = np.roll(nFlat[:,j], i_shift)
+                                if z_shift > 0:
+                                    nNew[:i_shift,j] = nAir
+                                elif z_shift < 0:
+                                    nNew[i_shift:,j] = nFlat[-1,j]
+                                else:
+                                    nNew[i_shift,j] = nFlat[-1,j]
+                        elif mode == 'cutting':
+                            if z_shift > 0:
+                                nNew[:i_shift,j] = nAir
+                                nNew[i_shift:,j] = nFlat[i_shift:,j]
+                else:
+                    dx_vec = abs(xVec[1]-xVec[0])
+                    xmin = min(xVec)
+                    xmax = max(xVec)
+                    xVec_new = np.arange(xmin, xmax + self.dx, self.dx)
+                    zVec_new = np.zeros(len(xVec_new))
+                    if dx_vec > self.dx:
+                        if interpolation == 'padding':
+                            zVec_new = util.smooth_padding(xVec,vec_DEM, self.dx)
+                        else:
+                            f_interp = interp1d(xVec, vec_DEM)
+                            zVec_new[0] = vec_DEM[0]
+                            zVec_new[-1] = vec_DEM[-1]
+                            zVec_new[1:-1] = f_interp(xVec_new[1:-1])
+                    elif dx_vec < self.dx:
+                        f_interp = interp1d(xVec, vec_DEM)
+                        zVec_new[0] = vec_DEM[0]
+                        zVec_new[-1] = vec_DEM[-1]
+                        zVec_new[1:-1] = f_interp(xVec_new[1:-1])
+                    j_min = util.findNearest(self.x, xmin)
+                    j_max = util.findNearest(self.x, xmax)
+                    for j in range(j_min, j_max):
+                        j_vec = util.findNearest(xVec_new, self.x[j])
+                        self.DEM[j] = zVec_new[j_vec]
+                        i_shift = int(self.DEM[j]/self.dz)
+                        i_shift_full = util.findNearest(self.zFull, self.DEM[j])
+                        if mode == 'shift':
+                            nNew[:,j] = np.roll(nFlat[:,j], i_shift)
+                            if self.DEM[j] > 0:
+                                nNew[:i_shift, j] = nAir
+                            elif self.DEM[j] < 0:
+                                nNew[i_shift:, j] = nFlat[-1,j]
+                        elif mode == 'cutting':
+                            if self.DEM[j] > 0:
+                                nNew[:i_shift_full,j] = nAir
+                                nNew[i_shift_full:,j] = nFlat[i_shift_full:,j]
+            else:
+                print('error! DEM vector must be set if function and surface_shift are set to none')
+        self.n = np.transpose(nNew)
+
+    def get_n(self, x=None, z=None):
+            """
+            gets index of refraction profile of simulation
+
+            Returns
+            -------
+            2-d float array
+            """
+            if x == None and z == None:
+                return np.transpose(self.n[:,self.fNum1:-self.fNum2])
+            elif x == None and z != None:
+                ii = util.findNearest(self.zFull, z)
+                return self.n[:,ii]
+            elif z == None and x != None:
+                ii = util.findNearest(self.x, x)
+                return self.n[ii,self.fNum1:-self.fNum2]
+            else:
+                ii_x = util.findNearest(self.x, x)
+                ii_z = util.findNearest(self.zFull, z)
+                return self.n[ii_x, ii_z]
     
     ### source functions ###
     def set_user_source_profile(self, method, z0=0, sVec=None, sFunc=None):
@@ -329,12 +460,12 @@ class paraProp:
         centerLmbda = util.c_light/centerFreq
         
         ### wavelength at reference depth ###
-        centerLmbda0 = centerLmbda/self.n0
+        centerLmbda0 = centerLmbda/abs(self.n0)
         
         ### create dipole ###
         z0 = depth
         z0Index = util.findNearest(self.zFull, z0)
-        
+        print(centerLmbda0, self.dz)
         nPoints = int((centerLmbda0/2) / self.dz)
         ZR1 = np.linspace(0,1, nPoints, dtype='complex')
         ZR2 = np.linspace(1,0, nPoints, dtype='complex')
@@ -352,7 +483,77 @@ class paraProp:
         f0 = A*(beam/(np.max(beam)))
         
         self.source[z0Index-nPoints+1:z0Index+nPoints+1]=f0
-        
+    def set_phased_array(self, zstart, centerFreq, A=1+0j, n=8, scaling=1):
+        '''
+
+            Set a phased array string of antennas -> with some number of dipole antennas connected
+            Old Parameters
+            z: ? -> removed this is simply the depth array -> zFull or z??
+            A: Amplitude
+            n: Number of Dipoles on string
+            scaling: ?
+
+
+            From previous example: 'Deimnesions defined by wavelength
+            My parameters:
+            -zstart -> start depth
+            -centerFreq -> central frequency
+
+        '''
+        #field0 = np.zeros(self.zNumFull, dtype='complex')
+
+        wavel = util.c_light/centerFreq #Wavelength
+        half_wavel = wavel/2 #Half of the Wavelength
+        self.source = np.zeros(self.zNumFull, dtype='complex')
+        for i in range(0, n):
+            #print(i)
+            z_i = zstart + (i*scaling*wavel) #position of antenna on string??
+            ii_z_mid = util.findNearest(self.zFull, z_i)
+
+            nPoints = int(half_wavel/self.dz) #points in HalfWavelength
+            if nPoints > int(len(self.zFull)/4): # Legacy Code -> Don't know what this is
+                nPoints = int(self.zNumFull/4)
+            # zRange = np.linspace(-half_wavel, half_wavel, 2*nPoints, dtype='complex') #THIS IS DEFINED AGAIN -> Comment out
+            zR1 = np.linspace(0,1, nPoints, dtype='complex')
+            zR2 = np.linspace(1,0, nPoints, dtype='complex')
+            zRange = np.append(zR1, zR2) #WHY IS ZRANGE DEFINED TWICE??
+            n_x = np.pi * zRange
+            e = [0,0,1]
+            beam = np.zeros(len(n_x), dtype='complex')
+            f0 = np.zeros(len(n_x), dtype='complex')
+            for j in range(len(n_x)): # In paraProp phased array -> he uses the same integer twice!
+                n_j = [n_x[j], 0, 0]
+                val = (np.cross(np.cross(n_j,e), n_j)[2])
+                beam[j] = complex(val, val)
+            f0 = (A*(beam/np.max(beam)))
+            self.source[ii_z_mid-nPoints+1:ii_z_mid+nPoints+1] = f0
+    def phase_array_vector(self, zVec, sVec, centerFreq): #Define a phased array with a Vector of Antenna Positions and Amplitudes (includes phase!)
+        nArray = len(sVec)
+        self.source = np.zeros(self.zNumFull, dtype='complex')
+        wavel = util.c_light/centerFreq #Wavelength
+        half_wavel = wavel/2 #Half of the Wavelength
+        for i in range(nArray):
+            z_antenna = zVec[i] # The Depth of the antenna
+            amp_antenna = sVec[i] #The Complex Amplitude of the Antenna
+            ii_z_md = util.findNearest(self.zFull, z_antenna)
+            nPoints = int(half_wavel/self.dz) #points in HalfWavelength
+            if nPoints > int(len(self.zFull)/4): # Legacy Code -> Don't know what this is
+                nPoints = int(self.zNumFull/4)
+            # zRange = np.linspace(-half_wavel, half_wavel, 2*nPoints, dtype='complex') #THIS IS DEFINED AGAIN -> Comment out
+            zR1 = np.linspace(0,1, nPoints, dtype='complex')
+            zR2 = np.linspace(1,0, nPoints, dtype='complex')
+            zRange = np.append(zR1, zR2) #WHY IS ZRANGE DEFINED TWICE??
+            n_x = np.pi * zRange
+            e = [0,0,1]
+            beam = np.zeros(len(n_x), dtype='complex')
+            f0 = np.zeros(len(n_x), dtype='complex')
+            for j in range(len(n_x)): # In paraProp phased array -> he uses the same integer twice!
+                n_j = [n_x[j], 0, 0]
+                val = (np.cross(np.cross(n_j,e), n_j)[2])
+                beam[j] = complex(val, val)
+            f0 = amp_antenna * (beam/np.max(beam))
+            self.source[ii_z_md-nPoints+1:ii_z_md+nPoints+1] = f0
+
     def get_source_profile(self):
         """
         gets source profile of simulation
@@ -447,7 +648,8 @@ class paraProp:
         return np.arange(0, self.dt*len(self.sigVec), self.dt)
                
         
-    ### field functions ###    
+    ### field functions ###
+
 
     def do_solver(self, rxList=np.array([]), freqMin=None, freqMax=None, solver_mode = 'one-way', refl_threshold=1e-10):
         """
@@ -498,7 +700,7 @@ class paraProp:
                 print("Warning: Running time-domain simulation with no receivers. Field will not be saved.")
             for rx in rxList:
                 rx.setup(self.freq, self.dt)
-
+        print(solver_mode)
         #Check if solving for TD signal or in FD
         if freqMin == None and freqMax == None:
             freq_ints = np.arange(0, int(self.freqNum / 2) + self.freqNum % 2, 1, dtype='int')
@@ -517,7 +719,6 @@ class paraProp:
             if (self.freq[j] == 0): continue
             u_plus = 2 * self.A[j] * self.source * self.filt * self.freq[j]
             self.field[0] = u_plus[self.fNum1:-self.fNum2]
-
             alpha_plus = np.exp(1.j * self.dx * self.kp0[j] * (np.sqrt(1. - (self.kz ** 2 / self.kp0[j] ** 2)) - 1.))
             B_plus = self.n ** 2 - 1
             Y_plus = np.sqrt(1. + (self.n / self.n0) ** 2)
@@ -531,13 +732,12 @@ class paraProp:
 
             for i in range(1, self.xNum):
                 u_plus_i = u_plus # Record starting reduced field -> in case we need to calculate
-                dn = self.x[i] - self.x[i - 1]
+                dn = self.n[i,:] - self.n[i - 1,:]
                 if dn.any() > 0:
                     u_plus *= util.transmission_coefficient(self.n[i], self.n[i-1])
                 u_plus = alpha_plus * (util.doFFT(u_plus))
                 u_plus = beta_plus[i] * (util.doIFFT(u_plus))
                 u_plus = self.filt * u_plus
-
                 delta_x_plus = self.dx * i
                 self.field_plus[i] = u_plus[self.fNum1:-self.fNum2] / (
                         np.sqrt(delta_x_plus) * np.exp(-1.j * self.k0[j] * delta_x_plus))
@@ -594,6 +794,330 @@ class paraProp:
                 else:
                     self.field[:,:] += self.field_plus[:,:]
                     self.field[:,:] += self.field_minus[:,:]
+    def do_solver_smooth(self, rxList=np.array([]), ant_length=1.0, freqMin=None, freqMax=None, solver_mode = 'one-way', refl_threshold=1e-10):
+        """
+        calculate field across the entire geometry (fd mode) or at receivers (td mode)
+        field can be estimate in the forwards or backwards direction or in both directions
+        -> modified from do_solver()
+        -> calculates forwards field
+        -> if dn/dx > 0 -> save position of reflector
+        -> use as a source
+        -> calculate an ensemble of u_minus
+
+        Precondition: index of refraction and source profiles are set
+
+        Change:
+        Smooth rx over a list of locations
+
+        future implementation plans:
+            - different method options
+            - only store last range step option
+
+        Parameters
+        ----------
+        Optional:
+        -rxList : array of Receiver objects
+            optional for cw signal simulation
+            required for non cw signal (td) simulation
+        -freqMin : float (must be less than nyquist frequnecy)
+            defines minimum cutoff frequnecy for TD evalaution
+        -freqMax : float (must be less than nyquist frequnecy)
+            defines maximum cutoff frequuncy for TD evaluation
+        -solver_mode : string
+            defines the simulation mode
+            must be one of three options:
+                one-way : only evaluates in the forwards direction (+)
+                two-way : evaluates in forwards (+) and backwards direction (-)
+                minus : only evaluates in the backwards (-) direction
+        -refl_threshold : float
+            sets minimum reflection power to be simulated (anything less will be neglected)
+
+        Output:
+        FD mode: self.field has solution of E field across the simualtion geometry for the inputs : n, f and z_tx
+        TD mode: rxList contains the signal and spectra for the array of receivers
+        """
+        if solver_mode != 'one-way' and solver_mode != 'two-way':
+            print('warning! solver mode must be given as: one-way or two-way')
+            print('will default to one way')
+            solver_mode = 'one-way'
+        if (self.freqNum != 1):
+            ### check for Receivers ###
+            if (len(rxList) == 0):
+                print("Warning: Running time-domain simulation with no receivers. Field will not be saved.")
+            for rx in rxList:
+                rx.setup(self.freq, self.dt)
+        print(solver_mode)
+        #Check if solving for TD signal or in FD
+        if freqMin == None and freqMax == None:
+            freq_ints = np.arange(0, int(self.freqNum / 2) + self.freqNum % 2, 1, dtype='int')
+        elif freqMin == None and freqMax != None:
+            ii_min = util.findNearest(self.freq, freqMin)
+            freq_ints = np.arange(ii_min, int(self.freqNum / 2) + self.freqNum % 2, 1, dtype='int')
+        elif freqMin != None and freqMax == None:
+            ii_max = util.findNearest(self.freq, freqMax)
+            freq_ints = np.arange(0, ii_max, 1, dtype='int')
+        else:
+            ii_min = util.findNearest(self.freq, freqMin)
+            ii_max = util.findNearest(self.freq, freqMax)
+            freq_ints = np.arange(ii_min, ii_max, 1, dtype='int')
+
+        for j in freq_ints:
+            #print(abs(j/len(self.freq))*200,  '%', abs(self.freq[j]*1e3))
+
+            if (self.freq[j] == 0): continue
+            u_plus = 2 * self.A[j] * self.source * self.filt * self.freq[j]
+            self.field[0] = u_plus[self.fNum1:-self.fNum2]
+
+            alpha_plus = np.exp(1.j * self.dx * self.kp0[j] * (np.sqrt(1. - (self.kz ** 2 / self.kp0[j] ** 2)) - 1.))
+            B_plus = self.n ** 2 - 1
+            Y_plus = np.sqrt(1. + (self.n / self.n0) ** 2)
+            beta_plus = np.exp(1.j * self.dx * self.kp0[j] * (np.sqrt(B_plus + Y_plus ** 2) - Y_plus))
+
+            if solver_mode == 'two-way':
+                refl_source_list = []
+                x_refl = []
+                ix_refl = []
+                nRefl = 0
+
+            for i in range(1, self.xNum):
+                u_plus_i = u_plus # Record starting reduced field -> in case we need to calculate
+                dn = self.n[i] - self.n[i - 1]
+                if dn.any() > 0:
+                    u_plus *= util.transmission_coefficient(self.n[i], self.n[i-1])
+                u_plus = alpha_plus * (util.doFFT(u_plus))
+                u_plus = beta_plus[i] * (util.doIFFT(u_plus))
+                u_plus = self.filt * u_plus
+                delta_x_plus = self.dx * i
+                self.field_plus[i] = u_plus[self.fNum1:-self.fNum2] / (
+                        np.sqrt(delta_x_plus) * np.exp(-1.j * self.k0[j] * delta_x_plus))
+
+                if solver_mode == 'two-way': #set to reflection modes
+                    if dn.any() > 0: #check if the ref index changes in x direction
+                        refl_source = util.reflection_coefficient(self.n[i], self.n[i-1]) * u_plus_i
+                        if (refl_source**2).any() > refl_threshold: #check if reflected power is above threshold
+                            x_refl.append(self.x[i])
+                            refl_source_list.append(refl_source)
+                            ix_refl.append(i)
+                            nRefl = len(refl_source_list)
+            if solver_mode == 'two-way' or solver_mode == 'minus':  # set to reflection modes
+                if nRefl > 0:
+                    u_minus_3arr = np.zeros((self.zNumFull, nRefl), dtype='complex')
+                    field_minus_3arr = np.zeros((self.xNum, self.zNum, nRefl), dtype='complex')
+                    for l in range(nRefl):
+                        ix = ix_refl[l]
+                        u_minus_3arr[:, l] = refl_source_list[l]
+                        field_minus_3arr[ix, :, l] = u_minus_3arr[self.fNum1:-self.fNum2, l]
+                        alpha_minus = np.exp(
+                            1.j * self.dx * self.kp0[j] * (np.sqrt(1. - (self.kz ** 2 / self.kp0[j] ** 2)) - 1.))
+                        B_minus = self.n ** 2 - 1
+                        Y_minus = np.sqrt(1. + (self.n / self.n0) ** 2)
+                        beta_minus = np.exp(1.j * self.dx * self.kp0[j] * (np.sqrt(B_minus + Y_minus ** 2) - Y_minus))
+                        ix_last = ix_refl[l]
+                        for k in np.flip(np.arange(0, ix_last, 1, dtype='int')):
+                            x_minus = self.x[k]
+                            dx_minus = abs(x_minus - self.x[ix_last])
+
+                            u_minus_3arr[:, l] = alpha_minus * (util.doFFT(u_minus_3arr[:, l]))  # ????
+                            u_minus_3arr[:, l] = beta_minus[k] * (util.doIFFT(u_minus_3arr[:, l]))
+                            u_minus_3arr[:, l] = self.filt * u_minus_3arr[:, l]
+                            field_minus_3arr[k, :, l] = np.transpose(
+                                (u_minus_3arr[self.fNum1:-self.fNum2, l] / np.sqrt(dx_minus)) * np.exp(
+                                    1j * dx_minus * self.k0[j]))
+                        self.field_minus[:,:] += field_minus_3arr[:,:,l]
+
+            if solver_mode == 'one-way':
+                self.field[:,:] = self.field_plus[:,:]
+                if (len(rxList) != 0):
+                    for rx in rxList:
+                        z_centre = rx.z
+                        z_0 = z_centre - ant_length/2
+                        z_1 = z_centre + ant_length/2
+                        z_sample_range = np.arange(z_0, z_1 + self.dz, self.dz)
+                        nZ = len(z_sample_range)
+                        amp_at_antenna = 0
+                        for n in range(nZ):
+                            amp_at_antenna += self.get_field(x0=rx.x,z0=z_sample_range[n])
+                        amp_at_antenna /= float(nZ)
+                        rx.add_spectrum_component(self.freq[j], amp_at_antenna)
+                    self.field.fill(0)
+            elif solver_mode == 'two-way':
+                if (len(rxList) != 0):
+                    for rx in rxList:
+                        rx.add_spectrum_component_plus(self.freq[j], self.get_field_plus(x0=rx.x, z0=rx.z))
+                        rx.add_spectrum_component_minus(self.freq[j], self.get_field_minus(x0=rx.x, z0=rx.z))
+                        rx.spectrum = rx.spectrum_plus + rx.spectrum_minus
+                    self.field.fill(0)
+                    self.field_plus.fill(0)
+                    self.field_minus.fill(0)
+                else:
+                    self.field[:,:] += self.field_plus[:,:]
+                    self.field[:,:] += self.field_minus[:,:]
+
+    def do_solver_smooth2(self, rxList=np.array([]), ant_length=1.0, freqMin=None, freqMax=None, solver_mode = 'one-way', refl_threshold=1e-10):
+        """
+        calculate field across the entire geometry (fd mode) or at receivers (td mode)
+        field can be estimate in the forwards or backwards direction or in both directions
+        -> modified from do_solver()
+        -> calculates forwards field
+        -> if dn/dx > 0 -> save position of reflector
+        -> use as a source
+        -> calculate an ensemble of u_minus
+
+        Precondition: index of refraction and source profiles are set
+
+        Change:
+        Smooth rx over a list of locations
+
+        future implementation plans:
+            - different method options
+            - only store last range step option
+
+        Parameters
+        ----------
+        Optional:
+        -rxList : array of Receiver objects
+            optional for cw signal simulation
+            required for non cw signal (td) simulation
+        -freqMin : float (must be less than nyquist frequnecy)
+            defines minimum cutoff frequnecy for TD evalaution
+        -freqMax : float (must be less than nyquist frequnecy)
+            defines maximum cutoff frequuncy for TD evaluation
+        -solver_mode : string
+            defines the simulation mode
+            must be one of three options:
+                one-way : only evaluates in the forwards direction (+)
+                two-way : evaluates in forwards (+) and backwards direction (-)
+                minus : only evaluates in the backwards (-) direction
+        -refl_threshold : float
+            sets minimum reflection power to be simulated (anything less will be neglected)
+
+        Output:
+        FD mode: self.field has solution of E field across the simualtion geometry for the inputs : n, f and z_tx
+        TD mode: rxList contains the signal and spectra for the array of receivers
+        """
+        if solver_mode != 'one-way' and solver_mode != 'two-way':
+            print('warning! solver mode must be given as: one-way or two-way')
+            print('will default to one way')
+            solver_mode = 'one-way'
+        if (self.freqNum != 1):
+            ### check for Receivers ###
+            if (len(rxList) == 0):
+                print("Warning: Running time-domain simulation with no receivers. Field will not be saved.")
+            for rx in rxList:
+                rx.setup(self.freq, self.dt)
+        print(solver_mode)
+        #Check if solving for TD signal or in FD
+        if freqMin == None and freqMax == None:
+            freq_ints = np.arange(0, int(self.freqNum / 2) + self.freqNum % 2, 1, dtype='int')
+        elif freqMin == None and freqMax != None:
+            ii_min = util.findNearest(self.freq, freqMin)
+            freq_ints = np.arange(ii_min, int(self.freqNum / 2) + self.freqNum % 2, 1, dtype='int')
+        elif freqMin != None and freqMax == None:
+            ii_max = util.findNearest(self.freq, freqMax)
+            freq_ints = np.arange(0, ii_max, 1, dtype='int')
+        else:
+            ii_min = util.findNearest(self.freq, freqMin)
+            ii_max = util.findNearest(self.freq, freqMax)
+            freq_ints = np.arange(ii_min, ii_max, 1, dtype='int')
+
+        for j in freq_ints:
+            #print(abs(j/len(self.freq))*200,  '%', abs(self.freq[j]*1e3))
+
+            if (self.freq[j] == 0): continue
+            u_plus = 2 * self.A[j] * self.source * self.filt * self.freq[j]
+            self.field[0] = u_plus[self.fNum1:-self.fNum2]
+
+            alpha_plus = np.exp(1.j * self.dx * self.kp0[j] * (np.sqrt(1. - (self.kz ** 2 / self.kp0[j] ** 2)) - 1.))
+            B_plus = self.n ** 2 - 1
+            Y_plus = np.sqrt(1. + (self.n / self.n0) ** 2)
+            beta_plus = np.exp(1.j * self.dx * self.kp0[j] * (np.sqrt(B_plus + Y_plus ** 2) - Y_plus))
+
+            if solver_mode == 'two-way':
+                refl_source_list = []
+                x_refl = []
+                ix_refl = []
+                nRefl = 0
+
+            for i in range(1, self.xNum):
+                u_plus_i = u_plus # Record starting reduced field -> in case we need to calculate
+                dn = self.n[i] - self.n[i - 1]
+                if dn.any() > 0:
+                    u_plus *= util.transmission_coefficient(self.n[i], self.n[i-1])
+                u_plus = alpha_plus * (util.doFFT(u_plus))
+                u_plus = beta_plus[i] * (util.doIFFT(u_plus))
+                u_plus = self.filt * u_plus
+
+                delta_x_plus = self.dx * i
+                self.field_plus[i] = u_plus[self.fNum1:-self.fNum2] / (
+                        np.sqrt(delta_x_plus) * np.exp(-1.j * self.k0[j] * delta_x_plus))
+
+                if solver_mode == 'two-way': #set to reflection modes
+                    if dn.any() > 0: #check if the ref index changes in x direction
+                        refl_source = util.reflection_coefficient(self.n[i], self.n[i-1]) * u_plus_i
+                        if (refl_source**2).any() > refl_threshold: #check if reflected power is above threshold
+                            x_refl.append(self.x[i])
+                            refl_source_list.append(refl_source)
+                            ix_refl.append(i)
+                            nRefl = len(refl_source_list)
+            if solver_mode == 'two-way' or solver_mode == 'minus':  # set to reflection modes
+                if nRefl > 0:
+                    u_minus_3arr = np.zeros((self.zNumFull, nRefl), dtype='complex')
+                    field_minus_3arr = np.zeros((self.xNum, self.zNum, nRefl), dtype='complex')
+                    for l in range(nRefl):
+                        ix = ix_refl[l]
+                        u_minus_3arr[:, l] = refl_source_list[l]
+                        field_minus_3arr[ix, :, l] = u_minus_3arr[self.fNum1:-self.fNum2, l]
+                        alpha_minus = np.exp(
+                            1.j * self.dx * self.kp0[j] * (np.sqrt(1. - (self.kz ** 2 / self.kp0[j] ** 2)) - 1.))
+                        B_minus = self.n ** 2 - 1
+                        Y_minus = np.sqrt(1. + (self.n / self.n0) ** 2)
+                        beta_minus = np.exp(1.j * self.dx * self.kp0[j] * (np.sqrt(B_minus + Y_minus ** 2) - Y_minus))
+                        ix_last = ix_refl[l]
+                        for k in np.flip(np.arange(0, ix_last, 1, dtype='int')):
+                            x_minus = self.x[k]
+                            dx_minus = abs(x_minus - self.x[ix_last])
+
+                            u_minus_3arr[:, l] = alpha_minus * (util.doFFT(u_minus_3arr[:, l]))  # ????
+                            u_minus_3arr[:, l] = beta_minus[k] * (util.doIFFT(u_minus_3arr[:, l]))
+                            u_minus_3arr[:, l] = self.filt * u_minus_3arr[:, l]
+                            field_minus_3arr[k, :, l] = np.transpose(
+                                (u_minus_3arr[self.fNum1:-self.fNum2, l] / np.sqrt(dx_minus)) * np.exp(
+                                    1j * dx_minus * self.k0[j]))
+                        self.field_minus[:,:] += field_minus_3arr[:,:,l]
+
+            if solver_mode == 'one-way':
+                self.field[:,:] = self.field_plus[:,:]
+                if (len(rxList) != 0):
+                    for rx in rxList:
+                        z_centre = rx.z
+                        z_0 = z_centre - ant_length/2
+                        z_1 = z_centre + ant_length/2
+                        z_sample_range = np.arange(z_0, z_1 + self.dz, self.dz)
+                        nZ = len(z_sample_range)
+                        amp_at_antenna = 0
+                        for n in range(nZ):
+                            amp_n = self.get_field(x0=rx.x,z0=z_sample_range[n])
+                            delta_z = z_sample_range[n] - z_centre
+                            eff = np.cos(pi*(delta_z/ant_length))
+                            #amp_n *= (eff/2*self.dz)
+                            amp_n *= (eff/(4*pi))
+
+                            amp_at_antenna += amp_n
+                        rx.add_spectrum_component(self.freq[j], amp_at_antenna)
+                    self.field.fill(0)
+            elif solver_mode == 'two-way':
+                if (len(rxList) != 0):
+                    for rx in rxList:
+                        rx.add_spectrum_component_plus(self.freq[j], self.get_field_plus(x0=rx.x, z0=rx.z))
+                        rx.add_spectrum_component_minus(self.freq[j], self.get_field_minus(x0=rx.x, z0=rx.z))
+                        rx.spectrum = rx.spectrum_plus + rx.spectrum_minus
+                    self.field.fill(0)
+                    self.field_plus.fill(0)
+                    self.field_minus.fill(0)
+                else:
+                    self.field[:,:] += self.field_plus[:,:]
+                    self.field[:,:] += self.field_minus[:,:]
+
 
     def get_field_minus(self, x0=None, z0=None):
         """
@@ -720,416 +1244,3 @@ class paraProp:
         dIndex = round((depth + self.fNum1*self.dz + self.airHeight) / self.dz)
         
         return vec[int(dIndex)]
-    
-
-'''
-#Old Q_options
-
-### field functions ###    
-    def do_solver(self, rxList=np.array([]), freqMin=None, freqMax=None):
-        """
-        calculates field at points in the simulation
-        Precondition: index of refraction and source profiles are set
-
-        future implementation plans:
-            - different method options
-            - only store last range step option
-        TODO: Add Frequency Cuts
-        Parameters
-        ----------
-        rxList : array of Receiver objects
-            optional for cw signal simulation
-            required for non cw signal simulation
-        """ 
-        
-        if (self.freqNum != 1):
-            ### check for Receivers ###
-            if (len(rxList) == 0):
-                print("Warning: Running time-domain simulation with no receivers. Field will not be saved.")
-            for rx in rxList:
-                rx.setup(self.freq, self.dt)
-
-
-        if freqMin == None and freqMax == None:
-            freq_ints = np.arange(0, int(self.freqNum/2)+self.freqNum%2, 1, dtype='int')
-        elif freqMin == None and freqMax != None:
-            ii_min = util.findNearest(self.freq, freqMin)
-            freq_ints = np.arange(ii_min, int(self.freqNum/2)+self.freqNum%2, 1, dtype='int')
-        elif freqMin != None and freqMax == None:
-            ii_max = util.findNearest(self.freq, freqMax)
-            freq_ints = np.arange(0, ii_max, 1, dtype='int')
-        else:
-            ii_min = util.findNearest(self.freq, freqMin)
-            ii_max = util.findNearest(self.freq, freqMax)
-            freq_ints = np.arange(ii_min, ii_max, 1, dtype='int')
-
-        for j in freq_ints:
-            if (self.freq[j] == 0): continue
-            u = 2 * self.A[j] * self.source * self.filt * self.freq[j]
-            self.field[0] = u[self.fNum1:-self.fNum2]
-
-            if self.Q_option == 0:
-                alpha = np.exp(1.j * self.dx * self.kp0[j] * (np.sqrt(1. - (self.kz**2 / self.kp0[j]**2))- 1.))
-                B = self.n**2-1
-                Y = np.sqrt(1.+(self.n/self.n0)**2)
-                beta = np.exp(1.j * self.dx * self.kp0[j] * (np.sqrt(B+Y**2)-Y))
-
-                for i in range(1, self.xNum):
-                    u = alpha * (util.doFFT(u))
-                    u = beta[i] * (util.doIFFT(u))
-                    u = self.filt * u
-
-                    self.field[i] = u[self.fNum1:-self.fNum2]/(np.sqrt(self.dx*i) * np.exp(-1.j * self.kp0[j] * self.dx * i))
-            elif self.Q_option == 1: #Normal QFF
-                A = np.sqrt(1 - (self.kz ** 2 / self.kp0[j] ** 2))
-                alpha = np.exp(1.j * self.dx * self.kp0[j] * (A - 1))
-                B = self.n - 1
-                beta = np.exp(1.j * self.dx * self.kp0[j] * B)
-                for i in range(1, self.xNum):
-                    u = alpha * (util.doFFT(u))
-                    u = beta[i] * (util.doIFFT(u))
-                    u = self.filt * u
-
-                    self.field[i] = u[self.fNum1:-self.fNum2] / (
-                            np.sqrt(self.dx * i) * np.exp(-1.j * self.kp0[j] * self.dx * i))
-
-            elif self.Q_option == 2: #Q_option -> Change to FF
-                A = (1 / self.n0) * np.sqrt((1 / self.n0) - (self.kz ** 2 / self.kp0[j] ** 2))
-                alpha = np.exp(1.j * self.dx * self.kp0[j] * (A-1))
-                B = self.n - 1
-                beta = np.exp(1.j * self.dx * self.kp0[j] * B)
-                for i in range(1, self.xNum):
-                        u = alpha * (util.doFFT(u))
-                        u = beta[i] * (util.doIFFT(u))
-                        u = self.filt * u
-
-                        self.field[i] = u[self.fNum1:-self.fNum2] / (
-                                    np.sqrt(self.dx * i) * np.exp(-1.j * self.kp0[j] * self.dx * i))
-            elif self.Q_option == 3:
-                A = np.sqrt(1. - (self.kz ** 2 / self.kp0[j] ** 2))
-                alpha = np.exp(1.j * self.dx * self.kp0[j] * (A-1))
-                B = (self.n/self.n0)**2 - 1
-                Y = np.sqrt(1 + (self.n/self.n0)**2)
-                beta = np.exp(1.j * self.dx * self.kp0[j] * (np.sqrt(B + Y ** 2) - Y))
-
-                for i in range(1, self.xNum):
-                    u = alpha * (util.doFFT(u))
-                    u = beta[i] * (util.doIFFT(u))
-                    u = self.filt * u
-
-                    self.field[i] = u[self.fNum1:-self.fNum2] / (
-                            np.sqrt(self.dx * i) * np.exp(-1.j * self.kp0[j] * self.dx * i))
-
-            elif self.Q_option == 4:
-                A = np.sqrt(1. - (self.kz ** 2 / self.kp0[j] ** 2))
-                alpha = np.exp(1.j * self.dx * self.kp0[j] * (A - 1))
-                B = (self.n) ** 2 - 1
-                Y = np.sqrt(1 + (self.n / self.n0) ** 2)
-                beta = np.exp(1.j * self.dx * self.kp0[j] * (np.sqrt(B + Y ** 2) - Y))
-                for i in range(1, self.xNum):
-                    u = alpha * (util.doFFT(u))
-                    u = beta[i] * (util.doIFFT(u))
-                    u = self.filt * u
-
-                    self.field[i] = u[self.fNum1:-self.fNum2] / (
-                            np.sqrt(self.dx * i) * np.exp(-1.j * (self.k0[j]) * self.dx * i))
-            else:
-
-                for i in range(1, self.xNum):
-                    alpha = np.exp(1.j * self.dx * self.kp0[j] * (np.sqrt(1. - (self.kz ** 2 / self.kp0[j] ** 2)) - 1.))
-                    B = self.n[i] ** 2 - 1
-                    Y = np.sqrt(1. + (self.n[i] / self.n0) ** 2)
-                    beta = np.exp(1.j * self.dx * self.kp0[j] * (np.sqrt(B + Y ** 2) - Y))
-
-                    u = alpha * (util.doFFT(u))
-                    u = beta[i] * (util.doIFFT(u))
-                    u = self.filt * u
-
-                    self.field[i] = u[self.fNum1:-self.fNum2] / (
-                                np.sqrt(self.dx * i) * np.exp(-1.j * self.kp0[j] * self.dx * i))
-
-            if (len(rxList) != 0):
-                for rx in rxList:
-                    rx.add_spectrum_component(self.freq[j], self.get_field(x0=rx.x, z0=rx.z))
-                self.field.fill(0)
-                
-                
-     def do_solver(self, rxList=np.array([]), freqMin=None, freqMax=None):
-        """
-        calculates field at points in the simulation
-        Precondition: index of refraction and source profiles are set
-
-        future implementation plans:
-            - different method options
-            - only store last range step option
-        TODO: Add Frequency Cuts
-        Parameters
-        ----------
-        rxList : array of Receiver objects
-            optional for cw signal simulation
-            required for non cw signal simulation
-        """ 
-        
-        if (self.freqNum != 1):
-            ### check for Receivers ###
-            if (len(rxList) == 0):
-                print("Warning: Running time-domain simulation with no receivers. Field will not be saved.")
-            for rx in rxList:
-                rx.setup(self.freq, self.dt)
-
-
-        if freqMin == None and freqMax == None:
-            freq_ints = np.arange(0, int(self.freqNum/2)+self.freqNum%2, 1, dtype='int')
-        elif freqMin == None and freqMax != None:
-            ii_min = util.findNearest(self.freq, freqMin)
-            freq_ints = np.arange(ii_min, int(self.freqNum/2)+self.freqNum%2, 1, dtype='int')
-        elif freqMin != None and freqMax == None:
-            ii_max = util.findNearest(self.freq, freqMax)
-            freq_ints = np.arange(0, ii_max, 1, dtype='int')
-        else:
-            ii_min = util.findNearest(self.freq, freqMin)
-            ii_max = util.findNearest(self.freq, freqMax)
-            freq_ints = np.arange(ii_min, ii_max, 1, dtype='int')
-
-        for j in freq_ints:
-            if (self.freq[j] == 0): continue
-            u = 2 * self.A[j] * self.source * self.filt * self.freq[j]
-            self.field[0] = u[self.fNum1:-self.fNum2]
-
-            A = np.sqrt(1. - (self.kz ** 2 / self.kp0[j] ** 2))
-            alpha = np.exp(1.j * self.dx * self.kp0[j] * (A - 1))
-            B = (self.n) ** 2 - 1
-            Y = np.sqrt(1 + (self.n / self.n0) ** 2)
-            beta = np.exp(1.j * self.dx * self.kp0[j] * (np.sqrt(B + Y ** 2) - Y))
-            for i in range(1, self.xNum):
-                u = alpha * (util.doFFT(u))
-                u = beta[i] * (util.doIFFT(u))
-                u = self.filt * u
-
-                self.field[i] = u[self.fNum1:-self.fNum2] / (
-                        np.sqrt(self.dx * i) * np.exp(-1.j * (self.k0[j]) * self.dx * i))
-
-            if (len(rxList) != 0):
-                for rx in rxList:
-                    rx.add_spectrum_component(self.freq[j], self.get_field(x0=rx.x, z0=rx.z))
-                self.field.fill(0)
-
-    def do_solver_2way(self, rxList=np.array([]), freqMin=None, freqMax=None):
-        #TODO: simplify do_solver -> make one do_solver which calculates field in both directions
-
-        """
-        calculates field at points in the simulation + calculates backwards reflected waves
-        -> modified from do_solver()
-        -> calculates forwards field
-        -> if dn/dx > 0 -> save position of reflector
-        -> use as a source
-        -> calculate an ensemble of u_minus
-
-        Precondition: index of refraction and source profiles are set
-
-        future implementation plans:
-            - different method options
-            - only store last range step option
-
-        Parameters
-        ----------
-        rxList : array of Receiver objects
-            optional for cw signal simulation
-            required for non cw signal simulation
-        """
-
-        if freqMin == None and freqMax == None:
-            freq_ints = np.arange(0, int(self.freqNum/2)+self.freqNum%2, 1, dtype='int')
-        elif freqMin == None and freqMax != None:
-            ii_min = util.findNearest(self.freq, freqMin)
-            freq_ints = np.arange(ii_min, int(self.freqNum/2)+self.freqNum%2, 1, dtype='int')
-        elif freqMin != None and freqMax == None:
-            ii_max = util.findNearest(self.freq, freqMax)
-            freq_ints = np.arange(0, ii_max, 1, dtype='int')
-        else:
-            ii_min = util.findNearest(self.freq, freqMin)
-            ii_max = util.findNearest(self.freq, freqMax)
-            freq_ints = np.arange(ii_min, ii_max, 1, dtype='int')
-
-        nRefl = 0
-        if (self.freqNum != 1):
-            ### check for Receivers ###
-            if (len(rxList) == 0):
-                print("Warning: Running time-domain simulation with no receivers. Field will not be saved.")
-            for rx in rxList:
-                rx.setup(self.freq, self.dt)
-
-        for j in freq_ints:
-            if (self.freq[j] == 0): continue
-            u_plus = 2 * self.A[j] * self.source * self.filt * self.freq[j]
-            self.field[0] = u_plus[self.fNum1:-self.fNum2]
-            alpha_plus = np.exp(
-                1.j * self.dx * self.kp0[j] * (np.sqrt(1. - (self.kz ** 2 / self.kp0[j] ** 2)) - 1.))
-            B_plus = self.n ** 2 - 1
-            Y_plus = np.sqrt(1. + (self.n / self.n0) ** 2)
-            beta_plus = np.exp(1.j * self.dx * self.kp0[j] * (np.sqrt(B_plus + Y_plus ** 2) - Y_plus))
-
-
-            refl_source_list = []
-            x_refl = []
-            ix_refl = []
-            for i in range(1, self.xNum):
-                u_plus_i = u_plus
-                u_plus = alpha_plus * (util.doFFT(u_plus))
-                u_plus = beta_plus[i] * (util.doIFFT(u_plus))
-                u_plus = self.filt * u_plus
-
-                self.field[i] = u_plus[self.fNum1:-self.fNum2] / (
-                            np.sqrt(self.dx * i) * np.exp(-1.j * self.k0[j] * self.dx * i))
-                if i < self.xNum - 1:
-                    dn = self.n[i+1] - self.n[i]
-                else:
-                    dn = np.zeros(len(u_plus))
-                if abs(dn.any()) > 0:
-                    refl_source = (u_plus_i * util.reflection_coefficient(self.n[i], self.n[i - 1]))
-                    refl_source_list.append(refl_source)
-                    x_refl.append(self.x[i])
-                    ix_refl.append(i)
-                    u_plus *= util.transmission_coefficient(self.n[i,:],self.n[i-1,:])
-
-            nRefl = len(refl_source_list)
-            if nRefl > 0:
-                u_minus_3arr = np.zeros((self.zNumFull, nRefl), dtype='complex')
-                field_minus_3arr = np.zeros((self.xNum, self.zNum, nRefl), dtype='complex')
-                for l in range(nRefl):
-                    ix = ix_refl[l]
-                    u_minus_3arr[:, l] = refl_source_list[l]
-                    field_minus_3arr[ix,:,l] = u_minus_3arr[self.fNum1:-self.fNum2,l]
-                    alpha_minus = np.exp(
-                        1.j * self.dx * self.kp0[j] * (np.sqrt(1. - (self.kz ** 2 / self.kp0[j] ** 2)) - 1.))
-                    B_minus = self.n ** 2 - 1
-                    Y_minus = np.sqrt(1. + (self.n / self.n0) ** 2)
-                    beta_minus = np.exp(1.j * self.dx * self.kp0[j] * (np.sqrt(B_minus + Y_minus ** 2) - Y_minus))
-
-                    ix_last = ix_refl[l]
-
-                    for k in np.flip(np.arange(0, ix_last, 1, dtype='int')):
-
-
-                        x_minus = self.x[k]
-                        dx_minus = abs(x_minus - self.x[ix_last])
-
-                        u_minus_3arr[:,l] = alpha_minus * (util.doFFT(u_minus_3arr[:,l])) #????
-                        u_minus_3arr[:,l] = beta_minus[k] * (util.doIFFT(u_minus_3arr[:,l]))
-                        u_minus_3arr[:,l] = self.filt*u_minus_3arr[:,l]
-                        field_minus_3arr[k, :, l] = np.transpose((u_minus_3arr[self.fNum1:-self.fNum2,l] / np.sqrt(dx_minus)) * np.exp(1j * dx_minus * self.k0[j]))
-                    self.field_minus[:,:] += field_minus_3arr[:,:,l] #TODO: Check this
-            if (len(rxList) != 0):
-                for rx in rxList:
-                    #rx.add_spectrum_component(self.freq[j], self.get_field(x0=rx.x, z0=rx.z))
-                    rx.add_spectrum_component_minus(self.freq[i], self.get_field_minus(x0=rx.x, z0=rx.z))
-                    rx.add_spectrum_component_plus(self.freq[i], self.get_field_minus(x0=rx.x, z0=rx.z))
-                    rx.spectrum = rx.spectrum_plus + rx.spectrum_minus
-                self.field.fill(0)
-                self.field_minus.fill(0)
-                
-        
-        
-            def do_solver_minus(self, rxList=np.array([]), freqMin=None, freqMax=None):
-
-        """
-        calculates field at points in the simulation + calculates backwards reflected waves
-        -> modified from do_solver()
-        -> calculates forwards field
-        -> if dn/dx > 0 -> save position of reflector
-        -> use as a source
-        -> calculate an ensemble of u_minus
-
-        Precondition: index of refraction and source profiles are set
-
-        future implementation plans:
-            - different method options
-            - only store last range step option
-
-        Parameters
-        ----------
-        rxList : array of Receiver objects
-            optional for cw signal simulation
-            required for non cw signal simulation
-        """
-        nRefl = 0
-        if (self.freqNum != 1):
-            ### check for Receivers ###
-            if (len(rxList) == 0):
-                print("Warning: Running time-domain simulation with no receivers. Field will not be saved.")
-            for rx in rxList:
-                rx.setup(self.freq, self.dt)
-
-        if freqMin == None and freqMax == None:
-            freq_ints = np.arange(0, int(self.freqNum/2)+self.freqNum%2, 1, dtype='int')
-        elif freqMin == None and freqMax != None:
-            ii_min = util.findNearest(self.freq, freqMin)
-            freq_ints = np.arange(ii_min, int(self.freqNum/2)+self.freqNum%2, 1, dtype='int')
-        elif freqMin != None and freqMax == None:
-            ii_max = util.findNearest(self.freq, freqMax)
-            freq_ints = np.arange(0, ii_max, 1, dtype='int')
-        else:
-            ii_min = util.findNearest(self.freq, freqMin)
-            ii_max = util.findNearest(self.freq, freqMax)
-            freq_ints = np.arange(ii_min, ii_max, 1, dtype='int')
-
-        for j in freq_ints:
-            if (self.freq[j] == 0): continue
-            u_plus = 2 * self.A[j] * self.source * self.filt * self.freq[j]
-            self.field[0] = u_plus[self.fNum1:-self.fNum2]
-
-            alpha_plus = np.exp(1.j * self.dx * self.kp0[j] * (np.sqrt(1. - (self.kz ** 2 / self.kp0[j] ** 2)) - 1.))
-            B_plus = self.n ** 2 - 1
-            Y_plus = np.sqrt(1. + (self.n / self.n0) ** 2)
-            beta_plus = np.exp(1.j * self.dx * self.kp0[j] * (np.sqrt(B_plus + Y_plus ** 2) - Y_plus))
-
-            refl_source_list = []
-            x_refl = []
-            ix_refl = []
-            for i in range(1, self.xNum):
-                u_plus_i = u_plus
-                u_plus = alpha_plus * (util.doFFT(u_plus))
-                u_plus = beta_plus[i] * (util.doIFFT(u_plus))
-                u_plus = self.filt * u_plus
-                self.field[i] = u_plus[self.fNum1:-self.fNum2] / (
-                            np.sqrt(self.dx * i) * np.exp(-1.j * self.k0[j] * self.dx * i))
-                dn = self.n[i] - self.n[i-1]
-                if abs(dn.any()) > 0:
-                    refl_source = u_plus_i * util.reflection_coefficient(self.n[i], self.n[i-1])
-                    refl_source_list.append(refl_source)
-                    x_refl.append(self.x[i])
-                    ix_refl.append(i)
-                    u_plus *= util.transmission_coefficient(self.n[i, :], self.n[i - 1, :])
-                    nRefl = len(refl_source_list)
-
-            if nRefl > 0:
-                u_minus_3arr = np.zeros((self.zNumFull, nRefl), dtype='complex')
-                field_minus_3arr = np.zeros((self.xNum, self.zNum, nRefl), dtype='complex')
-                for l in range(nRefl):
-                    ix = ix_refl[l]
-                    u_minus_3arr[:, l] = refl_source_list[l]
-                    field_minus_3arr[ix,:,l] = u_minus_3arr[self.fNum1:-self.fNum2,l]
-                    alpha_minus = np.exp(
-                        1.j * self.dx * self.kp0[j] * (np.sqrt(1. - (self.kz ** 2 / self.kp0[j] ** 2)) - 1.))
-                    B_minus = self.n ** 2 - 1
-                    Y_minus = np.sqrt(1. + (self.n/ self.n0) ** 2)
-                    beta_minus = np.exp(1.j * self.dx * self.kp0[j] * (np.sqrt(B_minus + Y_minus ** 2) - Y_minus))
-                    #ix_last = ix_refl[-1]
-                    ix_last = ix_refl[l]
-                    for k in np.flip(np.arange(0, ix_last, 1, dtype='int')):
-                        x_minus = self.x[k]
-                        dx_minus = abs(x_minus - self.x[ix_last])
-                        #print(k, x_minus)
-
-                        u_minus_3arr[:,l] = alpha_minus * (util.doFFT(u_minus_3arr[:,l])) #????
-                        u_minus_3arr[:,l] = beta_minus[k] * (util.doIFFT(u_minus_3arr[:,l]))
-                        u_minus_3arr[:,l] = self.filt*u_minus_3arr[:,l]
-                        field_minus_3arr[k, :, l] = np.transpose((u_minus_3arr[self.fNum1:-self.fNum2,l] / np.sqrt(dx_minus)) * np.exp(1j * dx_minus * self.k0[j]))
-                    self.field_minus[:,:] += field_minus_3arr[:,:,l]
-
-            if (len(rxList) != 0):
-                for rx in rxList:
-                    rx.add_spectrum_component(self.freq[j], self.get_field_minus(x0=rx.x, z0=rx.z))
-                self.field.fill(0)
-                self.field_minus.fill(0)
-'''

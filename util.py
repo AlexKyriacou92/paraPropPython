@@ -2,6 +2,7 @@
 # s. prohira
 # GPL v3
 
+import matplotlib.pyplot as plt
 import numpy as np
 import scipy as sci
 import scipy.constants as constant
@@ -11,9 +12,16 @@ import scipy.interpolate as interp
 from scipy.signal import butter, lfilter
 from numpy import linalg as la
 import csv
+from numpy.lib.format import open_memmap
+import h5py
+from scipy.interpolate import interp1d
+from scipy.signal import decimate
+import scipy
 
 I=1.j
 c_light = .29979246;#m/ns
+c0 = c_light*1e9
+
 pi = 3.14159265358979323846; #radians
 twoPi = 2.*pi; #radians
 z_0=50; #ohms
@@ -221,7 +229,7 @@ def doIFFT(V):
     return np.fft.ifft(V)
 
 def hilbertTransform(V):
-    return np.imag(sig.hilbert(V));
+    return np.imag(sig.hilbert(V))
 
 
 # ff=doFFT(V);
@@ -327,6 +335,17 @@ def butterBandpassFilter(data, lowcut, highcut, fs, order=3):
     y = lfilter(b, a, data)
     return y
 
+def butterHighpass(cutoff, fs, order=5):
+    nyq = 0.5 * fs
+    normal_cutoff = cutoff / nyq
+    b, a = sig.butter(order, normal_cutoff, btype='high', analog=False)
+    return b, a
+
+def butterHighpassFilter(data, cutoff, fs, order=5):
+    b, a = butterHighpass(cutoff, fs, order=order)
+    y = sig.filtfilt(b, a, data)
+    return y
+
 def butterLowpass(highcut, fs, order=5):
     nyq = 0.5 * fs
     high = highcut / nyq
@@ -361,8 +380,376 @@ def reflection_coefficient(m1, m2):
     k1 = m1.imag
     n2 = m2.real
     k2 = m2.imag
-    return (abs(n1 - n2)**2 + abs(k1-k2)**2) / (abs(n1+n2)**2 + abs(k1 + k2)**2)
+    #return abs(n1-n2)/abs(n1+n2)
+
+    return np.sqrt((abs(n1 - n2)**2 + abs(k1-k2)**2) / (abs(n1+n2)**2 + abs(k1 + k2)**2))
 
 #Transmission Coefficient
 def transmission_coefficient(m1, m2):
     return 1 - reflection_coefficient(m1, m2)
+
+def create_memmap(file, dimensions, data_type ='complex'):
+    A = open_memmap(file, shape = dimensions, mode='w+', dtype = data_type)
+    return A
+
+def get_maximum_index(arr):
+    ii = np.argmax(arr)
+    return ii
+
+def get_maximum_x(x, y):
+    ii = np.argmax(y)
+    xMax = x[ii]
+    return xMax
+
+def roll_back(t, sig, t_expected):
+    ii_sim = get_maximum_index(abs(sig))
+    ii_expected = findNearest(t, t_expected)
+    if ii_sim >= ii_expected:
+        delta_ii = ii_sim - ii_expected
+    elif ii_sim < ii_expected:
+        delta_ii = ii_expected - ii_sim
+    sig_roll = np.roll(sig, -delta_ii)
+    return sig_roll
+
+#=================================================================================================
+'''
+Analysis Tools
+'''
+#=================================================================================================
+
+def gaussian(x, mu, sig, norm, base):  # gaussian distribution + nooise
+    a = -1. * pow(x - mu, 2.) / (2 * pow(sig, 2.))
+    return norm * np.exp(a) + base
+
+
+def gaussian_simple(x, mu, sig, norm):  # gaussian distribution + nooise
+    a = -1. * pow(x - mu, 2.) / (2 * pow(sig, 2.))
+    return norm * np.exp(a)
+
+def cut_waveform(wvf, dt, t1, t2):
+    N = len(wvf)
+    tmax = N*dt
+    n1 = int(t1/tmax * N)
+    n2 = int(t2/tmax * N)
+    tspace = np.linspace(0, tmax, N)
+    return wvf[n1:n2], tspace[n1:n2]
+
+def median_power(spectrum, dt, f1, f2):
+    N = len(spectrum)
+    f_nyq = (1/(2*dt))
+    print('f_nyq = ', f_nyq)
+    n1 = int(f1/f_nyq * float(N))
+    n2 = int(f2/f_nyq * float(N))
+    print(n1, n2, n2-n1)
+    spectrum_cut = spectrum[n1:n2]
+    print('spectrum cut =', spectrum_cut)
+    print(np.median(spectrum_cut))
+    return np.median(spectrum_cut)
+
+def padd_wvf(arr, index):
+    nArr = len(arr)
+    hArr = int(float(len(arr)) / 2)
+    nPadd = 2 ** index
+    padded_wvf = np.zeros(nPadd)
+    hPadd = int(float(nPadd) / 2)
+    nPadd_cut = len(padded_wvf[hPadd - hArr: hPadd + hArr])
+    if nPadd_cut == nArr:
+        padded_wvf[hPadd - hArr: hPadd + hArr] = arr
+    elif nPadd_cut > nArr:
+        dArr = nPadd_cut - nArr
+        padded_wvf[hPadd - hArr: hPadd + hArr - dArr] = arr
+    elif nArr > nPadd_cut:
+        padded_wvf[hPadd - hArr: hPadd + hArr] = arr[:nPadd_cut]
+    return padded_wvf
+
+def padded_frequency(index, dt):
+    nPadd = 2**index
+    return np.fft.rfftfreq(nPadd, dt)
+
+def get_profile_from_file(fname):
+    profile_data = np.genfromtxt(fname)
+    z_profile = profile_data[:,0]
+    n_profile = profile_data[:,1]
+    return n_profile, z_profile
+
+def get_IR_from_file(fname):
+    profile_data = np.genfromtxt(fname)
+    freq_data = profile_data[:,0]
+    IR_data = profile_data[:,1]
+    return IR_data, freq_data
+
+def get_profile_from_file_cut(fname, zmin, zmax):
+    profile_data = np.genfromtxt(fname)
+    z_profile0 = profile_data[:, 0]
+    n_profile0 = profile_data[:, 1]
+    ii_min = findNearest(z_profile0, zmin)
+    ii_max = findNearest(z_profile0, zmax)
+    if ii_max < len(z_profile0):
+        z_profile = z_profile0[ii_min:ii_max+1]
+        n_profile = n_profile0[ii_min:ii_max+1]
+    else:
+        z_profile = z_profile0[ii_min:]
+        n_profile = n_profile0[ii_min:]
+    return n_profile, z_profile
+
+def get_profile_from_file_decimate(fname, zmin, zmax, dz_out):
+    nprof_cut, zprof_cut = get_profile_from_file_cut(fname, zmin, zmax)
+    dz_in = zprof_cut[1]-zprof_cut[0]
+    print(zprof_cut)
+    print(dz_out, dz_in)
+    M = int(round(dz_out, 3)/round(dz_in, 3))
+    nprof_out = decimate(nprof_cut, M)
+    dn = nprof_cut[0] - nprof_out[0]
+    nprof_out += dn
+    return nprof_out
+
+def save_profile_to_txtfile(zprof, nprof, fname):
+    N = len(nprof)
+    with open(fname,'w+') as fout:
+        for i in range(N):
+            zi = zprof[i]
+            ni = nprof[i]
+            line = str(zi) + '\t' + str(ni) + '\n'
+            fout.write(line)
+
+def do_interpolation_same_depth(zprof_in, nprof_in, N):
+    f_interp = interp1d(zprof_in, nprof_in)
+    zprof_out = np.linspace(min(zprof_in),max(zprof_in), N)
+    nprof_out = np.ones(N)
+    nprof_out[0] = nprof_in[0]
+    nprof_out[-1] = nprof_in[-1]
+    nprof_out[1:-1] = f_interp(zprof_out[1:-1])
+    return nprof_out, zprof_out
+
+def do_interpolation_spline(zprof_in, nprof_in, dz_out):
+    zprof_out = np.arange(min(zprof_in), max(zprof_in) + dz_out, dz_out)
+    spi = scipy.interpolate.UnivariateSpline(zprof_in, nprof_in, s=0)
+    nprof_out = spi(zprof_out)
+    return nprof_out, zprof_out
+
+
+def smooth_padding(z_vec, n_vec, dz):
+    z_max = max(z_vec)
+    z_min = min(z_vec)
+    dz_old = abs(z_vec[1] - z_vec[0])
+    z_vec_padd = np.arange(-(z_max + dz), z_max + dz, dz)
+    nDepths_padd = len(z_vec_padd)
+    z_vec_two_way = np.arange(-(z_max+dz_old), z_max +dz_old, dz_old)
+    nDepths_two = len(z_vec_two_way)
+    nHalf = nDepths_two//2
+
+    n_vec_twoway = np.ones(nDepths_two)
+    if z_min > 0:
+        n_vec_full = np.ones(nHalf)
+        z_vec_full = np.arange(0, z_max+dz_old, dz_old)
+        i_min = findNearest(z_vec_full, z_min)
+        n_vec_full[i_min:] = n_vec
+        n_vec_full[:i_min] = n_vec[0]
+    else:
+        n_vec_full = n_vec
+
+    if len(n_vec_twoway[nHalf:]) == len(n_vec_full):
+        n_vec_twoway[nHalf:] = n_vec_full
+        n_vec_twoway[:nHalf] = np.flip(n_vec_full)
+        n_vec_twoway = np.fft.ifftshift(n_vec_twoway)
+    else:
+        dN = len(n_vec_twoway[nHalf:]) - len(n_vec_full)
+        if dN > 0:
+            print(len(n_vec_twoway[dN:nHalf]), len(n_vec_full))
+            n_vec_twoway[nHalf:-dN] = n_vec_full
+            n_vec_twoway[:nHalf] = np.flip(n_vec_full)
+        else:
+            n_vec_twoway[nHalf:] = n_vec_full[:-dN]
+            n_vec_twoway[:nHalf] = np.flip(n_vec_full[:-dN])
+
+    n_spec = np.fft.ifft(n_vec_twoway - 1)
+    n_spec = np.fft.fftshift(n_spec)
+    n_spec_padded = np.zeros(nDepths_padd)
+    nHalf_padd = nDepths_padd // 2
+
+    nPadd1 = len(n_spec_padded[nHalf_padd - nHalf:nHalf_padd + nHalf])
+    nPadd2 = len(n_spec)
+    if nPadd1 - nPadd2 == 0:
+        n_spec_padded[nHalf_padd - nHalf:nHalf_padd + nHalf] = n_spec
+    else:
+        dNpadd = nPadd1-nPadd2
+        if dNpadd > 0:
+            n_spec_padded[dNpadd + nHalf_padd - nHalf:nHalf_padd + nHalf] = n_spec
+        else:
+            n_spec_padded[nHalf_padd - nHalf:nHalf_padd + nHalf] = n_spec[dNpadd:]
+
+
+    n_spec_padded = np.fft.ifftshift(n_spec_padded)
+    n_vec_padded = np.fft.fft(n_spec_padded) + 1
+    n_vec_padded = np.flip(n_vec_padded[nHalf_padd:])
+    z_vec_padd = z_vec_padd[nHalf_padd:]
+    return n_vec_padded, z_vec_padd
+
+fitfunc = lambda p, x: gaussian(x, p[0], p[1], p[2], p[3])  # fit function for SciPy optimize
+errfunc = lambda p, x, y: fitfunc(p, x) - y  # residual function -> minimized by SciPy optimize
+
+fitfunc_simple = lambda p, x: gaussian_simple(x, p[0], p[1], p[2])  # fit function for SciPy optimize
+errfunc_simple = lambda p, x, y: fitfunc_simple(p, x) - y  # residual function -> minimized by SciPy optimize
+
+def get_fft_data(fname_hdf, t_cut0 = 0, t_cut1 = 600e-9):
+    hdf_input = h5py.File(fname_hdf, 'r')
+    wvf_ave = np.array(hdf_input.get('wvf_ave'))
+    dt = float(hdf_input.attrs['dt'])
+    nSamples = int(hdf_input.attrs['nSamples'])
+    tspace = np.linspace(0, nSamples * dt, nSamples)
+
+    B = float(hdf_input.attrs['band'])
+    dfdt = float(hdf_input.attrs['dfdt'])
+    T = float(hdf_input.attrs['T'])
+    Tmin = 0.05 * T
+    Tmax = 0.95 * T
+
+    L = float(hdf_input.attrs['L_tx']) - float(hdf_input.attrs['L_rx'])
+    R = float(hdf_input.attrs['R'])
+
+    t_cutoff = L/(c0*0.66)
+    fcutoff = dfdt * L / (c0 * 0.66) / 4.
+
+    # Procedure -->
+    # Cutt Wvf --->
+    wvf_cut, t_cut = cut_waveform(wvf_ave, dt, Tmin, Tmax)
+
+    # Apply High Pass Filter > dfdt * L/v_cable / 4 -> 2.5 kHz
+    wvf_filt = butterHighpassFilter(wvf_cut, fcutoff, 1 / dt, order=3)
+
+    # Apply Blackman Window Function
+    wvf_filt *= np.blackman(len(wvf_filt))
+
+    # Apply Padding
+    i_padd = 20
+    wvf_padd = padd_wvf(wvf_filt, i_padd)
+
+    fft_padd = np.fft.rfft(wvf_padd)
+    freq_padd = padded_frequency(i_padd, dt)
+
+    fft_abs = abs(fft_padd) ** 2
+    time_of_flight = freq_padd / dfdt - t_cutoff
+    ii_min = findNearest(time_of_flight, t_cut0)
+    ii_max = findNearest(time_of_flight, t_cut1)
+    fft_abs_out = fft_abs[ii_min:ii_max]
+    time_of_flight_out = time_of_flight[ii_min:ii_max]
+    hdf_input.close()
+    return fft_abs_out, time_of_flight_out
+
+def get_waveform_simulation(fname, zTx, xRx, zRx):
+    fname_h5 = fname + '.h5'
+    fname_npy = fname + '.npy'
+
+    input_hdf = h5py.File(fname_h5, 'r')
+
+    dt = input_hdf.attrs["dt"]
+    nSamples = input_hdf.attrs["nSamples"]
+
+    tspace = np.linspace(0, dt * nSamples, nSamples) * 1e-9
+    bscan = np.load(fname_npy, 'r')
+
+    tx_depths = np.array(input_hdf.get('source_depths'))
+    rx_depths = np.array(input_hdf.get('rx_depths'))
+    rx_ranges = np.array(input_hdf.get('rx_range'))
+
+    ii_tx_z = findNearest(tx_depths, zTx)
+    ii_rx_x = findNearest(rx_ranges, xRx)
+    ii_rx_z = findNearest(rx_depths, zRx)
+
+    sig_rx = bscan[ii_tx_z, ii_rx_x, ii_rx_z]
+    return sig_rx, tspace
+
+def create_hdf(fname, sim, tx_signal, tx_depths, rx_ranges, rx_depths, comment=""):
+    output_hdf = h5py.File(fname, 'w')
+    output_hdf.attrs["iceDepth"] = sim.iceDepth
+    output_hdf.attrs["iceLength"] = sim.iceLength
+    output_hdf.attrs["airHeight"] = sim.airHeight
+    output_hdf.attrs["dx"] = sim.dx
+    output_hdf.attrs["dz"] = sim.dz
+    output_hdf.create_dataset('n_matrix', data=sim.get_n())
+
+    output_hdf.attrs["Amplitude"] = tx_signal.amplitude
+    output_hdf.attrs["freqCentral"] = tx_signal.frequency
+    output_hdf.attrs["Bandwidth"] = tx_signal.bandwidth
+    output_hdf.attrs["freqLP"] = tx_signal.freqMax
+    output_hdf.attrs["freqHP"] = tx_signal.freqMin
+    output_hdf.attrs["freqSample"] = tx_signal.fsample
+    output_hdf.attrs["freqNyquist"] = tx_signal.freq_nyq
+    output_hdf.attrs["tCentral"] = tx_signal.t_centre
+    output_hdf.attrs["tSample"] = tx_signal.tmax
+    output_hdf.attrs["dt"] = tx_signal.dt
+    output_hdf.attrs["nSamples"] = tx_signal.nSamples
+
+    n_profile_data = np.zeros((2, len(sim.get_n(x=0))))
+    n_profile_data[0] = sim.z
+    n_profile_data[1] = sim.get_n(x=0)
+
+    nRX_x = len(rx_ranges)
+    nRX_z = len(rx_depths)
+    rxArray = np.ones((nRX_x, nRX_z, 2))
+    for i in range(nRX_x):
+        for j in range(nRX_z):
+            rxArray[i,j,0] = rx_ranges[i]
+            rxArray[i,j,1] = rx_depths[j]
+
+    output_hdf.create_dataset("rxArray", data=rxArray)
+    output_hdf.create_dataset('n_profile', data=n_profile_data)
+    output_hdf.create_dataset("source_depths", data=tx_depths)
+    output_hdf.create_dataset('tspace', data=tx_signal.tspace)
+    output_hdf.create_dataset('signalPulse', data=tx_signal.pulse)
+    output_hdf.create_dataset('signalSpectrum', data=tx_signal.spectrum)
+    output_hdf.create_dataset("rx_range", data= rx_ranges)
+    output_hdf.create_dataset("rx_depths", data = rx_depths)
+
+    output_hdf.attrs["comment"] = comment
+
+    return output_hdf
+
+
+def create_profile(zprof_out, nprof_genes, zprof_genes, nprof_override, zprof_override):
+    """
+    This functions creates ref-index profiles in GA
+    -It combines a smoothing algorithm for the Evolving Genes
+    with a fixed profile that is not acted on by the algorithm
+    zprof_out : Depth Values of Output Profile
+    nprof_genes :
+    """
+    dz = zprof_out[1] - zprof_out[0]
+    nDepths = len(zprof_out)
+    nprof_out = np.ones(nDepths)
+
+    zmin_2 = min(zprof_genes)
+    zmax_2 = max(zprof_genes)
+    ii_min2 = findNearest(zprof_out, zmin_2)
+
+    #sp = csaps.UnivariateCubicSmoothingSpline(zprof_genes, nprof_genes, smooth=0.85)
+    spi = scipy.interpolate.UnivariateSpline(zprof_genes, nprof_genes, s=0)
+    zprof_2 = zprof_out[ii_min2:]
+    nprof_2 = spi(zprof_2)
+
+    nprof_out[ii_min2:] = nprof_2
+
+    zmax_1 = max(zprof_override)
+    ii_cut = findNearest(zprof_out, zmax_1)
+    # zprof_1 = zprof_genes[:ii_cut]
+    nDepths_1 = ii_cut
+    nprof_1, zprof_1 = do_interpolation_same_depth(zprof_in=zprof_override, nprof_in=nprof_override, N=nDepths_1)
+    '''
+    nprof_out[:ii_cut] = nprof_1
+    spi_2 = scipy.interpolate.UnivariateSpline(zprof_out, nprof_out, s=0)
+    nprof_out = spi_2(zprof_out)
+    '''
+    nprof_list = []
+    zprof_list = []
+    for i in range(len(zprof_1)):
+        nprof_list.append(nprof_1[i])
+        zprof_list.append(zprof_1[i])
+    for j in range(len(zprof_2)):
+        if zprof_2[j] > max(zprof_1):
+            nprof_list.append(nprof_2[j])
+            zprof_list.append(zprof_2[j])
+            #print(zprof_2[j],nprof_2[j])
+    spi_2 = scipy.interpolate.UnivariateSpline(zprof_list, nprof_list,s=0)
+    nprof_out = spi_2(zprof_out)
+
+    return nprof_out
