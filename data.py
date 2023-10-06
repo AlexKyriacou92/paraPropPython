@@ -181,6 +181,52 @@ def create_transmitter_array_from_file(fname_config):
                           float(transmitter_config['maxSource']) + float(transmitter_config['dTX']),
                           float(transmitter_config['dTX']))
     return tx_depths
+
+def save_field_to_file(sim, fname_out, mode = '1D'):
+    field_complex = sim.get_field()
+    output_hdf = h5py.File(fname_out, 'w')
+    output_hdf.attrs["iceDepth"] = sim.iceDepth
+    output_hdf.attrs["iceLength"] = sim.iceLength
+    output_hdf.attrs["airHeight"] = sim.airHeight
+    output_hdf.attrs["dx"] = sim.dx
+    output_hdf.attrs["dz"] = sim.dz
+    output_hdf.attrs["centerFreq"] = sim.centerFreq
+    output_hdf.create_dataset('source', data=sim.source)
+    output_hdf.create_dataset('field', data=field_complex)
+    if mode == '1D':
+        n_profile_full = sim.get_n(x=0)
+        ii_min = util.findNearest(sim.zFull, sim.airHeight)
+        ii_max = util.findNearest(sim.zFull, sim.iceDepth)
+        n_profile = n_profile_full[ii_min:ii_max]
+        output_hdf.create_dataset('n_profile', n_profile)
+        output_hdf.create_dataset('z_profile', sim.zFull[ii_min:ii_max])
+    elif mode == '2D':
+        n_profile_full = sim.get_n()
+        ii_min = util.findNearest(sim.zFull, sim.airHeight)
+        ii_max = util.findNearest(sim.zFull, sim.iceDepth)
+        n_profile = n_profile_full[ii_min:ii_max,:]
+        output_hdf.create_dataset('n_profile', n_profile)
+        output_hdf.create_dataset('z_profile', sim.zFull[ii_min:ii_max])
+    output_hdf.close()
+
+def get_field_from_file(fname_field):
+    with h5py.File(fname_field,'r') as input_hdf:
+        iceDepth = float(input_hdf.attrs["iceDepth"])
+        iceLength = float(input_hdf.attrs["iceLength"])
+        airHeight = float(input_hdf.attrs["airHeight"])
+        dx = float(input_hdf.attrs["dx"])
+        dz = float(input_hdf.attrs["dz"])
+        sim = ppp.paraProp(iceLength=iceLength, iceDepth=iceDepth, dx=dx, dz=dz, airHeight=airHeight)
+
+        field_out = np.array(input_hdf.get('field'))
+        sim.source = np.array(input_hdf.get('source'))
+        n_profile = np.array(input_hdf.get('n_profile'))
+        z_profile = np.array(input_hdf.get('z_profile'))
+        sim.set_n(nVec=n_profile, zVec=z_profile)
+        sim.field = field_out
+        sim.centerFreq = float(input_hdf['centerFreq'])
+    return sim
+
 def create_hdf_bscan(fname, sim, tx_signal, tx_depths, rx_ranges, rx_depths, comment=""):
     '''
     Creates a HDF (fname.h5) file that saves the simulation data -> dimensions, pulse data, receiver configuration

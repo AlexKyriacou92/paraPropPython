@@ -481,7 +481,8 @@ class paraProp:
             val = np.cross(np.cross(n,e),n)[2]
             beam[i] = complex(val, val)
         f0 = A*(beam/(np.max(beam)))
-        
+
+        self.centerFreq = centerFreq
         self.source[z0Index-nPoints+1:z0Index+nPoints+1]=f0
     def set_phased_array(self, zstart, centerFreq, A=1+0j, n=8, scaling=1):
         '''
