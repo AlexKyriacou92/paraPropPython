@@ -36,8 +36,6 @@ year_list = np.arange(start_year, end_year, 1)
 year_id_list = []
 print(year_list)
 nYears = len(year_list)
-fname_list = []
-
 
 nprofile_hdf = h5py.File(fname_nprofile, 'r')
 nprof_mat = np.array(nprofile_hdf.get('n_profile_matrix'))
@@ -61,12 +59,16 @@ nProfiles_sim = nYears
 
 z_depths = create_transmitter_array(fname_config)
 
-
+fname_list = dir_sim_path + 'CFM_sim_list.txt'
+f_list = open(fname_list, 'w')
 
 for i in year_id_list:
-    fname_output_npy = 'sim_ascan_CFM_' + str(i).zfill(3) + '.npy'
-    fname_output_h5 = 'sim_ascan_CFM_' + str(i).zfill(3) + '.h5'
+    fname_output_npy = dir_sim_path + 'sim_ascan_CFM_' + str(i).zfill(3) + '.npy'
+    fname_output_h5 = dir_sim_path + 'sim_ascan_CFM_' + str(i).zfill(3) + '.h5'
 
+    line = str(i) + '\t' + str(date_arr[i]) + '\t' + fname_output_npy
+    line += fname_output_h5 + '\n'
+    f_list.write(line)
     create_spectrum(fname_config=fname_config,
                     nprof_data=nprof_mat[i], zprof_data=zprof_mat,
                     fname_output_npy=fname_output_npy,
@@ -74,7 +76,7 @@ for i in year_id_list:
     for j in range(len(freq_space)):
         for k in range(len(z_depths)):
             suffix =  str(i).zfill(3)+ 'z_' + str(round(z_depths[k],2)).zfill(3) + 'm_f_' + str(round(freq_space[j],2)).zfill(2)
-            jobname = dir_sim_path + suffix
+            jobname = 'ascan_2CFM_' + suffix
             fname_sh_in = 'ascan_2CFM_' + suffix + '.sh'
             fname_sh_out = dir_sim_path + 'ascan_2CFM_' + suffix + '.out'
             cmd = 'python runSim_ascan.py ' + fname_config + ' ' + fname_output_npy + ' '
