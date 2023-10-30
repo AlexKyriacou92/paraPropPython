@@ -17,7 +17,7 @@ PARTITION = 'sixhour'
 #PARTITION = 'short'
 DAYS = 0
 HOURS = 1
-MEMORY = 1000 # in MB
+MEMORY = 5000 # in MB
 
 def make_job(fname_shell, fname_outfile, jobname, command, nNodes_min=NODES_MIN, nNodes_max=NODES_MAX, partition=PARTITION, days=DAYS, hours=HOURS, nodeMemory=MEMORY):
     '''
