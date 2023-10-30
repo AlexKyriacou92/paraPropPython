@@ -24,7 +24,7 @@ def get_dates(fname_in):
     date_arr = data_matrix[1:,0]
     return date_arr
 
-fname_config = 'config_ICRC_summit_km.txt'
+fname_config = 'config_ICRC_summit_km_ku.txt'
 fname_nprofile = 'nProf_CFM_deep.h5'
 fname_CFM = 'CFMresults.hdf5'
 
