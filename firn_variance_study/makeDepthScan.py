@@ -17,9 +17,17 @@ from transmitter import tx_signal
 from data import create_sim, create_rxList_from_file, create_transmitter_array, create_hdf_FT
 from data import create_tx_signal, bscan, bscan_rxList, create_hdf_bscan
 from data import create_tx_signal_from_file, get_IR_from_config
-
+from data import save_field_to_file
 sys.path.append('inversion/')
 #from objective_functions import misfit_function_ij
+
+def run_field(fname_config, n_profile, z_profile, z_tx, freq, fname_out):
+    sim = create_sim(fname_config)
+    sim.set_n(nVec=n_profile, zVec=z_profile)  # Set Refractive Index Profile
+    sim.set_dipole_source_profile(freq, z_tx)  # Set Source Profile
+    sim.set_cw_source_signal(freq)
+    sim.do_solver()
+    save_field_to_file(sim, fname_out)
 
 def ascan(fname_config, n_profile, z_profile, z_tx, x_rx, z_rx): #TODO: Add Output File
     tx_signal = create_tx_signal(fname_config)

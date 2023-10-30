@@ -194,19 +194,13 @@ def save_field_to_file(sim, fname_out, mode = '1D'):
     output_hdf.create_dataset('source', data=sim.source)
     output_hdf.create_dataset('field', data=field_complex)
     if mode == '1D':
-        n_profile_full = sim.get_n(x=0)
-        ii_min = util.findNearest(sim.zFull, sim.airHeight)
-        ii_max = util.findNearest(sim.zFull, sim.iceDepth)
-        n_profile = n_profile_full[ii_min:ii_max]
-        output_hdf.create_dataset('n_profile', n_profile)
-        output_hdf.create_dataset('z_profile', sim.zFull[ii_min:ii_max])
+        n_profile = sim.get_n(x=0)
+        output_hdf.create_dataset('n_profile', data=n_profile.real)
+        output_hdf.create_dataset('z_profile', data=sim.z)
     elif mode == '2D':
-        n_profile_full = sim.get_n()
-        ii_min = util.findNearest(sim.zFull, sim.airHeight)
-        ii_max = util.findNearest(sim.zFull, sim.iceDepth)
-        n_profile = n_profile_full[ii_min:ii_max,:]
-        output_hdf.create_dataset('n_profile', n_profile)
-        output_hdf.create_dataset('z_profile', sim.zFull[ii_min:ii_max])
+        n_profile = sim.get_n()
+        output_hdf.create_dataset('n_profile', data=n_profile.real)
+        output_hdf.create_dataset('z_profile', data=sim.z)
     output_hdf.close()
 
 def get_field_from_file(fname_field):
@@ -216,15 +210,18 @@ def get_field_from_file(fname_field):
         airHeight = float(input_hdf.attrs["airHeight"])
         dx = float(input_hdf.attrs["dx"])
         dz = float(input_hdf.attrs["dz"])
+
+        #Open Simulation
         sim = ppp.paraProp(iceLength=iceLength, iceDepth=iceDepth, dx=dx, dz=dz, airHeight=airHeight)
 
+        #Save Field from Input File
         field_out = np.array(input_hdf.get('field'))
         sim.source = np.array(input_hdf.get('source'))
         n_profile = np.array(input_hdf.get('n_profile'))
         z_profile = np.array(input_hdf.get('z_profile'))
         sim.set_n(nVec=n_profile, zVec=z_profile)
         sim.field = field_out
-        sim.centerFreq = float(input_hdf['centerFreq'])
+        sim.centerFreq = float(input_hdf.attrs['centerFreq'])
     return sim
 
 def create_hdf_bscan(fname, sim, tx_signal, tx_depths, rx_ranges, rx_depths, comment=""):
