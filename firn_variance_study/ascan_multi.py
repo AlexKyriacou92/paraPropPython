@@ -67,18 +67,19 @@ def run_scan_impulse(fname_config, fname_output, nprofile_data, zprofile_data, i
     sim.set_cw_source_signal(freq_select)
     sim.do_solver()
 
-    spectrum_npy = np.load(fname_output, 'w+')
-    for kk_rx in range(nRX):
-        rx_kk = rxList[kk_rx]
-        x_rx = rx_kk.x
-        z_rx = rx_kk.z
-        spectrum_npy[jj_tx, kk_rx, ii_freq] = sim.get_field(x0=x_rx,z0=z_rx)
+    with np.load(fname_output, 'w+') as spectrum_npy:
+        for kk_rx in range(nRX):
+            rx_kk = rxList[kk_rx]
+            x_rx = rx_kk.x
+            z_rx = rx_kk.z
+            spectrum_npy[jj_tx, kk_rx, ii_freq] = sim.get_field(x0=x_rx,z0=z_rx)
 
 def save_spectrum(fname_output_npy, fname_output_hdf):
     spectrum_npy = np.load(fname_output_npy)
     ascan_out = ascan()
     ascan_out.load_from_hdf(fname_output_hdf)
     ascan_out.load_spectrum(spectrum_npy)
+
 def get_dates(fname_in):
     with  h5py.File(fname_in, 'r') as input_hdf:
         data_matrix = np.array(input_hdf['density'])

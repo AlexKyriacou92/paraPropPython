@@ -79,7 +79,7 @@ for i in year_id_list:
             jobname = 'ascan_2CFM_' + suffix
             fname_sh_in = 'ascan_2CFM_' + suffix + '.sh'
             fname_sh_out = dir_sim_path + 'ascan_2CFM_' + suffix + '.out'
-            cmd = 'python runSim_ascan.py ' + fname_config + ' ' + fname_output_npy + ' '
+            cmd = 'python runSim_ascan.py ' + fname_config + ' ' + fname_output_npy + ' ' + fname_nprofile + ' ' + str(i) + ' ' + str(j) + ' ' + str(k)
             cmd += fname_nprofile + ' ' + str(i) + ' ' + str(j) + ' ' + str(k)
             make_job(fname_shell=fname_sh_in, fname_outfile=fname_sh_out, jobname=jobname, command=cmd)
             submit_job(fname_sh_in)
