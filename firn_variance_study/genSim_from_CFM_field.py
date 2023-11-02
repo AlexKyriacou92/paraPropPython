@@ -48,7 +48,7 @@ ii_cut = util.findNearest(zprof_mat, 100)
 zprof_mat = zprof_mat[:ii_cut]
 nprof_mat = nprof_mat[:,:ii_cut]
 
-dir_sim = 'CFM_files_ku'
+dir_sim = 'CFM_files_ku/fields_1D'
 if os.path.isdir(dir_sim) == False:
     os.system('mkdir ' + dir_sim)
 dir_sim_path = dir_sim + '/'
@@ -58,7 +58,7 @@ fname_CFM_list = 'CFM_sim_list.txt'
 fout_list = open(fname_CFM_list,'w')
 
 #start_year = int(date_arr[0])
-start_year = 2011
+start_year = 2015
 end_year = int(date_arr[-1]) + 1
 year_list = np.arange(start_year, end_year, 1)
 year_id_list = []
@@ -72,7 +72,7 @@ for i in range(nYears):
 nProfiles_sim = nYears
 
 z_depths = create_transmitter_array(fname_config)
-freq_list = np.arange(0.1, 0.5, 0.05)
+freq_list = np.arange(0.1, 0.4, 0.1)
 for i in year_id_list:
     for j in range(len(z_depths)):
         for k in range(len(freq_list)):
