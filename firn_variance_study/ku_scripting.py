@@ -9,15 +9,20 @@ from scipy.interpolate import interp1d
 import subprocess
 #from GA_operators import flat_mutation, gaussian_mutation, clone, cross_breed
 import sys
+import configparser
+
+fname_cluster_config = 'config_cluster.txt'
+config = configparser.ConfigParser()
+config.read(fname_cluster_config)
+cluster_settings = config['CLUSTER']
 
 #Cluster Settings
-NODES_MIN = 1
-NODES_MAX = 1
-PARTITION = 'sixhour'
-#PARTITION = 'short'
-DAYS = 0
-HOURS = 1
-MEMORY = 5000 # in MB
+NODES_MIN = int(cluster_settings['NODES_MIN'])
+NODES_MAX = int(cluster_settings['NODES_MAX'])
+PARTITION = cluster_settings['PARTITION']
+DAYS = int(cluster_settings['DAYS'])
+HOURS = int(cluster_settings['HOURS'])
+MEMORY = int(cluster_settings['MEMORY']) # in MB
 
 def make_job(fname_shell, fname_outfile, jobname, command, nNodes_min=NODES_MIN, nNodes_max=NODES_MAX, partition=PARTITION, days=DAYS, hours=HOURS, nodeMemory=MEMORY):
     '''
