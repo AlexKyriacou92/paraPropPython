@@ -392,6 +392,9 @@ def create_memmap(file, dimensions, data_type ='complex'):
     A = open_memmap(file, shape = dimensions, mode='w+', dtype = data_type)
     return A
 
+def create_memmap2(file, dimensions, data_type ='complex'):
+    A = open_memmap(file, shape = dimensions, mode='w+', dtype = data_type)
+
 def get_maximum_index(arr):
     ii = np.argmax(arr)
     return ii

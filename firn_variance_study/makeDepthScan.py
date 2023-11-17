@@ -17,7 +17,7 @@ from transmitter import tx_signal
 from data import create_sim, create_rxList_from_file, create_transmitter_array, create_hdf_FT
 from data import create_tx_signal, bscan, bscan_rxList, create_hdf_bscan
 from data import create_tx_signal_from_file, get_IR_from_config
-from data import save_field_to_file
+from data import save_field_to_file, ascan, create_transmitter_array_from_file
 sys.path.append('inversion/')
 #from objective_functions import misfit_function_ij
 
@@ -29,6 +29,43 @@ def run_field(fname_config, n_profile, z_profile, z_tx, freq, fname_out):
     sim.do_solver()
     save_field_to_file(sim, fname_out)
 
+def run_ascan_rx(fname_config, n_profile, z_profile, z_tx, freq, fname_hdf, fname_npy):
+    sim = create_sim(fname_config)
+    rxList = create_rxList_from_file(fname_config)
+    nRx = len(rxList)
+
+    txList = create_transmitter_array_from_file(fname_config)
+
+    sim.set_n(nVec=n_profile, zVec=z_profile)  # Set Refractive Index Profile
+
+    ascan_in = ascan()
+    ascan_in.load_from_hdf(fname_hdf=fname_hdf)
+    tx_signal_in = ascan_in.tx_signal
+    tx_spectrum_in = tx_signal_in.get_spectrum()
+    freq_space = tx_signal_in.get_freq_space()
+    ii_freq = util.findNearest(freq_space, freq)
+    print(freq_space, freq)
+    '''
+    for i in range(len(freq_space)):
+        print(i, freq_space[i], freq)
+    '''
+    amp_ii = tx_spectrum_in[ii_freq]
+
+    ii_tx = util.findNearest(txList, z_tx)
+    print('amplitude:', amp_ii, 'index:', ii_freq, 'freq=', freq_space[ii_freq])
+
+    sim.set_dipole_source_profile(centerFreq=freq, depth=z_tx, A=amp_ii)  # Set Source Profile
+    sim.set_cw_source_signal(freq=freq)
+    sim.do_solver()
+
+    rx_spectrum = np.load(fname_npy, 'r+')
+    for ii_rx in range(nRx):
+        rx_ii = rxList[ii_rx]
+        amp_rx = sim.get_field(x0=rx_ii.x, z0=rx_ii.z)
+        print('tx num', ii_tx, 'rx num', ii_rx, 'ii_freq', ii_freq, '\n rx:', rx_ii.x, rx_ii.z, 'amp:', amp_rx)
+        rx_spectrum[ii_tx, ii_rx, ii_freq] = amp_rx
+
+'''
 def ascan(fname_config, n_profile, z_profile, z_tx, x_rx, z_rx): #TODO: Add Output File
     tx_signal = create_tx_signal(fname_config)
     tx_signal.get_gausspulse()
@@ -48,7 +85,7 @@ def ascan(fname_config, n_profile, z_profile, z_tx, x_rx, z_rx): #TODO: Add Outp
     rx_out = rxList[0]
     signal_out = rx_out.get_signal()
     return signal_out
-
+'''
 def depth_scan_impulse(fname_config, n_profile, z_profile, fname_out=None):
     tx_signal = create_tx_signal(fname_config)
     tx_signal.set_impulse()

@@ -177,14 +177,18 @@ def create_transmitter_array_from_file(fname_config):
     config = configparser.ConfigParser()
     config.read(fname_config)
     transmitter_config = config['TRANSMITTER']
-    tx_depths = np.arange(float(transmitter_config['minSource']),
-                          float(transmitter_config['maxSource']) + float(transmitter_config['dTX']),
-                          float(transmitter_config['dTX']))
+    fname_tx = transmitter_config['fname_transmitters']
+    tx_depths = []
+    with open(fname_tx, 'r') as fin:
+        for line in fin:
+            cols = line.split()
+            z_tx = float(cols[0])
+            tx_depths.append(z_tx)
+    tx_depths = np.array(tx_depths)
     return tx_depths
 
-def create_ascan_hdf(fname_config, nprof_data, zprof_data, fname_output):
+def create_ascan_hdf(fname_config, tx_signal, nprof_data, zprof_data, fname_output):
     sim = create_sim(fname_config)
-    tx_signal = create_tx_signal_from_file(fname_config)
     rxList = create_rxList_from_file(fname_config)
     tx_depths = create_transmitter_array(fname_config)
 
@@ -245,6 +249,7 @@ class ascan:
         self.tx_signal = tx_signal(amplitude=Amplitude, frequency=freqCentral, bandwidth=Bandwidth, freqMin=freqMin,
                                    freqMax=freqMax, t_centre=tCentral, dt=dt, tmax=tSample)
         self.tx_signal.pulse = np.array(input_hdf.get('signalPulse'))
+        self.tx_signal.spectrum = np.array(input_hdf.get('signalSpectrum'))
         self.tx_depths = np.array(input_hdf.get('source_depths'))
 
         rxList_positions = np.array(input_hdf.get('rxList'))
@@ -329,9 +334,9 @@ def get_field_from_file(fname_field):
         #Save Field from Input File
         field_out = np.array(input_hdf.get('field'))
         sim.source = np.array(input_hdf.get('source'))
-        n_profile = np.array(input_hdf.get('n_profile'))
-        z_profile = np.array(input_hdf.get('z_profile'))
-        sim.set_n(nVec=n_profile, zVec=z_profile)
+        #n_profile = np.array(input_hdf.get('n_profile'))
+        #z_profile = np.array(input_hdf.get('z_profile'))
+        #sim.set_n(nVec=n_profile, zVec=z_profile)
         sim.field = field_out
         sim.centerFreq = float(input_hdf.attrs['centerFreq'])
     return sim
@@ -574,13 +579,12 @@ class bscan_rxList: #This one is a nTx x nRx dimension bscan
 
     def get_actual_position(self, z_tx, x_rx, z_rx):
         txNum = util.findNearest(self.tx_depths, z_tx)
-        rxNum = 0
         rxList = self.rxList
 
         nRx = len(rxList)
         range_tot = []
         for i in range(nRx):
-            ri = np.sqrt((x_rx - self.rxList[i].x)**2 + (z_rx - self.rxList[i].z)**2)
+            ri = np.sqrt(abs(x_rx - self.rxList[i].x)**2 + abs(z_rx - self.rxList[i].z)**2)
             range_tot.append(ri)
         rxNum = util.findNearest(range_tot, 0)
         rx_select = rxList[rxNum]
