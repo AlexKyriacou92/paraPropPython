@@ -130,8 +130,8 @@ n_profile_example = nProf_matrix[ii_date]
 
 from data import create_transmitter_array_from_file
 #STEP 1 -> Create File
-fname_hdf = 'example_ascan.h5'
-fname_npy = 'example_ascan.npy'
+fname_hdf = 'large_scale_ascan.h5'
+fname_npy = 'large_scale_ascan.npy'
 txList = create_transmitter_array_from_file(fname_config)
 tx_signal_in = create_spectrum(fname_config=fname_config,
                 nprof_data=n_profile_example, zprof_data=z_profile,
@@ -185,9 +185,37 @@ ii_freq = util.findNearest(freq_space, freq_ex)
 ii_tx = 0
 z_tx = txList[ii_tx]
 
-cmd = 'python runSim_ascan_rx.py ' + fname_config + ' ' + fname_npy + ' ' + fname_hdf + ' ' + fname_nProf + ' ' + str(ii_date) + ' ' + str(ii_freq) + ' ' + str(ii_tx)
-os.system(cmd)
+#The Script will dispatch jobs for the Frequnecy Range (Min to Max, i.e. 50 MHz to 450 MHz)
+freqMin = tx_signal_in.freqMin
+freqMax = tx_signal_in.freqMax
+ii_min = util.findNearest(freq_space, freqMin)
+ii_max = util.findNearest(freq_space, freqMax)
+# STEP 2 -> SEND OUT SCRIPTS
 
-spectrum_npy2 = np.load(fname_npy, 'r')
-print('Check value:', ii_tx, ii_freq)
-print('After Sim', spectrum_npy2[ii_tx, :, ii_freq])
+#Make Directory
+dir_sim = 'CFM_files_ku/large_scale_pulse'
+if os.path.isdir(dir_sim) == False:
+    os.system('mkdir ' + dir_sim)
+dir_sim_path = dir_sim + '/'
+for ii_freq in range(ii_min, ii_max):
+    freq_ii = freq_space[ii_freq]
+    cmd = 'python runSim_ascan_rx.py ' + fname_config + ' '
+    cmd += fname_npy + ' ' + fname_hdf + ' ' + fname_nProf + ' '
+    cmd += str(ii_date) + ' ' + str(ii_freq) + ' ' + str(ii_tx)
+
+    suffix = 'fid_' + str(int(freq_ii*1e3))
+    jobname = dir_sim_path + suffix
+    fname_sh_in = 'sim_CFM_' + suffix + '.sh'
+    fname_sh_out = dir_sim_path + 'sim_CFM_' + suffix + '.sh'
+
+    make_job(fname_shell=fname_sh_in, fname_outfile=fname_sh_out, jobname=jobname, command=cmd)
+    submit_job(fname_sh_in)
+
+
+#cmd = 'python runSim_ascan_rx.py ' + fname_config + ' ' + fname_npy + ' ' + fname_hdf + ' ' + fname_nProf + ' ' + str(ii_date) + ' ' + str(ii_freq) + ' ' + str(ii_tx)
+#os.system(cmd)
+
+
+#spectrum_npy2 = np.load(fname_npy, 'r')
+#print('Check value:', ii_tx, ii_freq)
+#print('After Sim', spectrum_npy2[ii_tx, :, ii_freq])
