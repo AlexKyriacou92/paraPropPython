@@ -199,6 +199,7 @@ if os.path.isdir(dir_sim) == False:
 dir_sim_path = dir_sim + '/'
 for ii_freq in range(ii_min, ii_max):
     freq_ii = freq_space[ii_freq]
+    print('create job for f = ', freq_ii*1e3, ' MHz')
     cmd = 'python runSim_ascan_rx.py ' + fname_config + ' '
     cmd += fname_npy + ' ' + fname_hdf + ' ' + fname_nProf + ' '
     cmd += str(ii_date) + ' ' + str(ii_freq) + ' ' + str(ii_tx)
