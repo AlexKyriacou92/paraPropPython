@@ -112,7 +112,7 @@ def select_date(date_arr, year, month):
 # Start With One Spectrum Point
 
 #INPUTS
-fname_config = 'config_ICRC_summit_example.txt'
+fname_config = 'config_summit_large_scale.txt'
 fname_nProf = 'nProf_CFM_deep2.h5'
 fname_CFM = 'CFMresults.hdf5'
 year_example = 2019
