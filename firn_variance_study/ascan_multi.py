@@ -112,11 +112,17 @@ def select_date(date_arr, year, month):
 # Start With One Spectrum Point
 
 #INPUTS
-fname_config = 'config_summit_large_scale.txt'
+fname_config = 'config_summit_large_scale_cfm.txt'
 fname_nProf = 'nProf_CFM_deep2.h5'
 fname_CFM = 'CFMresults.hdf5'
-year_example = 2019
-month_example = 6.
+
+config_in = configparser.ConfigParser(fname_config)
+cfm_config = config_in['CFM']
+input_config = config_in['INPUT']
+
+sim_prefix = input_config['config_name']
+year_example = int(cfm_config['year'])
+month_example = float(cfm_config['month'])
 
 nProf_hdf = h5py.File(fname_nProf, 'r')
 nProf_matrix = np.array(nProf_hdf['n_profile_matrix'])
@@ -130,8 +136,15 @@ n_profile_example = nProf_matrix[ii_date]
 
 from data import create_transmitter_array_from_file
 #STEP 1 -> Create File
-fname_hdf = 'large_scale_ascan.h5'
-fname_npy = 'large_scale_ascan.npy'
+fname_hdf = sim_prefix + '_' + str(year_example) + '_' + str(month_example).zfill(2) + ').h5'
+fname_npy = fname_hdf[:-3] + '.npy'
+
+sim_name = sim_prefix + '_' + str(year_example) + ' ' + str(month_example)
+with h5py.File(fname_hdf, 'r+') as hdf_in:
+    hdf_in.attrs['name'] = sim_name
+    hdf_in.attrs['year'] = year_example
+    hdf_in.attrs['month'] = month_example
+
 txList = create_transmitter_array_from_file(fname_config)
 tx_signal_in = create_spectrum(fname_config=fname_config,
                 nprof_data=n_profile_example, zprof_data=z_profile,
