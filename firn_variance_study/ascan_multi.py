@@ -144,11 +144,11 @@ if os.path.isdir(dir_sim) == False:
 dir_sim_path = dir_sim + '/'
 
 
-fname_hdf = dir_sim_path + sim_prefix + '_' + str(year_example) + '_' + str(month_example).zfill(2) + ').h5'
+fname_hdf = dir_sim_path + sim_prefix + '_' + str(year_example) + '_' + str(month_example).zfill(2) + '.h5'
 fname_npy = dir_sim_path + fname_hdf[:-3] + '.npy'
 
 sim_name = sim_prefix + '_' + str(year_example) + ' ' + str(month_example)
-with h5py.File(fname_hdf, 'r+') as hdf_in:
+with h5py.File(fname_hdf, 'w') as hdf_in:
     hdf_in.attrs['name'] = sim_name
     hdf_in.attrs['year'] = year_example
     hdf_in.attrs['month'] = month_example
@@ -224,7 +224,7 @@ for ii_freq in range(ii_min, ii_max):
     suffix = 'fid_' + str(int(freq_ii*1e3))
     jobname = dir_sim_path + suffix
     fname_sh_in = 'sim_CFM_' + suffix + '.sh'
-    fname_sh_out = dir_sim_path + 'sim_CFM_' + suffix + '.sh'
+    fname_sh_out = dir_sim_path + 'sim_CFM_' + suffix + '.out'
 
     make_job(fname_shell=fname_sh_in, fname_outfile=fname_sh_out, jobname=jobname, command=cmd)
     submit_job(fname_sh_in)
