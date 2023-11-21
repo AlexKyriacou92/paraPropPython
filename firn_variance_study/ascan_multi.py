@@ -116,7 +116,8 @@ fname_config = 'config_summit_large_scale_cfm.txt'
 fname_nProf = 'nProf_CFM_deep2.h5'
 fname_CFM = 'CFMresults.hdf5'
 
-config_in = configparser.ConfigParser(fname_config)
+config_in = configparser.ConfigParser()
+config_in.read(fname_config)
 cfm_config = config_in['CFM']
 input_config = config_in['INPUT']
 
@@ -136,8 +137,15 @@ n_profile_example = nProf_matrix[ii_date]
 
 from data import create_transmitter_array_from_file
 #STEP 1 -> Create File
-fname_hdf = sim_prefix + '_' + str(year_example) + '_' + str(month_example).zfill(2) + ').h5'
-fname_npy = fname_hdf[:-3] + '.npy'
+#Make Directory                                                                                                                                                                                                                                                                                                               
+dir_sim = 'CFM_files_ku/large_scale_pulse'
+if os.path.isdir(dir_sim) == False:
+    os.system('mkdir ' + dir_sim)
+dir_sim_path = dir_sim + '/'
+
+
+fname_hdf = dir_sim_path + sim_prefix + '_' + str(year_example) + '_' + str(month_example).zfill(2) + ').h5'
+fname_npy = dir_sim_path + fname_hdf[:-3] + '.npy'
 
 sim_name = sim_prefix + '_' + str(year_example) + ' ' + str(month_example)
 with h5py.File(fname_hdf, 'r+') as hdf_in:
@@ -193,8 +201,8 @@ tx_spectrum_in = tx_signal_in.get_spectrum()
 freq_space = tx_signal_in.get_freq_space()
 tspace = tx_signal_in.tspace
 
-freq_ex = 0.15
-ii_freq = util.findNearest(freq_space, freq_ex)
+#freq_ex = 0.15
+#ii_freq = util.findNearest(freq_space, freq_ex)
 ii_tx = 0
 z_tx = txList[ii_tx]
 
@@ -205,14 +213,10 @@ ii_min = util.findNearest(freq_space, freqMin)
 ii_max = util.findNearest(freq_space, freqMax)
 # STEP 2 -> SEND OUT SCRIPTS
 
-#Make Directory
-dir_sim = 'CFM_files_ku/large_scale_pulse'
-if os.path.isdir(dir_sim) == False:
-    os.system('mkdir ' + dir_sim)
-dir_sim_path = dir_sim + '/'
 for ii_freq in range(ii_min, ii_max):
     freq_ii = freq_space[ii_freq]
     print('create job for f = ', freq_ii*1e3, ' MHz')
+
     cmd = 'python runSim_ascan_rx.py ' + fname_config + ' '
     cmd += fname_npy + ' ' + fname_hdf + ' ' + fname_nProf + ' '
     cmd += str(ii_date) + ' ' + str(ii_freq) + ' ' + str(ii_tx)
