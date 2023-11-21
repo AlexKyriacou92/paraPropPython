@@ -1,5 +1,6 @@
 [INPUT]
 prefix = summit
+config_name = summit_cfm_large_scale
 
 [GEOMETRY]
 iceDepth = 1800.0
