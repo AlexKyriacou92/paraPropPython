@@ -58,7 +58,7 @@ def run_ascan_rx(fname_config, n_profile, z_profile, z_tx, freq, fname_hdf, fnam
     sim.set_cw_source_signal(freq=freq)
     sim.do_solver()
 
-    rx_spectrum = np.load(fname_npy, 'r+')
+    rx_spectrum = np.memmap(fname_npy, 'r+')
     for ii_rx in range(nRx):
         rx_ii = rxList[ii_rx]
         amp_rx = sim.get_field(x0=rx_ii.x, z0=rx_ii.z)
