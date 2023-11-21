@@ -58,13 +58,14 @@ def run_ascan_rx(fname_config, n_profile, z_profile, z_tx, freq, fname_hdf, fnam
     sim.set_cw_source_signal(freq=freq)
     sim.do_solver()
 
-    rx_spectrum = np.memmap(fname_npy, 'r+')
+    rx_spectrum = np.load(fname_npy, 'r+')
     for ii_rx in range(nRx):
         rx_ii = rxList[ii_rx]
         amp_rx = sim.get_field(x0=rx_ii.x, z0=rx_ii.z)
-        print('tx num', ii_tx, 'rx num', ii_rx, 'ii_freq', ii_freq, '\n rx:', rx_ii.x, rx_ii.z, 'amp:', amp_rx)
+        #print('tx num', ii_tx, 'rx num', ii_rx, 'ii_freq', ii_freq, '\n rx:', rx_ii.x, rx_ii.z, 'amp:', amp_rx)
         rx_spectrum[ii_tx, ii_rx, ii_freq] = amp_rx
-
+    print('save values', rx_spectrum[ii_tx, :, ii_freq])
+    print('Close')
 '''
 def ascan(fname_config, n_profile, z_profile, z_tx, x_rx, z_rx): #TODO: Add Output File
     tx_signal = create_tx_signal(fname_config)
