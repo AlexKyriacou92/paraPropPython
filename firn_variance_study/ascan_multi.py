@@ -145,7 +145,7 @@ dir_sim_path = dir_sim + '/'
 
 
 fname_hdf = dir_sim_path + sim_prefix + '_' + str(year_example) + '_' + str(month_example).zfill(2) + '.h5'
-fname_npy = dir_sim_path + fname_hdf[:-3] + '.npy'
+fname_npy = fname_hdf[:-3] + '.npy'
 
 sim_name = sim_prefix + '_' + str(year_example) + ' ' + str(month_example)
 with h5py.File(fname_hdf, 'w') as hdf_in:
@@ -228,6 +228,8 @@ for ii_freq in range(ii_min, ii_max):
 
     make_job(fname_shell=fname_sh_in, fname_outfile=fname_sh_out, jobname=jobname, command=cmd)
     submit_job(fname_sh_in)
+    time.sleep(3)
+    os.system('rm ' + fname_sh_in)
 
 
 #cmd = 'python runSim_ascan_rx.py ' + fname_config + ' ' + fname_npy + ' ' + fname_hdf + ' ' + fname_nProf + ' ' + str(ii_date) + ' ' + str(ii_freq) + ' ' + str(ii_tx)

@@ -30,5 +30,5 @@ noise = 1e-5
 fname_IR = eff_l_vpol_antenna_RNO_G.txt
 
 [CFM]
-year = 2019
+year = 2017
 month = 6
