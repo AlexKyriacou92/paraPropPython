@@ -71,7 +71,7 @@ with h5py.File(fname_hdf, 'a') as hdf_in:
 '''
 #TODO: DELETE INDIVIDUAL NPY FILES
 #TODO: DELETE OUT FILES
-'''
+
 with open(fname_list) as fin_list2:
     for _ in range(3):
         next(fin_list2)
@@ -80,8 +80,7 @@ with open(fname_list) as fin_list2:
         cols_l = line.split()
         ii_freq = int(cols_l[0])
         freq_ii = float(cols_l[1])
-        fname_npy_ii = dir_sim_path + cols_l[2]
-        fname_out_ii = dir_sim_path + cols_l[3]
-        
-        os.system('rm ' + fname_npy_ii + ' ' + fname_out_ii)
-'''
+        fname_spectrum_ii = dir_sim_path + cols_l[2]
+
+        os.system('rm -f ' + fname_spectrum_ii)
+os.system('rm -f ' + dir_sim_path + '.out')
