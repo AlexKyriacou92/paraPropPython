@@ -3,10 +3,10 @@ import sys
 import numpy as np
 import time
 import h5py
-import util
 
 sys.path.append('../')
 from data import ascan
+import util
 
 fname_list = sys.argv[1]
 
@@ -37,7 +37,9 @@ for line in fin_list:
     spectrum_i = np.load(fname_npy_ii, 'r')
     spectrum[:,:,ii_freq] = spectrum_i
 
+print(fname_hdf)
 ascan_in = ascan()
+print('check check')
 ascan_in.load_from_hdf(fname_hdf)
 ascan_in.save_spectrum(fname_npy)
 fin_list.close()

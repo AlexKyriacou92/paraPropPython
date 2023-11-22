@@ -229,7 +229,7 @@ def create_ascan_hdf(fname_config, tx_signal, nprof_data, zprof_data, fname_outp
 
 class ascan:
     def load_from_hdf(self, fname_hdf):
-        input_hdf = h5py.File(fname_hdf, 'r')
+        input_hdf = h5py.File(fname_hdf, 'r+')
         self.fname = fname_hdf
         self.iceDepth = float(input_hdf.attrs["iceDepth"])
         self.iceLength = float(input_hdf.attrs["iceLength"])
@@ -271,6 +271,7 @@ class ascan:
             self.spectrum_array = np.array(input_hdf.get('rxSpectrum'))
         if 'rxSignal' in input_hdf.keys():
             self.ascan_array = np.array(input_hdf.get('rxSignal'))
+        input_hdf.close()
 
     def save_spectrum(self, fname_npy):
         spectrum = np.load(fname_npy, 'r')
