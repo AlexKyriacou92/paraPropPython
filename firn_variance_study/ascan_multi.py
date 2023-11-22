@@ -199,7 +199,7 @@ for ii_freq in range(ii_min, ii_max):
     fout_list.write(line)
 
     fname_npy_i = dir_sim_path + fname_npy_i
-    util.create_memmap2(fname_npy, dimensions=(nTx, nRx), data_type='complex')
+    util.create_memmap2(fname_npy_i, dimensions=(nTx, nRx), data_type='complex')
 
     cmd = 'python runSim_ascan_rx.py ' + fname_config + ' '
     cmd += fname_npy_i + ' ' + fname_hdf + ' ' + fname_nProf + ' '
