@@ -15,7 +15,7 @@ from receiver import receiver as rx
 from transmitter import tx_signal
 from data import create_sim, create_rxList_from_file, create_transmitter_array, create_hdf_FT, ascan
 from data import create_tx_signal, bscan, bscan_rxList, create_hdf_bscan, create_transmitter_array_from_file
-from makeDepthScan import depth_scan_impulse_smooth, run_field, run_ascan_rx
+from makeDepthScan import depth_scan_impulse_smooth, run_field, run_ascan_rx, run_ascan_rx_txt
 
 if len(sys.argv) == 8:
     fname_config = sys.argv[1] #The Config File -> sys.argv[1]
@@ -52,5 +52,14 @@ if np.any(np.isnan(nprof_data) == True) == True:
     print('error, undefined values of ref index array!')
     sys.exit(-1)
 
-run_ascan_rx(fname_config=fname_config, n_profile=nprof_data, z_profile=zprof_data,
+suffix = fname_spectrum[-3:]
+
+if suffix == 'npy':
+    run_ascan_rx(fname_config=fname_config, n_profile=nprof_data, z_profile=zprof_data,
              z_tx=z_tx, freq=freq, fname_hdf=fname_hdf, fname_npy=fname_spectrum)
+elif suffix == 'txt':
+    run_ascan_rx_txt(fname_config=fname_config, n_profile=nprof_data, z_profile=zprof_data,
+             z_tx=z_tx, freq=freq, fname_hdf=fname_hdf, fname_txt=fname_spectrum)
+else:
+    print('Wrong file ending', suffix, ' for ', fname_spectrum, ', you have to use npy or txt')
+    sys.exit()
