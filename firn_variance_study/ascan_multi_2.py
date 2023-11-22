@@ -158,7 +158,7 @@ for ii_freq in range(ii_min, ii_max):
     jobname = dir_sim_path + suffix
     fname_sh_in = 'sim_CFM_' + suffix + '.sh'
 
-    fname_sh_out0 = 'sim_CFM_' + suffix + '.out'
+    fname_sh_out0 = 'sim_CFM_' + str(year) + '_' + str(month) + '_' + suffix + '.out'
     fname_sh_out = dir_sim_path + fname_sh_out0
 
     make_job(fname_shell=fname_sh_in, fname_outfile=fname_sh_out, jobname=jobname, command=cmd)
