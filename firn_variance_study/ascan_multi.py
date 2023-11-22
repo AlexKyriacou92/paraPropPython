@@ -145,7 +145,10 @@ dir_sim_path = dir_sim + '/'
 
 
 fname_body = sim_prefix + '_' + str(year_example) + '_' + str(month_example).zfill(2)
-fname_hdf = dir_sim_path + fname_body + '.h5'
+fname_hdf0 = fname_body + '.h5'
+fname_npy0 = fname_body + '.npy'
+
+fname_hdf = dir_sim_path + fname_hdf0
 
 sim_name = sim_prefix + '_' + str(year_example) + ' ' + str(month_example)
 with h5py.File(fname_hdf, 'w') as hdf_in:
@@ -159,43 +162,6 @@ tx_signal_in = create_spectrum(fname_config=fname_config,
                                nprof_data=n_profile_example, zprof_data=z_profile,
                                fname_output_h5=fname_hdf)
 
-'''
-tx_pulse_in = tx_signal_in.pulse
-tx_spectrum_in = tx_signal_in.get_spectrum()
-freq_space = tx_signal_in.get_freq_space()
-tspace = tx_signal_in.tspace
-
-fig = pl.figure(figsize=(8,5),dpi=120)
-ax = fig.add_subplot(111)
-ax.plot(freq_space, abs(tx_spectrum_in))
-ax.grid()
-pl.show()
-
-fig = pl.figure(figsize=(8,5),dpi=120)
-ax = fig.add_subplot(111)
-ax.plot(tspace, tx_pulse_in.real)
-ax.grid()
-pl.show()
-
-spectrum_npy = np.load(fname_npy, 'r')
-print(len(spectrum_npy[0,0]), len(tx_spectrum_in))
-print(txList)
-freq_ex = 0.15
-ii_freq = util.findNearest(freq_space, freq_ex)
-ii_tx = 0
-z_tx = txList[ii_tx]
-
-print('Before Sim', spectrum_npy[ii_tx, :, ii_freq])
-
-from makeDepthScan import run_ascan_rx
-# STEP 2 -> Run a Single Example
-run_ascan_rx(fname_config=fname_config, n_profile=n_profile_example, z_profile=z_profile,
-             z_tx=txList[0], freq=freq_ex, fname_hdf=fname_hdf, fname_npy=fname_npy)
-#TODO -> create script to run a single field and sample at receiver points
-spectrum_npy2 = np.load(fname_npy, 'r')
-print('Check value:', ii_tx, ii_freq)
-print('After Sim', spectrum_npy2[ii_tx, :, ii_freq])
-'''
 
 tx_pulse_in = tx_signal_in.pulse
 tx_spectrum_in = tx_signal_in.get_spectrum()
@@ -205,8 +171,7 @@ nSamples = tx_signal_in.nSamples
 
 rxList = create_rxList_from_file(fname_config)
 nRx = len(rxList)
-#freq_ex = 0.15
-#ii_freq = util.findNearest(freq_space, freq_ex)
+
 ii_tx = 0
 z_tx = txList[ii_tx]
 
@@ -219,21 +184,25 @@ ii_max = util.findNearest(freq_space, freqMax)
 
 #Write the Name of the File
 fname_list = fname_body + '_list.txt'
+
 fout_list = open(dir_sim_path + fname_list, 'w')
+fout_list.write(dir_sim_path+ '\t' + fname_hdf0 + '\t' + fname_npy0 +'\n')
+fout_list.write(str(nTx) + '\t' + str(nRx) + '\t' + str(nSamples) + '\n')
 fout_list.write('ID_Freq\tFreq_GHz\tfname_npy\n')
+
 for ii_freq in range(ii_min, ii_max):
     freq_ii = freq_space[ii_freq]
-    fname_npy = fname_body + '_' + str(ii_freq) + '.npy'
+    fname_npy_i = fname_body + '_' + str(ii_freq) + '.npy'
     print('create job for f = ', freq_ii*1e3, ' MHz')
 
-    line = str(ii_freq) + '\t' + str(round(freq_ii,3)) + '\t' + fname_npy + '\n'
+    line = str(ii_freq) + '\t' + str(round(freq_ii,3)) + '\t' + fname_npy_i + '\n'
     fout_list.write(line)
 
-    fname_npy = dir_sim_path + fname_npy
+    fname_npy_i = dir_sim_path + fname_npy_i
     util.create_memmap2(fname_npy, dimensions=(nTx, nRx), data_type='complex')
 
     cmd = 'python runSim_ascan_rx.py ' + fname_config + ' '
-    cmd += fname_npy + ' ' + fname_hdf + ' ' + fname_nProf + ' '
+    cmd += fname_npy_i + ' ' + fname_hdf + ' ' + fname_nProf + ' '
     cmd += str(ii_date) + ' ' + str(ii_freq) + ' ' + str(ii_tx)
 
     suffix = 'fid_' + str(int(freq_ii*1e3))
@@ -245,12 +214,4 @@ for ii_freq in range(ii_min, ii_max):
     submit_job(fname_sh_in)
     time.sleep(3)
     os.system('rm ' + fname_sh_in)
-
-
-#cmd = 'python runSim_ascan_rx.py ' + fname_config + ' ' + fname_npy + ' ' + fname_hdf + ' ' + fname_nProf + ' ' + str(ii_date) + ' ' + str(ii_freq) + ' ' + str(ii_tx)
-#os.system(cmd)
-
-
-#spectrum_npy2 = np.load(fname_npy, 'r')
-#print('Check value:', ii_tx, ii_freq)
-#print('After Sim', spectrum_npy2[ii_tx, :, ii_freq])
+fout_list.close()
