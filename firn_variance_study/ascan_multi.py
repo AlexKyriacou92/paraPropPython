@@ -212,6 +212,5 @@ for ii_freq in range(ii_min, ii_max):
 
     make_job(fname_shell=fname_sh_in, fname_outfile=fname_sh_out, jobname=jobname, command=cmd)
     submit_job(fname_sh_in)
-    time.sleep(3)
     os.system('rm ' + fname_sh_in)
 fout_list.close()
