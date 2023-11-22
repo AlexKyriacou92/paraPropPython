@@ -208,7 +208,9 @@ for ii_freq in range(ii_min, ii_max):
     suffix = 'fid_' + str(int(freq_ii*1e3))
     jobname = dir_sim_path + suffix
     fname_sh_in = 'sim_CFM_' + suffix + '.sh'
-    fname_sh_out = dir_sim_path + 'sim_CFM_' + suffix + '.out'
+
+    fname_sh_out0 = 'sim_CFM_' + suffix + '.out'
+    fname_sh_out = dir_sim_path + fname_sh_out0
 
     make_job(fname_shell=fname_sh_in, fname_outfile=fname_sh_out, jobname=jobname, command=cmd)
     submit_job(fname_sh_in)
