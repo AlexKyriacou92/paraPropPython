@@ -65,6 +65,39 @@ def run_ascan_rx(fname_config, n_profile, z_profile, z_tx, freq, fname_hdf, fnam
         rx_spectrum[ii_tx, ii_rx] = amp_rx
     print('save values', rx_spectrum[:])
     print('Close')
+
+def run_ascan_rx_txt(fname_config, n_profile, z_profile, z_tx, freq, fname_hdf, fname_txt):
+    sim = create_sim(fname_config)
+    rxList = create_rxList_from_file(fname_config)
+    nRx = len(rxList)
+
+    txList = create_transmitter_array_from_file(fname_config)
+
+    sim.set_n(nVec=n_profile, zVec=z_profile)  # Set Refractive Index Profile
+
+    ascan_in = ascan()
+    ascan_in.load_from_hdf(fname_hdf=fname_hdf)
+    tx_signal_in = ascan_in.tx_signal
+    tx_spectrum_in = tx_signal_in.get_spectrum()
+    freq_space = tx_signal_in.get_freq_space()
+    ii_freq = util.findNearest(freq_space, freq)
+    print(freq_space, freq)
+
+    amp_ii = tx_spectrum_in[ii_freq]
+    print('amplitude:', amp_ii, 'index:', ii_freq, 'freq=', freq_space[ii_freq])
+
+    sim.set_dipole_source_profile(centerFreq=freq, depth=z_tx, A=amp_ii)  # Set Source Profile
+    sim.set_cw_source_signal(freq=freq)
+    sim.do_solver()
+    with open(fname_txt) as fout:
+        fout.write('tx_z\t' +str(z_tx) + 'freq_GHz\t' + str(freq))
+        fout.write('rx_x\trx_z\tamp_rx_real\tamp_rx_imag\n')
+        for ii_rx in range(nRx):
+            rx_ii = rxList[ii_rx]
+            amp_rx = sim.get_field(x0=rx_ii.x, z0=rx_ii.z)
+            line = str(rx_ii.x) + '\t' + str(rx_ii.z) + '\t' + str(amp_rx.real) + '\t' + str(amp_rx.imag) + '\n'
+            fout.write(line)
+
 '''
 def ascan(fname_config, n_profile, z_profile, z_tx, x_rx, z_rx): #TODO: Add Output File
     tx_signal = create_tx_signal(fname_config)
