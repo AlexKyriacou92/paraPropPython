@@ -89,8 +89,8 @@ def run_ascan_rx_txt(fname_config, n_profile, z_profile, z_tx, freq, fname_hdf, 
     sim.set_dipole_source_profile(centerFreq=freq, depth=z_tx, A=amp_ii)  # Set Source Profile
     sim.set_cw_source_signal(freq=freq)
     sim.do_solver()
-    with open(fname_txt) as fout:
-        fout.write('tx_z\t' +str(z_tx) + 'freq_GHz\t' + str(freq))
+    with open(fname_txt, 'w') as fout:
+        fout.write('tx_z\t' + str(z_tx) + 'freq_GHz\t' + str(freq)+'\n')
         fout.write('rx_x\trx_z\tamp_rx_real\tamp_rx_imag\n')
         for ii_rx in range(nRx):
             rx_ii = rxList[ii_rx]
