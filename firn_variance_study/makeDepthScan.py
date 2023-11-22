@@ -63,7 +63,7 @@ def run_ascan_rx(fname_config, n_profile, z_profile, z_tx, freq, fname_hdf, fnam
         rx_ii = rxList[ii_rx]
         amp_rx = sim.get_field(x0=rx_ii.x, z0=rx_ii.z)
         #print('tx num', ii_tx, 'rx num', ii_rx, 'ii_freq', ii_freq, '\n rx:', rx_ii.x, rx_ii.z, 'amp:', amp_rx)
-        rx_spectrum[ii_tx, ii_rx, ii_freq] = amp_rx
+        rx_spectrum[ii_rx, ii_freq] = amp_rx
     print('save values', rx_spectrum[ii_tx, :, ii_freq])
     print('Close')
 '''

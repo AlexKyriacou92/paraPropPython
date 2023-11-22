@@ -19,7 +19,7 @@ from data import create_hdf_bscan, bscan_rxList, create_hdf_FT, create_tx_signal
 from data import create_ascan_hdf, ascan
 import util
 
-def create_spectrum(fname_config, nprof_data, zprof_data,  fname_output_npy, fname_output_h5):
+def create_spectrum(fname_config, nprof_data, zprof_data, fname_output_h5):
     tx_signal_out = create_tx_signal(fname_config)
     rxList = create_rxList_from_file(fname_config)
     txList = create_transmitter_array(fname_config)
@@ -38,7 +38,7 @@ def create_spectrum(fname_config, nprof_data, zprof_data,  fname_output_npy, fna
     tx_signal_out.apply_bandpass(fmin=fmin, fmax=fmax)
     tx_signal_out.add_gaussian_noise()
 
-    util.create_memmap2(fname_output_npy,(nTX, nRX, nSamples))
+    #util.create_memmap2(fname_output_npy,(nTX, nRX, nSamples))
     hdf_ascan = create_ascan_hdf(fname_config=fname_config,
                                  tx_signal=tx_signal_out,
                                  nprof_data=nprof_data,
@@ -144,8 +144,8 @@ if os.path.isdir(dir_sim) == False:
 dir_sim_path = dir_sim + '/'
 
 
-fname_hdf = dir_sim_path + sim_prefix + '_' + str(year_example) + '_' + str(month_example).zfill(2) + '.h5'
-fname_npy = fname_hdf[:-3] + '.npy'
+fname_body = sim_prefix + '_' + str(year_example) + '_' + str(month_example).zfill(2)
+fname_hdf = dir_sim_path + fname_body + '.h5'
 
 sim_name = sim_prefix + '_' + str(year_example) + ' ' + str(month_example)
 with h5py.File(fname_hdf, 'w') as hdf_in:
@@ -154,9 +154,10 @@ with h5py.File(fname_hdf, 'w') as hdf_in:
     hdf_in.attrs['month'] = month_example
 
 txList = create_transmitter_array_from_file(fname_config)
+nTx = len(txList)
 tx_signal_in = create_spectrum(fname_config=fname_config,
-                nprof_data=n_profile_example, zprof_data=z_profile,
-                fname_output_npy=fname_npy, fname_output_h5=fname_hdf)
+                               nprof_data=n_profile_example, zprof_data=z_profile,
+                               fname_output_h5=fname_hdf)
 
 '''
 tx_pulse_in = tx_signal_in.pulse
@@ -200,7 +201,10 @@ tx_pulse_in = tx_signal_in.pulse
 tx_spectrum_in = tx_signal_in.get_spectrum()
 freq_space = tx_signal_in.get_freq_space()
 tspace = tx_signal_in.tspace
+nSamples = tx_signal_in.nSamples
 
+rxList = create_rxList_from_file(fname_config)
+nRx = len(rxList)
 #freq_ex = 0.15
 #ii_freq = util.findNearest(freq_space, freq_ex)
 ii_tx = 0
@@ -213,9 +217,20 @@ ii_min = util.findNearest(freq_space, freqMin)
 ii_max = util.findNearest(freq_space, freqMax)
 # STEP 2 -> SEND OUT SCRIPTS
 
+#Write the Name of the File
+fname_list = fname_body + '_list.txt'
+fout_list = open(dir_sim_path + fname_list, 'w')
+fout_list.write('ID_Freq\tFreq_GHz\tfname_npy\n')
 for ii_freq in range(ii_min, ii_max):
     freq_ii = freq_space[ii_freq]
+    fname_npy = fname_body + '_' + str(ii_freq) + '.npy'
     print('create job for f = ', freq_ii*1e3, ' MHz')
+
+    line = str(ii_freq) + '\t' + str(round(freq_ii,3)) + '\t' + fname_npy + '\n'
+    fout_list.write(line)
+
+    fname_npy = dir_sim_path + fname_npy
+    util.create_memmap2(fname_npy, dimensions=(nTx, nRx), data_type='complex')
 
     cmd = 'python runSim_ascan_rx.py ' + fname_config + ' '
     cmd += fname_npy + ' ' + fname_hdf + ' ' + fname_nProf + ' '

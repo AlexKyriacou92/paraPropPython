@@ -267,13 +267,36 @@ class ascan:
         self.n_profile = np.array(input_hdf.get('n_profile')) # 2 x nZ array -> includes sim.z and sim.n(x=0,z)
         self.z_profile = np.array(input_hdf.get('z_profile'))
 
+        if 'rxSpectrum' in input_hdf.keys():
+            self.spectrum_array = np.array(input_hdf.get('rxSpectrum'))
+        if 'rxSignal' in input_hdf.keys():
+            self.ascan_array = np.array(input_hdf.get('rxSignal'))
+
+    def save_spectrum(self, fname_npy):
+        spectrum = np.load(fname_npy, 'r')
+        self.spectrum_array = spectrum
+        self.ascan_array = np.zeros((self.nTX, self.nRX, self.nSamples),dtype='complex')
+        for i in range(self.nTX):
+            for j in range(self.nRX):
+                spectrum_ij = self.spectrum_array[i,j]
+                #spectrum_ishift = np.fft.ifftshift(spectrum_ij)
+                spectrum_ij_flip = np.flip(spectrum_ij)
+                ascan_ij = np.fft.ifft(spectrum_ij_flip)
+                self.ascan_array[i,j] = ascan_ij
+        with h5py.File(self.fname, 'r+') as hdf_in:
+            hdf_in.create_dataset('rxSpectrum', data=self.spectrum_array)
+            hdf_in.create_dataset('rxSignal', data=self.ascan_array)
+
     def load_spectrum(self, spectrum):
         self.spectrum_array = spectrum
         self.ascan_array = np.zeros((self.nTX, self.nRX, self.nSamples),dtype='complex')
         for i in range(self.nTX):
             for j in range(self.nRX):
                 spectrum_ij = self.spectrum_array[i,j]
-                spectrum_ishift = np.fft.ifftshift(spectrum_ij)
+                #spectrum_ishift = np.fft.ifftshift(spectrum_ij)
+                spectrum_ij_flip = np.flip(spectrum_ij)
+                ascan_ij = np.fft.ifft(spectrum_ij_flip)
+                self.ascan_array[i,j] = ascan_ij
         return self.ascan_array
     def get_ascan(self, z_tx, x_rx, z_rx):
         ii_tx = util.findNearest(self.tx_depths, z_tx)
