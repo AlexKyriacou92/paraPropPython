@@ -229,7 +229,7 @@ def create_ascan_hdf(fname_config, tx_signal, nprof_data, zprof_data, fname_outp
 
 class ascan:
     def load_from_hdf(self, fname_hdf):
-        input_hdf = h5py.File(fname_hdf, 'r+')
+        input_hdf = h5py.File(fname_hdf, 'r')
         self.fname = fname_hdf
         self.iceDepth = float(input_hdf.attrs["iceDepth"])
         self.iceLength = float(input_hdf.attrs["iceLength"])
