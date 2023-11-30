@@ -22,9 +22,14 @@ def create_sim(fname_config): #Creates Simulation from config file using parser
     config = configparser.ConfigParser()
     config.read(fname_config)
     geometry = config['GEOMETRY']
-    sim = ppp.paraProp(iceDepth=float(geometry['iceDepth']), iceLength=float(geometry['iceLength']),
-                       dx=float(geometry['dx']), dz=float(geometry['dz']),
-                       airHeight=float(geometry['airHeight']))
+    if 'refDepth' in geometry:
+        sim = ppp.paraProp(iceDepth=float(geometry['iceDepth']), iceLength=float(geometry['iceLength']),
+                           dx=float(geometry['dx']), dz=float(geometry['dz']), airHeight=float(geometry['airHeight']),
+                           refDepth=float(geometry['refDepth']))
+    else:
+        sim = ppp.paraProp(iceDepth=float(geometry['iceDepth']), iceLength=float(geometry['iceLength']),
+                           dx=float(geometry['dx']), dz=float(geometry['dz']),
+                           airHeight=float(geometry['airHeight']))
     return sim
 
 def get_IR_from_config(fname_config, antenna='TX'):
