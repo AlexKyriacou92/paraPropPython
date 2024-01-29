@@ -300,8 +300,9 @@ class ascan:
             for j in range(self.nRX):
                 spectrum_ij = self.spectrum_array[i,j]
                 #spectrum_ishift = np.fft.ifftshift(spectrum_ij)
-                spectrum_ij_flip = np.flip(spectrum_ij)
-                ascan_ij = np.fft.ifft(spectrum_ij_flip)
+                #spectrum_ij_flip = np.flip(spectrum_ij)
+                #ascan_ij = np.fft.ifft(spectrum_ij_flip)
+                ascan_ij = np.fft.ifft(np.flip(spectrum_ij))
                 self.ascan_array[i,j] = ascan_ij
         return self.ascan_array
     def get_ascan(self, z_tx, x_rx, z_rx):

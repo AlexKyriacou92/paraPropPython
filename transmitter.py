@@ -23,9 +23,15 @@ class tx_signal:
         self.freq_nyq = 1/(2*dt)
         self.tmax = tmax
         self.nSamples = int(tmax/dt)
+        self.df = 1./(self.dt * self.nSamples)
         self.tspace = np.linspace(0, tmax, self.nSamples)
         self.freq_space = np.fft.fftfreq(self.nSamples, self.dt)
         self.noise_amplitude = noise_amplitude
+
+        self.freq_plus = np.arange(0, 1/self.dt, self.df) #Positive frequency space (0 to 2 f_nyq)
+        self.nHalf = int(self.nSamples / 2) + self.nSamples % 2
+        print('nHalf = ', self.nHalf)
+        self.spectrum_plus = np.zeros(self.nSamples, dtype='complex')
 
         if freqMin == None:
             self.freqMin = 0
@@ -52,6 +58,9 @@ class tx_signal:
         self.pulse = np.zeros(self.nSamples)
         self.pulse[jj] = self.amplitude
         self.spectrum = np.fft.fft(self.pulse)
+
+        self.spectrum_plus = np.zeros(self.nSamples, dtype='complex')
+        self.spectrum_plus[:self.nHalf] = self.spectrum[:self.nHalf]
         return self.pulse
 
     def get_gausspulse_complex(self, suppression = -60):
@@ -60,6 +69,8 @@ class tx_signal:
         pulse_i = self.amplitude * np.array(signal.gausspulse(self.tspace - self.t_centre, fc=self.frequency, bw=frac_bandwidth, bwr=suppression, retquad=True))[1]
         self.pulse = pulse_r + 1j*pulse_i
         self.spectrum = np.fft.fft(self.pulse)
+        self.spectrum_plus = np.zeros(self.nSamples, dtype='complex')
+        self.spectrum_plus[:self.nHalf] = self.spectrum[:self.nHalf]
         return self.pulse
 
     def get_gausspulse(self, suppression = -60):
@@ -67,6 +78,8 @@ class tx_signal:
         pulse_r = self.amplitude * signal.gausspulse(self.tspace - self.t_centre, fc=self.frequency, bw=frac_bandwidth, bwr=suppression)
         self.pulse = pulse_r
         self.spectrum = np.fft.fft(self.pulse)
+        self.spectrum_plus = np.zeros(self.nSamples, dtype='complex')
+        self.spectrum_plus[:self.nHalf] = self.spectrum[:self.nHalf]
         return self.pulse
 
     def get_gausspulse_real(self, suppression = -60):
@@ -74,6 +87,8 @@ class tx_signal:
         pulse_r = self.amplitude * signal.gausspulse(self.tspace - self.t_centre, fc=self.frequency, bw=frac_bandwidth, bwr=suppression)
         self.pulse = pulse_r
         self.spectrum = np.fft.fft(self.pulse)
+        self.spectrum_plus = np.zeros(self.nSamples, dtype='complex')
+        self.spectrum_plus[:self.nHalf] = self.spectrum[:self.nHalf]
         return self.pulse
 
     def get_spectrum(self): #NOTE: pulse must be defined before
@@ -89,6 +104,8 @@ class tx_signal:
                                                fs=1/self.dt,
                                                order=order)
         self.spectrum = np.fft.fft(self.pulse)
+        self.spectrum_plus = np.zeros(self.nSamples, dtype='complex')
+        self.spectrum_plus[:self.nHalf] = self.spectrum[:self.nHalf]
         return self.pulse
 
     def set_pulse(self, pulse_data, tspace_pulse):
@@ -103,7 +120,7 @@ class tx_signal:
         self.freq_space = np.fft.fftfreq(self.nSamples, self.dt)
         return self.pulse
 
-    def do_impulse_response(self, IR, IR_freq):
+    def do_impulse_response(self, IR, IR_freq): #TODO: APPLY SPECTRUM PLUS
         spectrum_shift = np.fft.fftshift(self.spectrum)
         freq_shift = np.fft.fftshift(self.freq_space)
         nFreq = len(freq_shift)
@@ -139,7 +156,8 @@ class tx_signal:
         spectrum_shift *= self.IR
         self.spectrum = np.fft.ifftshift(spectrum_shift)
         self.pulse = np.fft.ifft(self.spectrum)
-
+        self.spectrum_plus = np.zeros(self.nSamples, dtype='complex')
+        self.spectrum_plus[:self.nHalf] = self.spectrum[:self.nHalf]
         return self.pulse
 
     def set_psuedo_fmcw(self, fmin, fmax, IR, IR_freq):
@@ -207,6 +225,8 @@ class tx_signal:
         spectrum_shift *= self.IR
         self.spectrum = np.fft.ifftshift(spectrum_shift)
         self.pulse = np.fft.ifft(self.spectrum)
+        self.spectrum_plus = np.zeros(self.nSamples, dtype='complex')
+        self.spectrum_plus[:self.nHalf] = self.spectrum[:self.nHalf]
 
         return self.pulse
 
@@ -216,6 +236,9 @@ class tx_signal:
         tx_sig_c = tx_sig_r + 1j*tx_sig_i
         self.pulse = tx_sig_c
         self.spectrum = np.fft.fft(tx_sig_r)
+        self.spectrum_plus = np.zeros(self.nSamples, dtype='complex')
+        self.spectrum_plus[:self.nHalf] = self.spectrum[:self.nHalf]
+
         return self.pulse
 
     def add_gaussian_noise(self):
@@ -226,6 +249,9 @@ class tx_signal:
             #self.noise += util.hilbertTransform(np.random.normal(noise_amplitude, noise_amplitude, nSamples))# * float(nSamples)
             self.spectrum += self.noise
             self.pulse = np.fft.ifft(self.spectrum)
+            self.spectrum_plus = np.zeros(self.nSamples, dtype='complex')
+            self.spectrum_plus[:self.nHalf] = self.spectrum[:self.nHalf]
+
             #self.pulse += self.noise
             #self.spectrum = np.fft.fft(self.pulse)
     def add_white_noise(self):
@@ -234,6 +260,9 @@ class tx_signal:
         if noise_amplitude > 0:
             self.noise = noise_amplitude * np.random.uniform(0,1, nSamples)# * float(nSamples)
             self.spectrum += self.noise
+            self.spectrum_plus = np.zeros(self.nSamples, dtype='complex')
+            self.spectrum_plus[:self.nHalf] = self.spectrum[:self.nHalf]
+
             self.pulse = np.fft.ifft(self.spectrum)
             #self.pulse += self.noise
             #self.spectrum = np.fft.fft(self.pulse)

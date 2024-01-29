@@ -29,7 +29,7 @@ def run_field(fname_config, n_profile, z_profile, z_tx, freq, fname_out):
     sim.do_solver()
     save_field_to_file(sim, fname_out)
 
-def run_ascan_rx(fname_config, n_profile, z_profile, z_tx, freq, fname_hdf, fname_npy):
+def run_ascan_rx(fname_config, n_profile, z_profile, z_tx, freq_in, fname_hdf, fname_npy):
     sim = create_sim(fname_config)
     rxList = create_rxList_from_file(fname_config)
     nRx = len(rxList)
@@ -41,21 +41,30 @@ def run_ascan_rx(fname_config, n_profile, z_profile, z_tx, freq, fname_hdf, fnam
     ascan_in = ascan()
     ascan_in.load_from_hdf(fname_hdf=fname_hdf)
     tx_signal_in = ascan_in.tx_signal
-    tx_spectrum_in = tx_signal_in.get_spectrum()
-    freq_space = tx_signal_in.get_freq_space()
-    ii_freq = util.findNearest(freq_space, freq)
-    print(freq_space, freq)
+    pulse_tx = tx_signal_in.pulse.real
+    spectrum = util.doFFT(np.flip(pulse_tx))
+    dt = tx_signal_in.dt
+    nSamples = tx_signal_in.nSamples
+    df = 1. / (dt * nSamples)
+    freq = tx_signal_in.freq_plus
+    #freq_ii = freq[ii_freq]
+
+    #tx_spectrum_in = tx_signal_in.get_spectrum()
+    #freq_space = tx_signal_in.get_freq_space()
+
+    ii_freq = util.findNearest(freq, freq_in)
+    #print(freq, freq)
     '''
     for i in range(len(freq_space)):
         print(i, freq_space[i], freq)
     '''
-    amp_ii = tx_spectrum_in[ii_freq]
+    amp_ii = spectrum[ii_freq]
 
     ii_tx = util.findNearest(txList, z_tx)
-    print('amplitude:', amp_ii, 'index:', ii_freq, 'freq=', freq_space[ii_freq])
+    print('amplitude:', amp_ii, 'index:', ii_freq, 'freq=', freq[ii_freq])
 
-    sim.set_dipole_source_profile(centerFreq=freq, depth=z_tx, A=amp_ii)  # Set Source Profile
-    sim.set_cw_source_signal(freq=freq)
+    sim.set_dipole_source_profile(centerFreq=freq_in, depth=z_tx, A=amp_ii)  # Set Source Profile
+    sim.set_cw_source_signal(freq=freq_in)
     sim.do_solver()
 
     rx_spectrum = np.load(fname_npy, 'r+')

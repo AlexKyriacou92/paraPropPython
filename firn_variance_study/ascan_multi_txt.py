@@ -105,7 +105,13 @@ tx_signal_in = create_spectrum(fname_config=fname_config,
 
 tx_pulse_in = tx_signal_in.pulse
 tx_spectrum_in = tx_signal_in.get_spectrum()
-freq_space = tx_signal_in.get_freq_space()
+#freq_space = tx_signal_in.get_freq_space()
+#Define Frequnecy: Min to Max
+dt = tx_signal_in.dt
+nSamples = tx_signal_in.nSamples
+df = 1./(nSamples*dt)
+freq = tx_signal_in.freq_plus
+
 tspace = tx_signal_in.tspace
 nSamples = tx_signal_in.nSamples
 
@@ -116,10 +122,12 @@ ii_tx = 0
 z_tx = txList[ii_tx]
 
 #The Script will dispatch jobs for the Frequnecy Range (Min to Max, i.e. 50 MHz to 450 MHz)
+
+
 freqMin = tx_signal_in.freqMin
 freqMax = tx_signal_in.freqMax
-ii_min = util.findNearest(freq_space, freqMin)
-ii_max = util.findNearest(freq_space, freqMax)
+ii_min = util.findNearest(freq, freqMin)
+ii_max = util.findNearest(freq, freqMax)
 # STEP 2 -> SEND OUT SCRIPTS
 
 #Write the Name of the File
@@ -131,7 +139,7 @@ fout_list.write(str(nTx) + '\t' + str(nRx) + '\t' + str(nSamples) + '\n')
 fout_list.write('ID_Freq\tFreq_GHz\tfname_npy\n')
 
 for ii_freq in range(ii_min, ii_max):
-    freq_ii = freq_space[ii_freq]
+    freq_ii = freq[ii_freq]
     fname_txt_i = fname_body + '_' + str(ii_freq) + '.txt'
     print('create job for f = ', freq_ii*1e3, ' MHz')
 

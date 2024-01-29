@@ -756,3 +756,15 @@ def create_profile(zprof_out, nprof_genes, zprof_genes, nprof_override, zprof_ov
     nprof_out = spi_2(zprof_out)
 
     return nprof_out
+
+def get_rx(x, z, rxList):
+    rx_dr = []
+    for rx in rxList:
+        dx_sq = (x - rx.x)**2
+        dz_sq = (z - rx.z)**2
+        dr_sq = dx_sq + dz_sq
+        dr = np.sqrt(dr_sq)
+        rx_dr.append(dr)
+    ii_rx = np.argmin(rx_dr)
+    rx_ii = rxList[ii_rx]
+    return rx_ii

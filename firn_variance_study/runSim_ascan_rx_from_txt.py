@@ -38,9 +38,16 @@ z_tx = txList[ii_tx]
 ascan_in = ascan()
 ascan_in.load_from_hdf(fname_hdf=fname_hdf)
 tx_signal_in = ascan_in.tx_signal
-tx_spectrum = tx_signal_in.get_spectrum()
-freq_space = tx_signal_in.get_freq_space()
-freq = freq_space[ii_freq]
+#tx_spectrum = tx_signal_in.get_spectrum()
+#freq_space = tx_signal_in.get_freq_space()
+
+pulse_tx = tx_signal_in.pulse.real
+spectrum = util.doFFT(np.flip(pulse_tx))
+dt = tx_signal_in.dt
+nSamples = tx_signal_in.nSamples
+df = 1./(dt*nSamples)
+freq = tx_signal_in.freq_plus
+freq_ii = freq[ii_freq]
 
 if np.any(np.isnan(nprof_data) == True) == True:
     print('error, undefined values of ref index array!')
@@ -50,10 +57,10 @@ suffix = fname_spectrum[-3:]
 
 if suffix == 'npy':
     run_ascan_rx(fname_config=fname_config, n_profile=nprof_data, z_profile=zprof_data,
-             z_tx=z_tx, freq=freq, fname_hdf=fname_hdf, fname_npy=fname_spectrum)
+             z_tx=z_tx, freq=freq_ii, fname_hdf=fname_hdf, fname_npy=fname_spectrum)
 elif suffix == 'txt':
     run_ascan_rx_txt(fname_config=fname_config, n_profile=nprof_data, z_profile=zprof_data,
-             z_tx=z_tx, freq=freq, fname_hdf=fname_hdf, fname_txt=fname_spectrum)
+             z_tx=z_tx, freq=freq_ii, fname_hdf=fname_hdf, fname_txt=fname_spectrum)
 else:
     print('Wrong file ending', suffix, ' for ', fname_spectrum, ', you have to use npy or txt')
     sys.exit()
