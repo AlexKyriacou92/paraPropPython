@@ -41,8 +41,10 @@ def run_ascan_rx(fname_config, n_profile, z_profile, z_tx, freq_in, fname_hdf, f
     ascan_in = ascan()
     ascan_in.load_from_hdf(fname_hdf=fname_hdf)
     tx_signal_in = ascan_in.tx_signal
+
     pulse_tx = tx_signal_in.pulse.real
     spectrum = util.doFFT(np.flip(pulse_tx))
+
     dt = tx_signal_in.dt
     nSamples = tx_signal_in.nSamples
     df = 1. / (dt * nSamples)
