@@ -134,8 +134,8 @@ for ii_tx in range(nTx):
     z_tx = txList[ii_tx]
     for ii_freq in range(ii_min, ii_max):
         freq_ii = freq_plus[ii_freq]
-        fname_txt_i = fname_body + '_' + str(ii_freq) + '.txt'
-        print('create job for f = ', freq_ii*1e3, ' MHz')
+        fname_txt_i = fname_body + '_' + str(ii_tx).zfill(2) + '_' + str(ii_freq) + '.txt'
+        print('create job for, z_tx = ', z_tx, ' m, f = ', freq_ii*1e3, ' MHz')
 
         line = str(ii_tx) + '\t' + str(ii_freq) + '\t' + str(round(freq_ii,3)) + '\t' + fname_txt_i + '\n'
         fout_list.write(line)
