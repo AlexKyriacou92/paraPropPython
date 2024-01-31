@@ -72,6 +72,7 @@ with h5py.File(fname_hdf, 'a') as hdf_in:
 #TODO: DELETE INDIVIDUAL NPY FILES
 #TODO: DELETE OUT FILES
 
+'''
 with open(fname_list) as fin_list2:
     for _ in range(3):
         next(fin_list2)
@@ -84,3 +85,4 @@ with open(fname_list) as fin_list2:
 
         os.system('rm -f ' + fname_spectrum_ii)
 os.system('rm -f ' + dir_sim_path + '.out')
+'''
