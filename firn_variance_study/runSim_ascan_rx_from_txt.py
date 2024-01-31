@@ -60,7 +60,7 @@ if suffix == 'npy':
              z_tx=z_tx, freq=freq_ii, fname_hdf=fname_hdf, fname_npy=fname_spectrum)
 elif suffix == 'txt':
     run_ascan_rx_txt(fname_config=fname_config, n_profile=nprof_data, z_profile=zprof_data,
-             z_tx=z_tx, freq=freq_ii, fname_hdf=fname_hdf, fname_txt=fname_spectrum)
+             z_tx=z_tx, freq_in=freq_ii, fname_hdf=fname_hdf, fname_txt=fname_spectrum)
 else:
     print('Wrong file ending', suffix, ' for ', fname_spectrum, ', you have to use npy or txt')
     sys.exit()
