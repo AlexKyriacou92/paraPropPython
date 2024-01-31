@@ -757,7 +757,7 @@ def create_profile(zprof_out, nprof_genes, zprof_genes, nprof_override, zprof_ov
 
     return nprof_out
 
-def get_rx(x, z, rxList):
+def get_rx_id(x, z, rxList):
     rx_dr = []
     for rx in rxList:
         dx_sq = (x - rx.x)**2
@@ -766,5 +766,9 @@ def get_rx(x, z, rxList):
         dr = np.sqrt(dr_sq)
         rx_dr.append(dr)
     ii_rx = np.argmin(rx_dr)
+    return ii_rx
+
+def get_rx(x, z, rxList):
+    ii_rx = get_rx_id(x,z,rxList)
     rx_ii = rxList[ii_rx]
     return rx_ii
