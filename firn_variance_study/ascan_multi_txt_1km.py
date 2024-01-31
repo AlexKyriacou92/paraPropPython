@@ -82,7 +82,8 @@ if os.path.isdir(dir_sim) == False:
     os.system('mkdir ' + dir_sim)
 dir_sim_path = dir_sim + '/'
 
-sim_prefix = fname_nProf[:-4]
+sim_prefix = os.path.basename(fname_nProf)
+sim_prefix = sim_prefix[:-4]
 sim_name = sim_prefix
 fname_body = sim_prefix
 fname_hdf0 = fname_body + '.h5'
