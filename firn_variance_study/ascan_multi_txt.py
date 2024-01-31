@@ -118,9 +118,6 @@ nSamples = tx_signal_in.nSamples
 rxList = create_rxList_from_file(fname_config)
 nRx = len(rxList)
 
-ii_tx = 0
-z_tx = txList[ii_tx]
-
 #The Script will dispatch jobs for the Frequnecy Range (Min to Max, i.e. 50 MHz to 450 MHz)
 
 
@@ -136,31 +133,35 @@ fname_list = fname_body + '_list.txt'
 fout_list = open(dir_sim_path + fname_list, 'w')
 fout_list.write(dir_sim_path+ '\t' + fname_hdf0 + '\t' + fname_npy0 +'\n')
 fout_list.write(str(nTx) + '\t' + str(nRx) + '\t' + str(nSamples) + '\n')
-fout_list.write('ID_Freq\tFreq_GHz\tfname_npy\n')
+fout_list.write('ID_TX\tID_Freq\tFreq_GHz\tfname_npy\n')
 
-for ii_freq in range(ii_min, ii_max):
-    freq_ii = freq[ii_freq]
-    fname_txt_i = fname_body + '_' + str(ii_freq) + '.txt'
-    print('create job for f = ', freq_ii*1e3, ' MHz')
+for ii_tx in range(nTx):
+    #ii_tx = 0
+    z_tx = txList[ii_tx]
 
-    line = str(ii_freq) + '\t' + str(round(freq_ii,3)) + '\t' + fname_txt_i + '\n'
-    fout_list.write(line)
+    for ii_freq in range(ii_min, ii_max):
+        freq_ii = freq[ii_freq]
+        fname_txt_i = fname_body + '_' + str(ii_freq) + '.txt'
+        print('create job for f = ', freq_ii*1e3, ' MHz')
 
-    fname_npy_i = dir_sim_path + fname_txt_i
-    util.create_memmap2(fname_npy_i, dimensions=(nTx, nRx), data_type='complex')
+        line = str(ii_tx) + '\t' + str(ii_freq) + '\t' + str(round(freq_ii,3)) + '\t' + fname_txt_i + '\n'
+        fout_list.write(line)
 
-    cmd = 'python runSim_ascan_rx_from_txt.py ' + fname_config + ' '
-    cmd += fname_npy_i + ' ' + fname_hdf + ' ' + fname_nProf + ' '
-    cmd += str(ii_freq) + ' ' + str(ii_tx)
+        fname_npy_i = dir_sim_path + fname_txt_i
+        util.create_memmap2(fname_npy_i, dimensions=(nTx, nRx), data_type='complex')
 
-    suffix = 'fid_' + str(int(freq_ii*1e3))
-    jobname = dir_sim_path + suffix
-    fname_sh_in = 'sim_CFM_' + suffix + '.sh'
+        cmd = 'python runSim_ascan_rx_from_txt.py ' + fname_config + ' '
+        cmd += fname_npy_i + ' ' + fname_hdf + ' ' + fname_nProf + ' '
+        cmd += str(ii_freq) + ' ' + str(ii_tx)
 
-    fname_sh_out0 = 'sim_CFM_' + sim_name + '_' + suffix + '.out'
-    fname_sh_out = dir_sim_path + fname_sh_out0
+        suffix = 'fid_' + str(ii_tx).zfill(2) + '_' + str(int(freq_ii*1e3))
+        jobname = dir_sim_path + suffix
+        fname_sh_in = 'sim_CFM_' + suffix + '.sh'
 
-    make_job(fname_shell=fname_sh_in, fname_outfile=fname_sh_out, jobname=jobname, command=cmd)
-    submit_job(fname_sh_in)
-    os.system('rm ' + fname_sh_in)
+        fname_sh_out0 = 'sim_CFM_' + sim_name + '_' + suffix + '.out'
+        fname_sh_out = dir_sim_path + fname_sh_out0
+
+        make_job(fname_shell=fname_sh_in, fname_outfile=fname_sh_out, jobname=jobname, command=cmd)
+        submit_job(fname_sh_in)
+        os.system('rm ' + fname_sh_in)
 fout_list.close()

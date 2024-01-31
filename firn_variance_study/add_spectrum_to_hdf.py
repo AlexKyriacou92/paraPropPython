@@ -30,9 +30,10 @@ spectrum = util.create_memmap(fname_npy, dimensions=(nTx, nRx, nSamples), data_t
 
 for line in fin_list:
     cols_l = line.split()
-    ii_freq = int(cols_l[0])
-    freq_ii = float(cols_l[1])
-    fname_spectrum_ii = dir_sim_path + cols_l[2]
+    ii_tx = int(cols_l[0])
+    ii_freq = int(cols_l[1])
+    freq_ii = float(cols_l[2])
+    fname_spectrum_ii = dir_sim_path + cols_l[3]
 
     if fname_spectrum_ii[-3:] == 'npy':
         spectrum_i = np.load(fname_spectrum_ii, 'r')
@@ -52,7 +53,7 @@ for line in fin_list:
                 amp_rx_im = float(cols[3])
                 amp_rx = amp_rx_re + 1j*amp_rx_im
 
-                spectrum_i[0,jj_rx] = amp_rx
+                spectrum_i[ii_tx,jj_rx] = amp_rx
                 jj_rx += 1
             spectrum[:, :, ii_freq] = spectrum_i
 
