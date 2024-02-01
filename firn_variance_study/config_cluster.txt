@@ -1,7 +1,16 @@
 [CLUSTER]
 NODES_MIN = 1
 NODES_MAX = 1
-PARTITION = 'physastro'
+PARTITION = physastro
+TASKS = 1
+NCPUS = 1
 DAYS = 0
 HOURS = 1
-MEMORY = 10000
+MEMORY = 5000
+
+[JOB]
+prefix = summit_job
+mpi = None
+operator = python
+script = runSim_impulse.py
+arg = config_ICRC_summit.txt share/greenland_simple.txt greenland_simple_small.h5
