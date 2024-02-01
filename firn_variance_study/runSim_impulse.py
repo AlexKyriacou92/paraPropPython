@@ -22,7 +22,7 @@ if len(sys.argv) == 4:
     fname_nprof = sys.argv[2]
     fname_nprof_split = fname_nprof.split('.')
     suffix = fname_nprof_split[-1]
-    if suffix == 'h5' or suffix == 'hdf5'
+    if suffix == 'h5' or suffix == 'hdf5':
         ii_select = int(sys.argv[3])
     elif suffix == 'txt':
         fname_out = sys.argv[3]
