@@ -279,19 +279,27 @@ class ascan:
         input_hdf.close()
 
     def save_spectrum(self, fname_npy):
-        spectrum = np.load(fname_npy, 'r')
-        self.spectrum_array = spectrum
-        self.ascan_array = np.zeros((self.nTX, self.nRX, self.nSamples),dtype='complex')
-        for i in range(self.nTX):
-            for j in range(self.nRX):
-                spectrum_ij = self.spectrum_array[i,j]
-                #spectrum_ishift = np.fft.ifftshift(spectrum_ij)
-                spectrum_ij_flip = np.flip(spectrum_ij)
-                ascan_ij = np.fft.ifft(spectrum_ij_flip)
-                self.ascan_array[i,j] = ascan_ij
-        with h5py.File(self.fname, 'r+') as hdf_in:
-            hdf_in.create_dataset('rxSpectrum', data=self.spectrum_array)
-            hdf_in.create_dataset('rxSignal', data=self.ascan_array)
+        with h5py.File(self.fname, 'r') as input_hdf:
+            if ('rxSpectrum' in input_hdf.keys() == False) and ('rxSignal' in input_hdf.keys() == False):
+                spectrum = np.load(fname_npy, 'r')
+                self.spectrum_array = spectrum
+                self.ascan_array = np.zeros((self.nTX, self.nRX, self.nSamples),dtype='complex')
+                for i in range(self.nTX):
+                    for j in range(self.nRX):
+                        spectrum_ij = spectrum[i,j]
+                        ascan_ij = np.flip(util.doIFFT(spectrum_ij))
+                        self.ascan_array[i,j] = ascan_ij
+                        self.spectrum_array[i,j] = spectrum_ij #TODO: Check if spectrum needs to be flipped
+                with h5py.File(self.fname, 'a') as hdf_in:
+                    if ('rxSpectrum' in hdf_in.keys()) and ('rxSignal' in hdf_in.keys()):
+                        hdf_in['rxSpectrum'][:,:,:] = self.spectrum_array[:,:,:]
+                        hdf_in['rxSignal'][:,:,:] = self.ascan_array[:,:,:]
+                    else:
+                        hdf_in.create_dataset('rxSpectrum', data=self.spectrum_array)
+                        hdf_in.create_dataset('rxSignal', data=self.ascan_array)
+            else:
+                print('RX spectra and signals already in HDF5 file')
+                pass
 
     def load_spectrum(self, spectrum):
         self.spectrum_array = spectrum
