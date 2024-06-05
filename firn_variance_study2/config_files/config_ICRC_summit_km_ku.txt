@@ -1,0 +1,32 @@
+[INPUT]
+sim_mode = pseudo
+fname_pseudodata = share/guliya.txt
+prefix = summit
+
+
+[GEOMETRY]
+iceDepth = 1800.0
+iceLength = 5000.0
+dx = 1.0
+dz = 0.2
+airHeight = 100.0
+
+[TX_SIGNAL]
+amplitude = 1.0
+freq_centre = 0.15
+bandwidth = 0.15
+t_centre = 50.0
+t_max = 1000.0
+dt = 1.0
+freqMin = 0.05
+freqMax = 0.45
+noise = 1e-5
+
+[TRANSMITTER]
+fname_transmitters = tx_list_deep.txt
+fname_IR = eff_l_vpol_antenna_RNO_G.txt
+
+[RECEIVER]
+fname_receivers = rx_list_deep.txt
+noise = 1e-5
+fname_IR = eff_l_vpol_antenna_RNO_G.txt
