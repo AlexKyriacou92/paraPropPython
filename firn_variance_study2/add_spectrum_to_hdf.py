@@ -56,33 +56,5 @@ for line in fin_list:
                 spectrum_i[ii_tx,jj_rx] = amp_rx
                 jj_rx += 1
             spectrum[:, :, ii_freq] = spectrum_i
-
-'''
-print(fname_hdf)
-with h5py.File(fname_hdf, 'a') as hdf_in:
-    hdf_in.create_dataset('rxSpectrum', data=spectrum)
-    pulse_arr = np.zeros((nTx, nRx, nSamples),dtype='complex')
-    for i in range(nTx):
-        for j in range(nRx):
-            spectrum_ij = spectrum[i,j]
-            spectrum_ij_flip = np.flip(spectrum_ij)
-            pulse_rx = np.fft.ifft(spectrum_ij_flip)
-            pulse_rx[i,j] = pulse_rx
-    hdf_in.create_dataset('rxSignal', data=pulse_arr)
-'''
-#TODO: DELETE INDIVIDUAL NPY FILES
-#TODO: DELETE OUT FILES
-
-
-with open(fname_list) as fin_list2:
-    for _ in range(3):
-        next(fin_list2)
-    for line in fin_list2:
-        cols_l = line.split()
-        cols_l = line.split()
-        ii_freq = int(cols_l[0])
-        freq_ii = float(cols_l[1])
-        fname_spectrum_ii = dir_sim_path + cols_l[2]
-
-        os.system('rm -f ' + fname_spectrum_ii)
-os.system('rm -f ' + dir_sim_path + '.out')
+    os.system('rm -f ' + fname_spectrum_ii)
+os.system('rm -f ' + dir_sim_path + ' *.out')
