@@ -115,7 +115,8 @@ for ii_tx in range(nTx):
     for ii_freq in range(ii_min, ii_max):
         freq_ii = freq_plus[ii_freq]
         fname_txt_i = fname_body + '_' + str(ii_tx).zfill(2) + '_' + str(ii_freq) + '.txt'
-        fname_txt_i = os.path.join(dir_sim_path, fname_txt_i)
+        fname_txt_i = fname_txt_i
+        fname_txt_path = os.path.join(dir_sim_path, fname_txt_i)
         print('create job for, z_tx = ', z_tx, ' m, f = ', freq_ii*1e3, ' MHz')
 
         line = str(ii_tx) + '\t' + str(ii_freq) + '\t' + str(round(freq_ii,3)) + '\t' + fname_txt_i + '\n'
@@ -125,7 +126,7 @@ for ii_tx in range(nTx):
         #util.create_memmap2(fname_npy_i, dimensions=(nTx, nRx), data_type='complex')
 
         cmd = 'python runSim_ascan_rx_from_txt.py ' + fname_config + ' '
-        cmd += fname_txt_i + ' ' + fname_hdf + ' ' + fname_nprof + ' '
+        cmd += fname_txt_path + ' ' + fname_hdf + ' ' + fname_nprof + ' '
         cmd += str(ii_freq) + ' ' + str(ii_tx)
 
         suffix = 'fid_' + str(ii_tx).zfill(2) + '_' + str(int(freq_ii*1e3))
