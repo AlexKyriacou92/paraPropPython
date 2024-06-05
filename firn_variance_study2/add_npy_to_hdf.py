@@ -8,7 +8,6 @@ import configparser
 from numpy import exp, log
 import matplotlib.pyplot as pl
 from makeDepthScan import depth_scan_impulse_smooth
-from ku_scripting import *
 
 sys.path.append('../')
 from paraPropPython import paraProp as ppp
@@ -30,7 +29,7 @@ for file in path_list:
     if file.endswith('.h5'):
         hdf_list.append(os.path.join(path2sim,file))
         file_npy = file[:-3] + '.npy'
-        npy_list.append(file_npy)
+        npy_list.append(os.path.join(path2sim,file_npy))
 
 nFiles = len(hdf_list)
 
