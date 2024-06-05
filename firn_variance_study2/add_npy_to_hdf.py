@@ -28,7 +28,7 @@ npy_list = []
 path_list = os.listdir(path2sim)
 for file in path_list:
     if file.endswith('.h5'):
-        hdf_list.append(file)
+        hdf_list.append(os.path.join(path2sim,file))
         file_npy = file[:-3] + '.npy'
         npy_list.append(file_npy)
 
