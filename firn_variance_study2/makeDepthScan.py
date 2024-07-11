@@ -105,27 +105,6 @@ def run_ascan_rx_txt(fname_config, n_profile, z_profile, z_tx, freq_in, fname_hd
             line = str(rx_ii.x) + '\t' + str(rx_ii.z) + '\t' + str(amp_rx.real) + '\t' + str(amp_rx.imag) + '\n'
             fout.write(line)
 
-'''
-def ascan(fname_config, n_profile, z_profile, z_tx, x_rx, z_rx): #TODO: Add Output File
-    tx_signal = create_tx_signal(fname_config)
-    tx_signal.get_gausspulse()
-    tx_signal.add_gaussian_noise()
-    rxList = []
-    rx_1 = rx(x=x_rx, z=z_rx)
-    sourceDepth = z_tx
-    rxList.append(rx_1)
-
-    sim = create_sim(fname_config)
-    sim.set_n(nVec=n_profile, zVec=z_profile)  # Set Refractive Index Profile
-    sim.set_dipole_source_profile(tx_signal.frequency, sourceDepth)  # Set Source Profile
-    sim.set_td_source_signal(tx_signal.pulse, tx_signal.dt)  # Set transmitted signal
-    print('solving PE')
-    sim.do_solver(rxList, freqMin=tx_signal.freqMin, freqMax=tx_signal.freqMax)
-
-    rx_out = rxList[0]
-    signal_out = rx_out.get_signal()
-    return signal_out
-'''
 def depth_scan_impulse(fname_config, n_profile, z_profile, fname_out=None):
     tx_signal = create_tx_signal(fname_config)
     tx_signal.set_impulse()
