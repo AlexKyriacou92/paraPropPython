@@ -37,7 +37,9 @@ def create_pulse_askaryan_config(fname_config):
     tmax = tx_signal_out.tmax
     t_center = tx_signal_out.t_centre
 
-    pulse_ask_out, tspace_ask = create_pulse_askaryan(Esh=E_nu_TeV, dtheta_v=dtheta_v, R_alpha=R_alpha, t_min=-1*t_center/1e3, t_max=(tmax-t_center)/1e3)
+    pulse_ask_out, tspace_ask = create_pulse_askaryan(Esh=E_nu_TeV, dtheta_v=dtheta_v, R_alpha=R_alpha,
+                                                      t_min=-1*t_center/1e3, t_max=(tmax-t_center)/1e3,
+                                                      fs=tx_signal_out.fsample*1e3)
     pulse_ask_interp = np.interp(tspace, tspace_ask, pulse_ask_out)
     tx_signal_out.set_pulse(pulse_ask_interp, tspace)
     return tx_signal_out
