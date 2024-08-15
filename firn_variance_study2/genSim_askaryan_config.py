@@ -67,7 +67,7 @@ config.read(fname_config)
 fname_nprof = config['REFRACTIVE_INDEX']['fname_profile']
 
 nprof_data, zprof_data = util.get_profile_from_file(fname_nprof)
-dir_sim = config['OUTPUT']['CFM_ask']
+dir_sim = config['OUTPUT']['path2output']
 if os.path.isdir(dir_sim) == False:
     os.system('mkdir ' + dir_sim)
 dir_sim_path = dir_sim + '/'
