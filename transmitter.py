@@ -116,6 +116,9 @@ class tx_signal:
         self.nSamples = len(pulse_data)
         self.tspace = tspace_pulse
         self.freq_space = np.fft.fftfreq(self.nSamples, self.dt)
+        self.spectrum_plus = util.doFFT(np.flip(self.pulse))
+        self.freq_plus = np.arange(0, 1/self.dt, self.df) #Positive frequency space (0 to 2 f_nyq)
+
         return self.pulse
 
     def do_impulse_response(self, IR, IR_freq): #TODO: APPLY SPECTRUM PLUS
