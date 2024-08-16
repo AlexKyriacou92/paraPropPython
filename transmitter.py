@@ -117,7 +117,7 @@ class tx_signal:
         self.tspace = tspace_pulse
         self.freq_space = np.fft.fftfreq(self.nSamples, self.dt)
         self.spectrum_plus = util.doFFT(np.flip(self.pulse))
-        self.freq_plus = np.arange(0, 1/self.dt, self.df) #Positive frequency space (0 to 2 f_nyq)
+        self.freq_plus = np.arange(0, self.df*self.nSamples, self.df) #Positive frequency space (0 to 2 f_nyq)
 
         return self.pulse
 
