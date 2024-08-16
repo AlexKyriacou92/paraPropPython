@@ -143,7 +143,7 @@ for ii_tx in range(nTx):
 
         make_job(fname_shell=fname_sh_in, fname_outfile=fname_sh_out, jobname=jobname, command=cmd)
         submit_job(fname_sh_in)
-        if ii_tx > 0 and ii_freq > 0:
+        if ii_freq > 0:
             os.system('rm ' + fname_sh_in)
 
 fout_list.close()
