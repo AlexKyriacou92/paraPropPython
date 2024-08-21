@@ -6,7 +6,7 @@ from scipy.interpolate import interp1d
 from scipy import signal
 from scipy.signal.windows import tukey
 # A. Kyriacou
-
+from math import pi
 '''
 This module defines the transmitter and transmitted signal
 Trasnmitter acts as the source for the radio emission that is observed at the receiver points
@@ -86,6 +86,33 @@ class tx_signal:
         frac_bandwidth = self.bandwidth / self.frequency
         pulse_r = self.amplitude * signal.gausspulse(self.tspace - self.t_centre, fc=self.frequency, bw=frac_bandwidth, bwr=suppression)
         self.pulse = pulse_r
+        self.spectrum = np.fft.fft(self.pulse)
+        self.spectrum_plus = util.doFFT(np.flip(self.pulse))
+        return self.pulse
+
+    def get_gausspulse_meep(self):
+        '''
+        Formula taken from https://meep.readthedocs.io/en/master/Python_User_Interface/#gaussiansource
+        :param t: time
+        :param fc: central frequency
+        :param fwidth: frquency width
+        :param t0: start time
+        :param a: amplitude
+
+        :return: gaussian pulse
+        '''
+        fc = self.frequency
+        fwidth = self.bandwidth
+        a = self.amplitude
+        t = self.tspace
+        t0 = self.t_centre
+
+        omega = 2 * pi * fc
+        width = 1 / fwidth
+        pulse_out_0 = a * np.exp(-1j * omega * t - ((t - t0) ** 2) / (2 * width ** 2))
+        pulse_out_d = np.gradient(pulse_out_0)
+        pulse_out = ((-1j * omega) ** -1) * pulse_out_d
+        self.pulse = pulse_out.real
         self.spectrum = np.fft.fft(self.pulse)
         self.spectrum_plus = util.doFFT(np.flip(self.pulse))
         return self.pulse
