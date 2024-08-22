@@ -21,6 +21,8 @@ from data import save_field_to_file, ascan, create_transmitter_array_from_file
 sys.path.append('inversion/')
 #from objective_functions import misfit_function_ij
 
+from Askaryan_Signal import create_pulse as create_pulse_askaryan, TeV
+
 def run_field(fname_config, n_profile, z_profile, z_tx, freq, fname_out):
     sim = create_sim(fname_config)
     sim.set_n(nVec=n_profile, zVec=z_profile)  # Set Refractive Index Profile
@@ -351,6 +353,77 @@ def depth_scan_cw(fname_config, n_profile, z_profile, fname_out=None):
         hdf_output.close()
     return bscan_npy
 
+def depth_scan_askaryan(fname_config, n_profile, z_profile, fname_out=None):
+    config = configparser.ConfigParser()
+    config.read(fname_config)
+    ask_config = config['ASKARYAN']
+
+    dtheta_v = float(ask_config['dtheta_v'])
+    E_nu_eV = float(ask_config['showerEnergy'])
+    E_nu_TeV = E_nu_eV / TeV
+    R_alpha = float(ask_config['attenuationEquivalent'])
+    tx_signal_out = create_tx_signal(fname_config)
+    tspace = tx_signal_out.tspace
+    tmax = tx_signal_out.tmax
+    t_center = tx_signal_out.t_centre
+
+    pulse_ask_out, tspace_ask = create_pulse_askaryan(Esh=E_nu_TeV, dtheta_v=dtheta_v, R_alpha=R_alpha,
+                                                      t_min=-1 * t_center / 1e3, t_max=(tmax - t_center) / 1e3,
+                                                      fs=tx_signal_out.fsample * 1e3)
+    pulse_ask_interp = np.interp(tspace, tspace_ask, pulse_ask_out)
+    tx_signal_out.set_pulse(pulse_ask_interp, tspace)
+
+    tx_signal_out.add_gaussian_noise()
+    rxList0 = create_rxList_from_file(fname_config)
+    tx_depths = create_transmitter_array(fname_config)
+
+    nDepths = len(tx_depths)
+    nReceivers = len(rxList0)
+
+    bscan_npy = np.zeros((nDepths, nReceivers, tx_signal_out.nSamples), dtype='complex')
+
+    print('Running tx scan')
+    for i in range(nDepths):
+        tstart = time.time()
+        sourceDepth = tx_depths[i]
+        print('z = ', sourceDepth)
+
+        rxList = rxList0
+
+        sim = create_sim(fname_config)
+        sim.set_n(nVec=n_profile, zVec=z_profile)  # Set Refractive Index Profile
+        sim.set_dipole_source_profile(tx_signal_out.frequency, sourceDepth)  # Set Source Profile
+        sim.set_td_source_signal(tx_signal_out.pulse, tx_signal_out.dt)  # Set transmitted signal
+        print('solving PE')
+        sim.do_solver(rxList, freqMin=tx_signal_out.freqMin, freqMax=tx_signal_out.freqMax)
+        print('complete')
+        tend = time.time()
+        for j in range(nReceivers):
+            rx_j = rxList[j]
+            rx_j.add_gaussian_noise(noise_amplitude=rx_j.noise_amplitude)
+            rx_sig = rx_j.get_signal()
+            bscan_npy[i,j] = rx_sig
+        if i == 0 and fname_out != None:
+            hdf_output = create_hdf_FT(fname=fname_out, sim=sim,
+                                       tx_signal=tx_signal_out, tx_depths=tx_depths, rxList=rxList)
+
+        duration_s = (tend - tstart)
+        duration = datetime.timedelta(seconds=duration_s)
+        remainder_s = duration_s * (nDepths - (i + 1))
+        remainder = datetime.timedelta(seconds=remainder_s)
+
+        completed = round(float(i + 1) / float(nDepths) * 100, 2)
+        print(completed, ' % completed, duration:', duration)
+        print('remaining steps', nDepths - (i + 1), '\nremaining time:', remainder, '\n')
+        now = datetime.datetime.now()
+        tstamp_now = now.timestamp()
+        end_time = datetime.datetime.fromtimestamp(tstamp_now + remainder_s)
+        print('completion at:', end_time)
+        print('')
+    if fname_out != None:
+        hdf_output.create_dataset('bscan_sig', data=bscan_npy)
+        hdf_output.close()
+    return bscan_npy
 def depth_scan(fname_config, n_profile, z_profile, fname_out=None):
     tx_signal = create_tx_signal(fname_config)
     tx_signal.get_gausspulse()
