@@ -8,7 +8,7 @@ import configparser
 from numpy import exp, log
 import matplotlib.pyplot as pl
 from sys import argv
-import util_nuRadioMC
+#import util_nuRadioMC
 sys.path.append('../')
 from paraPropPython import paraProp as ppp
 import receiver as rx
@@ -58,7 +58,7 @@ for i in range(nSims):
     print(i, fname_hdf_i)
     if i == 0:
         ascan_0 = ascan_i
-        travel_times, amp_list, path_lengths, solution_types = util_nuRadioMC.get_ray_points(0, z_tx, x_rx, z_rx, 'analytic')
+        #travel_times, amp_list, path_lengths, solution_types = util_nuRadioMC.get_ray_points(0, z_tx, x_rx, z_rx, 'analytic')
 
     pulse_rx = ascan_i.get_ascan(z_tx=z_tx, x_rx=x_rx, z_rx=z_rx)
     pulse_list.append(pulse_rx)
@@ -70,8 +70,10 @@ for i in range(nSims):
     fspace = np.fft.fftfreq(ascan_i.nSamples, ascan_i.dt)
     fspace = np.fft.fftshift(fspace)
     fspace_list.append(fspace)
+'''
 if len(travel_times) >= 2:
     dt = travel_times[1]-travel_times[0]
+'''
 
 tx_sig = ascan_0.tx_signal.pulse
 fig = pl.figure(figsize=(10,6),dpi=150)
@@ -117,8 +119,10 @@ ax.set_ylabel('E field amplitude [mV]',fontsize=fontsize)
 ax.legend(fontsize=fontsize)
 ax.grid()
 #ax.axvline(tspace[ii0],color='k')
+'''
 if len(travel_times) >= 2:
     ax.axvline(tspace[ii0] + dt,color='k')
+'''
 ax.set_xlim(0,1000)
 
 prefix = 'rx_trace_ztx_' + str(int(z_tx)) + 'm_xrx_' + str(int(x_rx)) + 'm_zrx_' + str(int(z_rx)) + 'm'
