@@ -1,0 +1,9 @@
+[DATAFILES]
+FNAME_1 = CFM_ask/Prof_CFM_2019_1.h5
+
+[LABELS]
+label1 = 2019 January
+
+[RX]
+Z_RX = 100.0
+X_RX = 600.0
