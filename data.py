@@ -234,73 +234,107 @@ def create_ascan_hdf(fname_config, tx_signal, nprof_data, zprof_data, fname_outp
 
 class ascan:
     def load_from_hdf(self, fname_hdf):
-        input_hdf = h5py.File(fname_hdf, 'r')
-        self.fname = fname_hdf
-        self.iceDepth = float(input_hdf.attrs["iceDepth"])
-        self.iceLength = float(input_hdf.attrs["iceLength"])
-        self.airHeight = float(input_hdf.attrs["airHeight"])
-        self.dx = float(input_hdf.attrs["dx"])
-        self.dz = float(input_hdf.attrs["dz"])
+        with h5py.File(fname_hdf, 'r') as input_hdf:
+            self.fname = fname_hdf
+            self.iceDepth = float(input_hdf.attrs["iceDepth"])
+            self.iceLength = float(input_hdf.attrs["iceLength"])
+            self.airHeight = float(input_hdf.attrs["airHeight"])
+            self.dx = float(input_hdf.attrs["dx"])
+            self.dz = float(input_hdf.attrs["dz"])
 
-        Amplitude = float(input_hdf.attrs["Amplitude"])
-        freqCentral = float(input_hdf.attrs["freqCentral"])
-        freqMin = float(input_hdf.attrs["freqMin"])
-        Bandwidth = float(input_hdf.attrs['Bandwidth'])
-        freqMax = float(input_hdf.attrs["freqMax"])
-        tCentral = float(input_hdf.attrs["tCentral"])
-        tSample = float(input_hdf.attrs["tSample"])
-        dt = float(input_hdf.attrs["dt"])
+            Amplitude = float(input_hdf.attrs["Amplitude"])
+            freqCentral = float(input_hdf.attrs["freqCentral"])
+            freqMin = float(input_hdf.attrs["freqMin"])
+            Bandwidth = float(input_hdf.attrs['Bandwidth'])
+            freqMax = float(input_hdf.attrs["freqMax"])
+            tCentral = float(input_hdf.attrs["tCentral"])
+            tSample = float(input_hdf.attrs["tSample"])
+            dt = float(input_hdf.attrs["dt"])
 
-        self.tx_signal = tx_signal(amplitude=Amplitude, frequency=freqCentral, bandwidth=Bandwidth, freqMin=freqMin,
-                                   freqMax=freqMax, t_centre=tCentral, dt=dt, tmax=tSample)
-        self.tx_signal.pulse = np.array(input_hdf.get('signalPulse'))
-        self.tx_signal.spectrum = np.array(input_hdf.get('signalSpectrum'))
-        self.tx_depths = np.array(input_hdf.get('source_depths'))
+            self.tx_signal = tx_signal(amplitude=Amplitude, frequency=freqCentral, bandwidth=Bandwidth, freqMin=freqMin,
+                                       freqMax=freqMax, t_centre=tCentral, dt=dt, tmax=tSample)
+            self.tx_signal.pulse = np.array(input_hdf.get('signalPulse'))
+            self.tx_signal.spectrum = np.array(input_hdf.get('signalSpectrum'))
+            self.tx_depths = np.array(input_hdf.get('source_depths'))
 
-        rxList_positions = np.array(input_hdf.get('rxList'))
-        rxList = []
-        for i in range(len(rxList_positions)):
-            rx_i = rx(x=rxList_positions[i,0], z= rxList_positions[i,1])
-            rxList.append(rx_i)
-        self.rxList = rxList
-        self.tspace = self.tx_signal.tspace
-        self.nSamples = self.tx_signal.nSamples
-        self.dt = self.tx_signal.dt
+            rxList_positions = np.array(input_hdf.get('rxList'))
+            rxList = []
+            for i in range(len(rxList_positions)):
+                rx_i = rx(x=rxList_positions[i,0], z= rxList_positions[i,1])
+                rxList.append(rx_i)
+            self.rxList = rxList
+            self.tspace = self.tx_signal.tspace
+            self.nSamples = self.tx_signal.nSamples
+            self.dt = self.tx_signal.dt
 
-        self.nRX = len(self.rxList)
-        self.nTX = len(self.tx_depths)
-        self.n_profile = np.array(input_hdf.get('n_profile')) # 2 x nZ array -> includes sim.z and sim.n(x=0,z)
-        self.z_profile = np.array(input_hdf.get('z_profile'))
+            self.nRX = len(self.rxList)
+            self.nTX = len(self.tx_depths)
+            self.n_profile = np.array(input_hdf.get('n_profile')) # 2 x nZ array -> includes sim.z and sim.n(x=0,z)
+            self.z_profile = np.array(input_hdf.get('z_profile'))
 
-        if 'rxSpectrum' in input_hdf.keys():
-            self.spectrum_array = np.array(input_hdf.get('rxSpectrum'))
-        if 'rxSignal' in input_hdf.keys():
-            self.ascan_array = np.array(input_hdf.get('rxSignal'))
-        input_hdf.close()
-
+            if 'rxSpectrum' in input_hdf.keys():
+                self.spectrum_array = np.array(input_hdf.get('rxSpectrum'))
+            if 'rxSignal' in input_hdf.keys():
+                self.ascan_array = np.array(input_hdf.get('rxSignal'))
     def save_spectrum(self, fname_npy):
+        rx_spec_bool = True
+        rx_sig_bool = True
         with h5py.File(self.fname, 'r') as input_hdf:
-            if ('rxSpectrum' in input_hdf.keys() == False) and ('rxSignal' in input_hdf.keys() == False):
+            rx_spec_bool = 'rxSpectrum' in input_hdf.keys()
+            rx_sig_bool = 'rxSignal' in input_hdf.keys()
+            print('is spectrum in input?', rx_spec_bool, 'signal?', rx_sig_bool)
+
+            if rx_sig_bool == False and rx_spec_bool == False:
+                print('Adding Rx Spectrum and Signal to HDF')
                 spectrum = np.load(fname_npy, 'r')
-                self.spectrum_array = spectrum
+                self.spectrum_array = np.zeros((self.nTX, self.nRX, self.nSamples),dtype='complex')
                 self.ascan_array = np.zeros((self.nTX, self.nRX, self.nSamples),dtype='complex')
                 for i in range(self.nTX):
                     for j in range(self.nRX):
                         spectrum_ij = spectrum[i,j]
-                        ascan_ij = np.flip(util.doIFFT(spectrum_ij))
-                        self.ascan_array[i,j] = ascan_ij
-                        self.spectrum_array[i,j] = spectrum_ij #TODO: Check if spectrum needs to be flipped
-                with h5py.File(self.fname, 'a') as hdf_in:
-                    if ('rxSpectrum' in hdf_in.keys()) and ('rxSignal' in hdf_in.keys()):
-                        hdf_in['rxSpectrum'][:,:,:] = self.spectrum_array[:,:,:]
-                        hdf_in['rxSignal'][:,:,:] = self.ascan_array[:,:,:]
-                    else:
-                        hdf_in.create_dataset('rxSpectrum', data=self.spectrum_array)
-                        hdf_in.create_dataset('rxSignal', data=self.ascan_array)
+                        #ascan_ij = np.flip(util.doIFFT(spectrum_ij))
+                        ascan_ij = util.doIFFT(np.flip(spectrum_ij))
+                        if len(ascan_ij) == len(self.ascan_array[i,j]):
+                            self.ascan_array[i,j] = ascan_ij
+                            self.spectrum_array[i,j] = spectrum_ij #TODO: Check if spectrum needs to be flipped
+                        else:
+                            dN = len(self.ascan_array[i,j]) - len(ascan_ij)
+                            print('Warning, length of hdf5 ascan_array and npy array do not match')
+                            print('len(self.ascan_array[i,j])-len(ascan_ij) =', dN)
+                            if dN > 0:
+                                self.ascan_array[i, j,-dN] = ascan_ij
+                                self.spectrum_array[i, j,:-dN] = spectrum_ij
+                            elif dN < 0:
+                                self.ascan_array[i,j] = ascan_ij[:dN]
+                                self.spectrum_array[i,j] = spectrum_ij[:dN]
+
             else:
                 print('RX spectra and signals already in HDF5 file')
                 pass
-
+        if rx_sig_bool == False and rx_sig_bool == False:
+            with h5py.File(self.fname, 'a') as hdf_in:
+                if ('rxSpectrum' in hdf_in.keys()) and ('rxSignal' in hdf_in.keys()):
+                    hdf_in['rxSpectrum'][:, :, :] = self.spectrum_array[:, :, :]
+                    hdf_in['rxSignal'][:, :, :] = self.ascan_array[:, :, :]
+                else:
+                    hdf_in.create_dataset('rxSpectrum', data=self.spectrum_array)
+                    hdf_in.create_dataset('rxSignal', data=self.ascan_array)
+    def delete_spectrum(self):
+        with h5py.File(self.fname, 'a') as input_hdf:
+            rx_spec_bool = 'rxSpectrum' in input_hdf.keys()
+            rx_sig_bool = 'rxSignal' in input_hdf.keys()
+            if rx_sig_bool == True:
+                print('Deleting rxSignal')
+                del input_hdf['rxSignal']
+            else:
+                print('No rxSignal, pass')
+                pass
+            if rx_spec_bool == True:
+                print('Deleting rxSpectrum')
+                del input_hdf['rxSpectrum']
+            else:
+                print('No rxSpectrum, pass')
+                pass
     def load_spectrum(self, spectrum):
         self.spectrum_array = spectrum
         self.ascan_array = np.zeros((self.nTX, self.nRX, self.nSamples),dtype='complex')
@@ -422,11 +456,11 @@ def create_hdf_bscan(fname, sim, tx_signal, tx_depths, rx_ranges, rx_depths, com
         for j in range(nRX_z):
             rxArray[i,j,0] = rx_ranges[i]
             rxArray[i,j,1] = rx_depths[j]
-
+    nSamples2 = len(tx_signal.pulse)
     output_hdf.create_dataset("rxArray", data=rxArray)
     output_hdf.create_dataset('n_profile', data=n_profile_data)
     output_hdf.create_dataset("source_depths", data=tx_depths)
-    output_hdf.create_dataset('tspace', data=tx_signal.tspace)
+    output_hdf.create_dataset('tspace', data=np.linspace(0, tx_signal.dt*nSamples2, nSamples2))
     output_hdf.create_dataset('signalPulse', data=tx_signal.pulse)
     output_hdf.create_dataset('signalSpectrum', data=tx_signal.spectrum)
     output_hdf.create_dataset("rx_range", data= rx_ranges)
@@ -554,7 +588,10 @@ class bscan_rxList: #This one is a nTx x nRx dimension bscan
             rx_i = rx(x=rxList_positions[i,0], z= rxList_positions[i,1])
             rxList.append(rx_i)
         self.rxList = rxList
-        self.tspace = self.tx_signal.tspace
+
+        nSamples2 = len(self.tx_signal.pulse)
+        tspace2 = np.linspace(0, nSamples2*self.tx_signal.dt, nSamples2)
+        self.tspace = tspace2
         self.nSamples = self.tx_signal.nSamples
         self.dt = self.tx_signal.dt
 
