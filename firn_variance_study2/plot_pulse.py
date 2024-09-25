@@ -76,18 +76,38 @@ for i in range(nSims):
 if len(travel_times) >= 2:
     dt = travel_times[1]-travel_times[0]
 
-
+fontsize = 18
+labelsize = 14
 tx_sig = ascan_0.tx_signal.pulse
-fig = pl.figure(figsize=(10,6),dpi=150)
-ax = fig.add_subplot(111)
+fig = pl.figure(figsize=(8,12),dpi=100)
+ax1 = fig.add_subplot(211)
+ax2 = fig.add_subplot(212)
+#fig.suptitle('Source Signal',fontsize=fontsize)
+ax1.set_title('Pulse Amplitude $V_{tx}$',fontsize=fontsize)
+ax2.set_title('Spectrum Amplitude $A_{tx}$',fontsize=fontsize)
+
 if len(tspace_list[0]) != len(tx_sig.real):
     tspace_tx = np.linspace(0, max(tspace_list[0]), len(tx_sig))
-    ax.plot(tspace_tx, tx_sig.real,c='k')
+    ax1.plot(tspace_tx, tx_sig.real * 1000,c='k')
 else:
     tspace_tx = tspace_list[0]
-    ax.plot(tspace_tx, tx_sig.real,c='k')
+    ax1.plot(tspace_tx, tx_sig.real * 1000,c='k')
+fspace_tx = np.fft.rfftfreq(len(tspace_tx), tspace_tx[1]-tspace_tx[0])
+spec_tx = np.fft.rfft(tx_sig)
 
-ax.grid()
+ax1.set_xlabel('Time t [ns]',fontsize=fontsize)
+ax1.set_ylabel(r'$V_{tx}$ [mV/m]',fontsize=fontsize)
+ax1.grid()
+ax1.set_xlim(20,80)
+ax1.tick_params(axis='both', labelsize=labelsize)
+
+ax2.plot(fspace_tx, abs(spec_tx)*1000,c='k')
+ax2.set_xlabel('Frequency f [GHz]',fontsize=fontsize)
+ax2.set_ylabel(r'$A_{tx}$ [mV/m/GHz]',fontsize=fontsize)
+ax2.grid()
+ax2.tick_params(axis='both', labelsize=labelsize)
+ax2.set_xlim(0,1)
+fig.savefig('source_waveform.png', bbox_inches='tight')
 pl.show()
 
 fontsize=20
