@@ -150,7 +150,3 @@ fout_list.close()
 
 #Add Spectrrum to HDF file
 fname_npy = os.path.join(dir_sim_path, fname_npy0)
-
-ascan_sim = ascan()
-ascan_sim.load_from_hdf(fname_hdf=fname_hdf)
-ascan_sim.save_spectrum(fname_npy=fname_npy)
