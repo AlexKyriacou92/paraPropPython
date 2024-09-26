@@ -3,6 +3,7 @@ import sys
 import numpy as np
 import time
 import h5py
+from os.path import isfile
 
 sys.path.append('../')
 from data import ascan
@@ -40,21 +41,21 @@ for line in fin_list:
         spectrum[:, :, ii_freq] = spectrum_i
     elif fname_spectrum_ii[-3:] == 'txt':
         spectrum_i = np.zeros((nTx, nRx),dtype='complex')
+        if isfile(fname_spectrum_ii) == True:
+            with open(fname_spectrum_ii, 'r') as fin:
+                for _ in range(2):
+                    next(fin)
+                jj_rx = 0
+                for line in fin:
+                    cols = line.split()
+                    rx_x = float(cols[0])
+                    rx_z = float(cols[1])
+                    amp_rx_re = float(cols[2])
+                    amp_rx_im = float(cols[3])
+                    amp_rx = amp_rx_re + 1j*amp_rx_im
 
-        with open(fname_spectrum_ii, 'r') as fin:
-            for _ in range(2):
-                next(fin)
-            jj_rx = 0
-            for line in fin:
-                cols = line.split()
-                rx_x = float(cols[0])
-                rx_z = float(cols[1])
-                amp_rx_re = float(cols[2])
-                amp_rx_im = float(cols[3])
-                amp_rx = amp_rx_re + 1j*amp_rx_im
-
-                spectrum_i[ii_tx,jj_rx] = amp_rx
-                jj_rx += 1
-            spectrum[:, :, ii_freq] = spectrum_i
+                    spectrum_i[ii_tx,jj_rx] = amp_rx
+                    jj_rx += 1
+                spectrum[:, :, ii_freq] = spectrum_i
     os.system('rm -f ' + fname_spectrum_ii)
-os.system('rm -f ' + dir_sim_path + ' *.out')
+os.system('rm -f ' + dir_sim_path + '*.out')
