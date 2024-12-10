@@ -772,3 +772,15 @@ def get_rx(x, z, rxList):
     ii_rx = get_rx_id(x,z,rxList)
     rx_ii = rxList[ii_rx]
     return rx_ii
+
+def rotate_wvf(wvf, t, t0):
+    ii_t0 = findNearest(t, t0)
+    ii_max = np.argmax(wvf)
+    delta_ii = ii_t0 - ii_max
+    wvf_out = np.roll(wvf, delta_ii)
+    return wvf_out
+
+def cut_arr(y, x, xmin, xmax):
+    imin = findNearest(x, xmin)
+    imax = findNearest(x, xmax)
+    return y[imin:imax]
