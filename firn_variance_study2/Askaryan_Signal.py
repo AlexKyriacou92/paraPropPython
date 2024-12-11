@@ -55,12 +55,12 @@ def get_sigma_hadronic(E, f):
     f0 = 500.0 #MHz
     eps = log10(E)
     if E >= 1.0 and E < 100:
-        sigma_d = (f0/f) * (2.07 - 0.33*eps + 7.5e-2 * eps**2)
+        sigma_out = sigma_d * (f0/f) * (2.07 - 0.33*eps + 7.5e-2 * eps**2)
     elif E >= 100.0 and E < 100e3:
-        sigma_d = (f0/f) * (1.74 - 1.21e-2 * eps)
+        sigma_out = sigma_d * (f0/f) * (1.74 - 1.21e-2 * eps)
     elif E >= 100e3 and E < 10e6: # And E < 10e6 Tev or 10 EeV
-        sigma_d = (f0/f) * (4.23 - 0.785*eps + 5.5e-2 * eps**2)
-    sigma = deg2rad(sigma_d)
+        sigma_out = sigma_d * (f0/f) * (4.23 - 0.785*eps + 5.5e-2 * eps**2)
+    sigma = deg2rad(sigma_out)
     return sigma
 def E_field_on_cone(Esh, f):
     '''
