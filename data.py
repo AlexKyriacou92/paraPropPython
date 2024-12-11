@@ -10,9 +10,6 @@ import os
 from matplotlib import pyplot as pl
 import configparser
 import argparse
-
-
-
 def create_sim(fname_config): #Creates Simulation from config file using parser
     '''
     Creates paraProp simulation object (see paraPropPython.py) object from config file
