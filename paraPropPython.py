@@ -30,7 +30,7 @@ class paraProp:
     refDepth : float
         reference depth for simulation (m). Initialized to 1 m below surface
     """
-    def __init__(self, iceLength, iceDepth, dx, dz, airHeight=25, filterDepth=100, refDepth=1):
+    def __init__(self, iceLength, iceDepth, dx, dz, airHeight=25, filterDepth=100, refDepth=1, refIndex = None):
         ### spatial parameters ### 
         # x #
         self.x = np.arange(0, iceLength+dx, dx)
@@ -44,8 +44,12 @@ class paraProp:
         self.z = np.arange(-airHeight, iceDepth + dz, dz)
         self.zNum = len(self.z)
         self.dz = dz
-        self.refDepth = refDepth            
-        
+        if refIndex == None:
+            self.refDepth = refDepth
+            self.refIndex = None
+        else:
+            self.refDepth = None
+            self.refIndex = refIndex # Reference Index
         ### other simulation variables ###       
         # filter information #
         self.fNum0 = int(filterDepth / dz)
@@ -251,7 +255,11 @@ class paraProp:
             print('error! you must choose between nFunc, nVal and nVec')
             return -1
         ### set reference index of refraction ###
-        self.n0 = self.at_depth(self.n[:, 0], self.refDepth)
+        #self.n0 = self.at_depth(self.n[:, 0], self.refDepth)
+        if self.refIndex == None:
+            self.n0 = self.at_depth(self.n[:, 0], self.refDepth)
+        else:
+            self.n0 = self.refIndex
         self.n = np.transpose(self.n)
 
     def set_DEM(self, surf_val = None, func_DEM=None, vec_DEM = [], xVec= [], nAir=1.0003, mode = 'shift', interpolation='padding'):
