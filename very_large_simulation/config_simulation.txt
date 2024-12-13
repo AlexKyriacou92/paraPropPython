@@ -1,0 +1,34 @@
+[OUTPUT]
+prefix = ARA_sim_1model
+path2output=RNO_sims
+
+[GEOMETRY]
+iceDepth = 3000.0
+iceLength = 1500.0
+dx = 1.0
+dz = 0.1
+airHeight = 10.0
+
+[TX_SIGNAL]
+amplitude = 1.0
+freq_centre = 0.15
+bandwidth = 0.2
+t_centre = 1.0
+t_max = 1800.0
+dt = 0.25
+freqMin = 0.05
+freqMax = 0.5
+#noise = 1e-5
+fname_tx_signal = spunk_trace.txt
+
+[REFRACTIVE_INDEX]
+fname_profile = ref_profiles/ARA_single.txt
+
+[TRANSMITTER]
+fname_transmitters = tx_list_1.txt
+#fname_IR = eff_l_vpol_antenna_RNO_G.txt
+
+[RECEIVER]
+fname_receivers = rx_list_1km.txt
+#noise = 1e-5
+#fname_IR = eff_l_vpol_antenna_RNO_G.txt

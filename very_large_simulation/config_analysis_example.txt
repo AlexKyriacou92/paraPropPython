@@ -1,0 +1,9 @@
+[DATAFILES]
+FNAME_1 = nProf_CFM_2013_1.h5
+
+[LABELS]
+label1 = 2013 Jan
+
+[RX]
+Z_RX = 100.0
+X_RX = 600.0

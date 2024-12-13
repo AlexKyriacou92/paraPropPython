@@ -1,0 +1,42 @@
+[INPUT]
+sim_mode = pseudo
+fname_pseudodata = share/guliya.txt
+prefix = summit
+
+[OUTPUT]
+path2output=CFM_ask
+
+[GEOMETRY]
+iceDepth = 1000.0
+iceLength = 1000.0
+dx = 1.0
+dz = 0.1
+airHeight = 10.0
+
+[TX_SIGNAL]
+amplitude = 1.0
+freq_centre = 0.15
+bandwidth = 0.2
+t_centre = 50
+t_max = 1800.0
+dt = 1.0
+freqMin = 0.01
+freqMax = 0.5
+noise = 1e-5
+
+[ASKARYAN]
+dtheta_v = 2.5
+showerEnergy=1e18
+attenuationEquivalent=100.
+
+[REFRACTIVE_INDEX]
+fname_profile = ref_profiles/nProf_CFM_2019_1.txt
+
+[TRANSMITTER]
+fname_transmitters = tx_list_1.txt
+fname_IR = eff_l_vpol_antenna_RNO_G.txt
+
+[RECEIVER]
+fname_receivers = rx_list_deep.txt
+noise = 1e-5
+fname_IR = eff_l_vpol_antenna_RNO_G.txt
