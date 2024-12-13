@@ -119,12 +119,12 @@ fout_list.write(dir_sim_path+ '\t' + fname_hdf0 + '\t' + fname_npy0 +'\n')
 fout_list.write(str(nTx) + '\t' + str(nRx) + '\t' + str(nSamples) + '\n')
 fout_list.write('ID_TX\tID_Freq\tFreq_GHz\tfname_npy\n')
 
-ii_max2 = ii_min + 1
+#ii_max2 = ii_min + 1
 
 for ii_tx in range(nTx):
     z_tx = txList[ii_tx]
 
-    for ii_freq in range(ii_min, ii_max2):
+    for ii_freq in range(ii_min, ii_max):
         freq_ii = freq_plus[ii_freq]
 
         fname_txt_i = fname_body + '_' + str(ii_tx).zfill(2) + '_' + str(ii_freq) + '.txt'
