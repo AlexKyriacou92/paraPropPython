@@ -2,6 +2,7 @@ import datetime
 import numpy as np
 import sys
 import time
+import os
 from os.path import join
 
 sys.path.append('../')
@@ -28,13 +29,15 @@ dt = 1
 t_max = 3 * 1.8 * iceLength/0.3
 
 path2data = 'ascan_dir'
+if os.path.isdir(path2data) == False:
+    os.system('mkdir ' + path2data)
 
 d_rx = 10
 rx_ranges = np.arange(d_rx, iceLength, d_rx)
 rx_depths = np.arange(d_rx, iceDepth, d_rx)
 
 
-z_tx = [100.]
+z_tx = [50.]
 nTx = len(z_tx)
 
 for j in range(nTx):
