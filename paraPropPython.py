@@ -30,7 +30,7 @@ class paraProp:
     refDepth : float
         reference depth for simulation (m). Initialized to 1 m below surface
     """
-    def __init__(self, iceLength, iceDepth, dx, dz, airHeight=25, filterDepth=100, refDepth=1):
+    def __init__(self, iceLength, iceDepth, dx, dz, airHeight=25, filterDepth=100, refDepth=1, refIndex = None):
         ### spatial parameters ### 
         # x #
         self.x = np.arange(0, iceLength+dx, dx)
@@ -44,7 +44,12 @@ class paraProp:
         self.z = np.arange(-airHeight, iceDepth + dz, dz)
         self.zNum = len(self.z)
         self.dz = dz
-        self.refDepth = refDepth            
+        if refIndex == None:
+            self.refDepth = refDepth
+            self.refIndex = None
+        else:
+            self.refDepth = None
+            self.refIndex = refIndex # Reference Index
         
         ### other simulation variables ###       
         # filter information #
@@ -251,7 +256,10 @@ class paraProp:
             print('error! you must choose between nFunc, nVal and nVec')
             return -1
         ### set reference index of refraction ###
-        self.n0 = self.at_depth(self.n[:, 0], self.refDepth)
+        if self.refIndex == None:
+            self.n0 = self.at_depth(self.n[:, 0], self.refDepth)
+        else:
+            self.n0 = self.refIndex
         self.n = np.transpose(self.n)
 
     def set_DEM(self, surf_val = None, func_DEM=None, vec_DEM = [], xVec= [], nAir=1.0003, mode = 'shift', interpolation='padding'):
@@ -472,8 +480,11 @@ class paraProp:
         zRange = np.append(ZR1, ZR2)
         
         n_x = np.pi*zRange #TODO: What does this mean?
+
+        print(n_x)
         e = [0., 0., 1.]
         beam = np.zeros(len(n_x), dtype='complex')
+
         f0 = np.zeros(len(n_x), dtype='complex')
         
         for i in range(len(n_x)):
@@ -715,7 +726,7 @@ class paraProp:
             ii_min = util.findNearest(self.freq, freqMin)
             ii_max = util.findNearest(self.freq, freqMax)
             freq_ints = np.arange(ii_min, ii_max, 1, dtype='int')
-
+        #u_plus = np.zeros(len(self.source), dtype=np.float64)
         for j in freq_ints:
             if (self.freq[j] == 0): continue
             u_plus = 2 * self.A[j] * self.source * self.filt * self.freq[j]

@@ -230,6 +230,110 @@ def create_ascan_hdf(fname_config, tx_signal, nprof_data, zprof_data, fname_outp
     return output_hdf
 
 class ascan:
+    def save_sim_to_hdf(self, sim, tx_signal_in, rxList, sourceDepth, fname_hdf):
+        self.fname = fname_hdf
+        self.sim = sim
+        self.rxList = rxList
+        self.nRX = len(rxList)
+
+        self.tx_signal = tx_signal_in
+
+        self.tx_depths = np.array([sourceDepth])
+        self.nTX = len(self.tx_depths)
+
+        self.rxArray = np.ones((self.nRX, 2))
+        for i in range(self.nRX):
+            self.rxArray[i,0] = self.rxList[i].x
+            self.rxArray[i,1] = self.rxList[i].z
+
+        self.nSamples = self.tx_signal.nSamples
+        self.spectrum_array = np.zeros((self.nTX, self.nRX, self.nSamples), dtype='complex')
+        self.ascan_array = np.zeros((self.nTX, self.nRX, self.nSamples), dtype='complex')
+        for i in range(self.nRX):
+            rx_i = rxList[i]
+            self.ascan_array[0,i] = rx_i.get_signal()
+            self.spectrum_array[0,i] = rx_i.spectrum
+
+        with h5py.File(fname_hdf, 'w') as output_hdf:
+            output_hdf.attrs["iceDepth"] = self.sim.iceDepth
+            output_hdf.attrs["iceLength"] = self.sim.iceLength
+            output_hdf.attrs["airHeight"] = self.sim.airHeight
+            output_hdf.attrs["dx"] = self.sim.dx
+            output_hdf.attrs["dz"] = self.sim.dz
+            output_hdf.attrs["centerFreq"] = self.sim.centerFreq
+            output_hdf.create_dataset('z_profile', data=self.sim.z)
+            output_hdf.create_dataset('n_profile', data=self.sim.get_n(x=0))
+            output_hdf.create_dataset('signalPulse', data=self.tx_signal.pulse)
+            output_hdf.create_dataset('signalSpectrum', data=self.tx_signal.spectrum)
+
+            output_hdf.attrs["Amplitude"] = self.tx_signal.amplitude
+            output_hdf.attrs["freqCentral"] = self.tx_signal.frequency
+            output_hdf.attrs["Bandwidth"] = self.tx_signal.bandwidth
+            output_hdf.attrs["freqMax"] = self.tx_signal.freqMax
+            output_hdf.attrs["freqMin"] = self.tx_signal.freqMin
+            output_hdf.attrs["freqSample"] = self.tx_signal.fsample
+            output_hdf.attrs["freqNyquist"] = self.tx_signal.freq_nyq
+            output_hdf.attrs["tCentral"] = self.tx_signal.t_centre
+            output_hdf.attrs["tSample"] = self.tx_signal.tmax
+            output_hdf.attrs["dt"] = self.tx_signal.dt
+            output_hdf.attrs["nSamples"] = self.tx_signal.nSamples
+
+            output_hdf.create_dataset("rxArray", data=self.rxArray)
+            output_hdf.create_dataset("source_depths", data=self.tx_depths)
+            output_hdf.create_dataset('rxSpectrum', data=self.spectrum_array)
+            output_hdf.create_dataset('rxSignal', data=self.ascan_array)
+    def save_sim_to_hdf2(self, sim, tx_signal_in, rxList, tx_depths, fname_hdf):
+        self.fname = fname_hdf
+        self.sim = sim
+        self.rxList = rxList
+        self.nRX = len(rxList)
+
+        self.tx_signal = tx_signal_in
+
+        self.tx_depths = tx_depths
+        self.nTX = len(self.tx_depths)
+
+        self.rxArray = np.ones((self.nRX, 2))
+        for i in range(self.nRX):
+            self.rxArray[i,0] = self.rxList[i].x
+            self.rxArray[i,1] = self.rxList[i].z
+
+        self.nSamples = self.tx_signal.nSamples
+        self.spectrum_array = np.zeros((self.nTX, self.nRX, self.nSamples), dtype='complex')
+        self.ascan_array = np.zeros((self.nTX, self.nRX, self.nSamples), dtype='complex')
+        for i in range(self.nRX):
+            rx_i = rxList[i]
+            self.ascan_array[0,i] = rx_i.get_signal()
+            self.spectrum_array[0,i] = rx_i.spectrum
+
+        with h5py.File(fname_hdf, 'w') as output_hdf:
+            output_hdf.attrs["iceDepth"] = self.sim.iceDepth
+            output_hdf.attrs["iceLength"] = self.sim.iceLength
+            output_hdf.attrs["airHeight"] = self.sim.airHeight
+            output_hdf.attrs["dx"] = self.sim.dx
+            output_hdf.attrs["dz"] = self.sim.dz
+            output_hdf.attrs["centerFreq"] = self.sim.centerFreq
+            output_hdf.create_dataset('z_profile', data=self.sim.z)
+            output_hdf.create_dataset('n_profile', data=self.sim.get_n(x=0))
+            output_hdf.create_dataset('signalPulse', data=self.tx_signal.pulse)
+            output_hdf.create_dataset('signalSpectrum', data=self.tx_signal.spectrum)
+
+            output_hdf.attrs["Amplitude"] = self.tx_signal.amplitude
+            output_hdf.attrs["freqCentral"] = self.tx_signal.frequency
+            output_hdf.attrs["Bandwidth"] = self.tx_signal.bandwidth
+            output_hdf.attrs["freqMax"] = self.tx_signal.freqMax
+            output_hdf.attrs["freqMin"] = self.tx_signal.freqMin
+            output_hdf.attrs["freqSample"] = self.tx_signal.fsample
+            output_hdf.attrs["freqNyquist"] = self.tx_signal.freq_nyq
+            output_hdf.attrs["tCentral"] = self.tx_signal.t_centre
+            output_hdf.attrs["tSample"] = self.tx_signal.tmax
+            output_hdf.attrs["dt"] = self.tx_signal.dt
+            output_hdf.attrs["nSamples"] = self.tx_signal.nSamples
+
+            output_hdf.create_dataset("rxArray", data=self.rxArray)
+            output_hdf.create_dataset("source_depths", data=self.tx_depths)
+            output_hdf.create_dataset('rxSpectrum', data=self.spectrum_array)
+            output_hdf.create_dataset('rxSignal', data=self.ascan_array)
     def load_from_hdf(self, fname_hdf):
         with h5py.File(fname_hdf, 'r') as input_hdf:
             self.fname = fname_hdf
@@ -253,8 +357,12 @@ class ascan:
             self.tx_signal.pulse = np.array(input_hdf.get('signalPulse'))
             self.tx_signal.spectrum = np.array(input_hdf.get('signalSpectrum'))
             self.tx_depths = np.array(input_hdf.get('source_depths'))
+            #print(input_hdf.keys(), 'rxArray' in input_hdf.keys())
+            if 'rxList' in input_hdf.keys():
+                rxList_positions = np.array(input_hdf.get('rxList'))
+            elif 'rxArray' in input_hdf.keys():
+                rxList_positions = np.array(input_hdf.get('rxArray'))
 
-            rxList_positions = np.array(input_hdf.get('rxList'))
             rxList = []
             for i in range(len(rxList_positions)):
                 rx_i = rx(x=rxList_positions[i,0], z= rxList_positions[i,1])
