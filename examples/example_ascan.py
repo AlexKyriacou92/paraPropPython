@@ -32,7 +32,7 @@ path2data = 'ascan_dir'
 if os.path.isdir(path2data) == False:
     os.system('mkdir ' + path2data)
 
-d_rx = 10
+d_rx = 2
 rx_ranges = np.arange(d_rx, iceLength, d_rx)
 rx_depths = np.arange(d_rx, iceDepth, d_rx)
 

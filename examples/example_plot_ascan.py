@@ -31,15 +31,16 @@ nSamples = ascan_example.nSamples # Number of samples in waveform
 dt = ascan_example.dt #Time interval of sample
 
 #TX depths
-tx_depths = ascan_example.tx_depths
-nTx = len(tx_depths)
-t_centre = tx_signal_1.t_centre
+tx_depths = ascan_example.tx_depths # Array of TX depths (z_tx)
+nTx = len(tx_depths) # Number of TX
+t_centre = tx_signal_1.t_centre # Time of impulse
 
 # List of Receivers
-rxList = ascan_example.rxList
+rxList = ascan_example.rxList # List of receivers (RX)
+nRx = len(rxList) # Number of Receivers
 
 n_profile = ascan_example.n_profile # Ref Index Profile
-z_profile = ascan_example.z_profile # Depth vector - correpsonds to ref index profile
+z_profile = ascan_example.z_profile # Depth vector - corresponds to ref index profile
 
 rxPulses = ascan_example.ascan_array # Array of Pulses: nTx x nRx x nSamples
 
@@ -119,4 +120,38 @@ ax2.set_ylabel('$S_{rx}$ [V/m/Hz]',fontsize=fontsize)
 ax2.set_xlim(0, max(fspace))
 ax2.grid()
 ax2.tick_params(axis='both', labelsize=labelsize)
+pl.show()
+
+#Example of Using the Ascan Array -> Map the RX power as a function of (x,z) for the first TX
+
+fig = pl.figure(figsize=(8,5),dpi=120)
+ax = fig.add_subplot(111)
+
+x_rx_all = []
+z_rx_all = []
+
+ii_tx = 0 # Select First TX
+rx_power_arr = np.zeros(nRx)
+for i in range(nRx):
+    x_rx_all.append(rxList[i].x)
+    z_rx_all.append(rxList[i].z)
+    rx_pulse_i = rxPulses[ii_tx,i]
+    rx_power = np.sum(abs(rx_pulse_i)**2)
+    rx_power_arr[i] = 10*np.log10(rx_power)
+
+x_rx_un = np.unique(x_rx_all)
+z_rx_un = np.unique(z_rx_all)
+nRx_x = len(x_rx_un)
+nRx_z = len(z_rx_un)
+vmin_1 = 1e-4
+vmax_1 = 1e-1
+ax.set_title('RX Power $P_{rx}')
+hist2d_rx_power, x_bins, z_bins = np.histogram2d(x_rx_all, z_rx_all, bins=(nRx_x, nRx_z), weights=rx_power_arr)
+pmesh = ax.imshow(np.transpose(hist2d_rx_power),extent=[min(x_rx_un), max(x_rx_un), max(z_rx_un), min(z_rx_un)],
+                  aspect='auto',cmap='hot', interpolation='spline16')
+cbar = fig.colorbar(pmesh)
+ax.set_xlabel('RX Range $x_{rx}$ [m]',fontsize=fontsize)
+ax.set_ylabel('RX Depth $z_{rx}$ [m]',fontsize=fontsize)
+ax.tick_params(axis='both',labelsize=labelsize)
+cbar.set_label('$P_{rx}$ [u]', fontsize=fontsize)
 pl.show()

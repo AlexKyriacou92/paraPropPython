@@ -179,14 +179,27 @@ def create_transmitter_array_from_file(fname_config):
     config = configparser.ConfigParser()
     config.read(fname_config)
     transmitter_config = config['TRANSMITTER']
-    fname_tx = transmitter_config['fname_transmitters']
-    tx_depths = []
-    with open(fname_tx, 'r') as fin:
-        for line in fin:
-            cols = line.split()
-            z_tx = float(cols[0])
-            tx_depths.append(z_tx)
-    tx_depths = np.array(tx_depths)
+    if 'fname_transmitters' in transmitter_config.keys():
+        fname_tx = transmitter_config['fname_transmitters']
+        tx_depths = []
+        with open(fname_tx, 'r') as fin:
+            for line in fin:
+                cols = line.split()
+                z_tx = float(cols[0])
+                tx_depths.append(z_tx)
+        tx_depths = np.array(tx_depths)
+    elif 'source_depth' in transmitter_config.keys():
+        source_depth = float(transmitter_config['source_depth'])
+        tx_depths = [source_depth]
+    else:
+        fname_tx = transmitter_config['fname_transmitters']
+        tx_depths = []
+        with open(fname_tx, 'r') as fin:
+            for line in fin:
+                cols = line.split()
+                z_tx = float(cols[0])
+                tx_depths.append(z_tx)
+        tx_depths = np.array(tx_depths)
     return tx_depths
 
 def create_ascan_hdf(fname_config, tx_signal, nprof_data, zprof_data, fname_output):
