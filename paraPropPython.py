@@ -27,10 +27,16 @@ class paraProp:
         amount of air to be simulated above ice (m). Initialized to 25 m
     filterDepth : float
         size of the filtered reason above and below simulated region (m). Initialized to 100 m
+
+    sourceMode: bool
+        a boolean that will set n0 to be equal to: n0 = n(sourceDepth), if source is defined iwth set_dipole_source_profile
+        NOTE: does net set n0 for other source definition, i.e. set_phased_array
     refDepth : float
         reference depth for simulation (m). Initialized to 1 m below surface
+    refIndex : float
+        Sets n0 manually with refIndex
     """
-    def __init__(self, iceLength, iceDepth, dx, dz, airHeight=25, filterDepth=100, refDepth=1, refIndex = None):
+    def __init__(self, iceLength, iceDepth, dx, dz, airHeight=25, filterDepth=100, sourceMode = True, refDepth=1, refIndex = None):
         ### spatial parameters ### 
         # x #
         self.x = np.arange(0, iceLength+dx, dx)
@@ -44,6 +50,8 @@ class paraProp:
         self.z = np.arange(-airHeight, iceDepth + dz, dz)
         self.zNum = len(self.z)
         self.dz = dz
+
+        self.sourceMode = sourceMode
         if refIndex == None:
             self.refDepth = refDepth
             self.refIndex = None
@@ -51,7 +59,7 @@ class paraProp:
             self.refDepth = None
             self.refIndex = refIndex # Reference Index
         
-        ### other simulation variables ###       
+        ### other simulation variables ###
         # filter information #
         self.fNum0 = int(filterDepth / dz)
         
@@ -260,6 +268,8 @@ class paraProp:
             self.n0 = self.at_depth(self.n[:, 0], self.refDepth)
         else:
             self.n0 = self.refIndex
+
+        self.n0 = self.refIndex
         self.n = np.transpose(self.n)
 
     def set_DEM(self, surf_val = None, func_DEM=None, vec_DEM = [], xVec= [], nAir=1.0003, mode = 'shift', interpolation='padding'):
@@ -463,6 +473,9 @@ class paraProp:
         A : complex float
             complex amplitude of dipole. Initialized to 1 + 0j
         """
+        if self.sourceMode == True:
+            self.n0 = self.at_depth(self.n[:, 0], depth)
+
         ### frequency and wavelength in freespace ###
         self.source = np.zeros(self.zNumFull, dtype='complex')
         centerLmbda = util.c_light/centerFreq
