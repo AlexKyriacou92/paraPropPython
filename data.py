@@ -162,6 +162,7 @@ def create_rxList_from_file(fname_config):
             rxList.append(rx_i)
     return rxList
 
+'''
 def create_transmitter_array(fname_config):
     config = configparser.ConfigParser()
     config.read(fname_config)
@@ -174,8 +175,9 @@ def create_transmitter_array(fname_config):
             tx_depths.append(float(cols[0]))
     tx_depths = np.array(tx_depths)
     return tx_depths
+'''
 
-def create_transmitter_array_from_file(fname_config):
+def create_transmitter_array(fname_config):
     config = configparser.ConfigParser()
     config.read(fname_config)
     transmitter_config = config['TRANSMITTER']
