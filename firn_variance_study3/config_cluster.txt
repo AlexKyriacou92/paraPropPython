@@ -1,0 +1,16 @@
+[CLUSTER]
+NODES_MIN = 1
+NODES_MAX = 1
+PARTITION = sixhour
+TASKS = 1
+NCPUS = 1
+DAYS = 0
+HOURS = 1
+MEMORY = 5000
+
+[JOB]
+prefix = summit_job
+mpi = None
+operator = python
+script = runSim_ascan_rx_from_txt.py
+arg = test_out.txt nProf_CFM_2019_1.h5 nProf_CFM_2018_1.txt 10 0
