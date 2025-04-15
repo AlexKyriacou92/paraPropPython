@@ -10,7 +10,6 @@ sys.path.append('../')
 from data import create_sim, create_rxList_from_file, create_tx_signal, create_transmitter_array
 from data import create_ascan_hdf, ascan
 import util
-#from data import create_transmitter_array_from_file
 from Askaryan_Signal import create_pulse as create_pulse_askaryan, TeV
 import subprocess
 from transmitter import tx_signal

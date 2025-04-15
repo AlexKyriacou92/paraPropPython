@@ -36,7 +36,7 @@ def run_ascan_rx(fname_config, n_profile, z_profile, z_tx, freq_in, fname_hdf, f
     rxList = create_rxList_from_file(fname_config)
     nRx = len(rxList)
 
-    txList = create_transmitter_array_from_file(fname_config)
+    txList = create_transmitter_array(fname_config)
 
     sim.set_n(nVec=n_profile, zVec=z_profile)  # Set Refractive Index Profile
 
@@ -79,7 +79,7 @@ def run_ascan_rx_txt(fname_config, n_profile, z_profile, z_tx, freq_in, fname_hd
     rxList = create_rxList_from_file(fname_config)
     nRx = len(rxList)
 
-    txList = create_transmitter_array_from_file(fname_config)
+    txList = create_transmitter_array(fname_config)
 
     sim.set_n(nVec=n_profile, zVec=z_profile)  # Set Refractive Index Profile
 
