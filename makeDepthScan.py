@@ -17,7 +17,7 @@ from transmitter import tx_signal
 from data import create_sim, create_rxList_from_file, create_transmitter_array, create_hdf_FT
 from data import create_tx_signal, bscan, bscan_rxList, create_hdf_bscan
 from data import create_tx_signal_from_file, get_IR_from_config
-from data import save_field_to_file, ascan, create_transmitter_array_from_file
+from data import save_field_to_file, ascan
 sys.path.append('inversion/')
 #from objective_functions import misfit_function_ij
 

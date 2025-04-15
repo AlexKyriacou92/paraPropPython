@@ -7,18 +7,18 @@ import h5py
 import configparser
 from numpy import exp, log
 import matplotlib.pyplot as pl
-from makeDepthScan import depth_scan_impulse_smooth
 
 sys.path.append('../')
+from makeDepthScan import depth_scan_impulse_smooth
+
+#sys.path.append('../')
 from paraPropPython import paraProp as ppp
 import receiver as rx
 from transmitter import tx_signal
 from data import create_sim, create_rxList_from_file, create_tx_signal, create_transmitter_array
 from data import create_hdf_bscan, bscan_rxList, create_hdf_FT
 from data import create_ascan_hdf, ascan
-
 import util
-from data import create_transmitter_array_from_file
 
 path2sim = sys.argv[1]
 

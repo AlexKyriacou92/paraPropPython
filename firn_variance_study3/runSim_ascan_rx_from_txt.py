@@ -14,7 +14,7 @@ import paraPropPython as ppp
 from receiver import receiver as rx
 from transmitter import tx_signal
 from data import create_sim, create_rxList_from_file, create_transmitter_array, create_hdf_FT, ascan
-from data import create_tx_signal, bscan, bscan_rxList, create_hdf_bscan, create_transmitter_array_from_file
+from data import create_tx_signal, bscan, bscan_rxList, create_hdf_bscan
 from makeDepthScan import depth_scan_impulse_smooth, run_field, run_ascan_rx, run_ascan_rx_txt
 
 if len(sys.argv) == 7:
@@ -31,7 +31,7 @@ else:
 
 nprof_data, zprof_data = util.get_profile_from_file(fname_nprof)
 
-txList = create_transmitter_array_from_file(fname_config)
+txList = create_transmitter_array(fname_config)
 z_tx = txList[ii_tx]
 
 ascan_in = ascan()
