@@ -177,8 +177,11 @@ def create_spectrum(fname_config, nprof_data, zprof_data, fname_output_h5, z_tx=
                                       fname_output=fname_output_h5)
     hdf_ascan.close()
     return tx_signal_out
+if len(sys.argv) == 2:
+    fname_config = sys.argv[1]
+    fname_nprofile_all = 'n_profile_l_all.txt'
 
-if len(sys.argv) == 3:
+elif len(sys.argv) == 3:
     fname_config = sys.argv[1]
     fname_nprofile_all = sys.argv[2]
 else:
@@ -196,7 +199,7 @@ dir_sim_path = dir_sim + '/'
 year_l = []
 month_l = []
 nprofile_list = []
-path2profiles = 'ref_profiles_all'
+path2profiles = 'ref_profiles'
 with open(fname_nprofile_all) as all_profiles:
     for line in all_profiles:
         cols = line.split()
