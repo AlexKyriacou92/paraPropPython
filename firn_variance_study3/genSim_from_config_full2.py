@@ -44,6 +44,7 @@ def create_ascan_hdf2(fname_config, tx_signal, z_tx, nprof_data, zprof_data, fna
     output_hdf.attrs["airHeight"] = sim.airHeight
     output_hdf.attrs["dx"] = sim.dx
     output_hdf.attrs["dz"] = sim.dz
+    #output_hdf.attrs['n0'] = sim.n0
 
     output_hdf.attrs["Amplitude"] = tx_signal.amplitude
     output_hdf.attrs["freqCentral"] = tx_signal.frequency
@@ -149,6 +150,16 @@ def create_spectrum(fname_config, nprof_data, zprof_data, fname_output_h5, z_tx=
 nArgs = len(argv)
 if nArgs == 2:
     fname_config = argv[1]
+    fname_nprofile_in = None
+elif nArgs == 3:
+    fname_config = argv[1]
+    fname_nprofile_in = argv[2]
+    fname_base_name = os.path.basename(fname_nprofile_in)
+    sim_prefix_in = fname_base_name.split('.')[0]
+elif nArgs == 4:
+    fname_config = argv[1]
+    fname_nprofile_in = argv[2]
+    sim_prefix_in = argv[3]
 else:
     print('wrong arg number', nArgs)
     print('Enter: python ', argv[0], ' <config_file.txt>')
@@ -158,8 +169,12 @@ else:
 config = configparser.ConfigParser()
 config.read(fname_config)
 
-fname_nprof = config['REFRACTIVE_INDEX']['fname_profile']
+if nArgs > 3:
+    fname_nprof = config['REFRACTIVE_INDEX']['fname_profile']
+else:
+    fname_nprof = fname_nprofile_in
 nprof_data, zprof_data = util.get_profile_from_file(fname_nprof)
+
 
 dir_sim = config['OUTPUT']['path2output']
 if os.path.isdir(dir_sim) == False:
@@ -171,8 +186,11 @@ datetime_str = now.strftime('%y%m%d_%H%M%S')
 fname_config_new = fname_config[:-4] + '_' + datetime_str + '.txt'
 #system('cp ' + fname_config + ' ' + fname_config_new)
 
+if nArgs <= 2:
+    sim_prefix = config['OUTPUT']['prefix'] #os.path.basename(fname_nprof)
+else:
+    sim_prefix = sim_prefix_in
 
-sim_prefix = config['OUTPUT']['prefix'] #os.path.basename(fname_nprof)
 #sim_prefix = sim_prefix[:-4]
 sim_name = sim_prefix
 fname_body = sim_prefix
@@ -193,7 +211,7 @@ elif 'source_depth' in tx_config.keys() and 'fname_transmitters' in tx_config.ke
     txList = create_transmitter_array(fname_config)
 else:
     print('error, config[TRANSMITTER] in config file must have fname_transmitters or source_depth')
-    sys.exit()
+    exit()
 
 nTx = len(txList)
 tx_signal_in = create_spectrum(fname_config=fname_config,
