@@ -220,6 +220,9 @@ f_log.write('sim_num\tyear\tmonth\tpath2nprofiles\tfname_profile\tpath2hdf\tfnam
 f_log.close()
 
 #Waiting Time
+t_wait_freq = 30
+t_wait_tx = 60
+
 nMinutes = 120
 t_60 = 60.
 max_wait_time = nMinutes * t_60
@@ -311,8 +314,30 @@ for ii_nprof in range(ii_nprof_start, ii_nprof_end):
 
             make_job(fname_shell=fname_sh_in, fname_outfile=fname_sh_out, jobname=jobname, command=cmd)
             submit_job(fname_sh_in)
-            if ii_freq > 100:
-                os.system('rm ' + fname_sh_in)
+            os.system('rm ' + fname_sh_in)
+            if ii_freq % 100 == 0 and ii_freq > 0:
+                print('wait ', t_wait_freq, 's, nJobs = ', countuserjobs())
+                time.sleep(t_wait_freq)
+        nJobs1 = countuserjobs()
+        if nJobs1 > 0:
+            t_waiting = t_wait_it
+            proceed_bool = False
+            while proceed_bool == False:
+                nJobs = countjobs()
+                print('nJobs = ', nJobs)
+                if t_waiting < max_wait_time:
+                    if nJobs > 0:
+                        print('Waiting for', t_wait_it, 's', ', total wait = ', t_waiting, 's')
+                        time.sleep(t_wait_it)
+                        t_waiting += t_wait_it
+                    else:
+                        print('Jobs complete, proceed')
+                        proceed_bool = True
+                else:
+                    print('Time out! Not all jobs terminatied after', max_wait_time, 's')
+                    print('Abort, shut down all remaining jobs')
+                    system('./kill_jobs.sh')
+                    exit()
     fout_list.close()
     print('all jobs submitted',year_l[ii_nprof], ' ', month_l[ii_nprof])
     line_l = [str(ii_nprof),
@@ -333,24 +358,7 @@ for ii_nprof in range(ii_nprof_start, ii_nprof_end):
     f_log.write(line_out)
     f_log.close()
     
-    t_waiting = t_wait_it
-    proceed_bool = False
-    while proceed_bool == False:
-        nJobs = countjobs()
-        print('nJobs = ', nJobs)
-        if t_waiting < max_wait_time:
-            if nJobs > 0:
-                print('Waiting for', t_wait_it, 's', ', total wait = ', t_waiting, 's')
-                time.sleep(t_wait_it)
-                t_waiting += t_wait_it
-            else:
-                print('Jobs complete, proceed')
-                proceed_bool = True
-        else:
-            print('Time out! Not all jobs terminatied after', max_wait_time, 's')
-            print('Abort, shut down all remaining jobs')
-            system('./kill_jobs.sh')
-            exit()
+
     system('python add_spectrum_to_hdf.py ' + dir_sim_path + fname_list)
     system('python add_npy_to_hdf.py ' + dir_sim_path)
     print('Sim complete:', year_l[ii_nprof], ' ', month_l[ii_nprof], '\n')
