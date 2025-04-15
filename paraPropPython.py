@@ -474,7 +474,7 @@ class paraProp:
             complex amplitude of dipole. Initialized to 1 + 0j
         """
         if self.sourceMode == True:
-            self.n0 = self.at_depth(self.n[:, 0], depth)
+            self.n0 = self.at_depth(self.n[0,:], depth)
 
         ### frequency and wavelength in freespace ###
         self.source = np.zeros(self.zNumFull, dtype='complex')
