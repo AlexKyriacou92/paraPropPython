@@ -784,3 +784,8 @@ def cut_arr(y, x, xmin, xmax):
     imin = findNearest(x, xmin)
     imax = findNearest(x, xmax)
     return y[imin:imax]
+
+def cut_arr2(y, x, xmin, xmax):
+    imin = findNearest(x, xmin)
+    imax = findNearest(x, xmax)
+    return y[imin:imax], x[imin:imax]
