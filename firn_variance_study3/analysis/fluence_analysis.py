@@ -6,8 +6,6 @@ from sys import argv, exit
 import configparser
 
 import peakutils
-from mpi4py import MPI
-import meep as mp
 import os
 from numpy import array
 from matplotlib.colors import LogNorm
