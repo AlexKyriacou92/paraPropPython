@@ -45,7 +45,7 @@ I apologize to any future readers for the extremely messy, ugly and needlessly c
 I haven't yet worked out the balance between elegant/simple/readable code 
 and code that gets what I need done in the here and now.
 '''
-
+print('Begin Simulation')
 
 def countuserjobs():
     # Counts the number of jobs that is running under your username
@@ -180,13 +180,19 @@ def create_spectrum(fname_config, nprof_data, zprof_data, fname_output_h5, z_tx=
 if len(sys.argv) == 2:
     fname_config = sys.argv[1]
     fname_nprofile_all = 'n_profile_l_all.txt'
+    path2profiles = 'ref_profiles_1cm_all'
 
 elif len(sys.argv) == 3:
     fname_config = sys.argv[1]
     fname_nprofile_all = sys.argv[2]
+    path2profiles = 'ref_profiles_1cm_all'
+elif len(sys.argv) == 4:
+    fname_config = sys.argv[1]
+    fname_nprofile_all = sys.argv[2]
+    path2profiles = sys.argv[3]
 else:
     print('wrong arg number', len(sys.argv))
-    print('Enter: python ', sys.argv[0], ' <config_file.txt> <nprof_l>')
+    print('Enter: python ', sys.argv[0], ' <config_file.txt> <nprof_l> <pathtoprofiles>')
     sys.exit()
 
 config = configparser.ConfigParser()
@@ -199,13 +205,18 @@ dir_sim_path = dir_sim + '/'
 year_l = []
 month_l = []
 nprofile_list = []
-path2profiles = 'ref_profiles'
+#path2profiles = 'ref_profiles_1cm_all'
 with open(fname_nprofile_all) as all_profiles:
     for line in all_profiles:
         cols = line.split()
         year_l.append(int(cols[0]))
         month_l.append(int(cols[1]))
-        nprofile_list.append(os.path.join(path2profiles, cols[2]))
+        fname_nprof_i = os.path.join(path2profiles, cols[2])
+        if os.path.isfile(fname_nprof_i) == True:
+            nprofile_list.append(fname_nprof_i)
+        else:
+            print('error, could not find', cols[2], 'inside', path2profiles, 'exiting')
+            exit()
 
 nProfiles_all = len(nprofile_list)
 
@@ -228,137 +239,152 @@ t_60 = 60.
 max_wait_time = nMinutes * t_60
 t_wait_it = 10.
 
-ii_nprof_start = 30*12 + 1
-ii_nprof_end = 30*12 + 2
-#ii_nprof_end = ii_nprof_start + 12*10
+year_zero = 1980
+start_year = 2010
+end_year = 2020
+
+ii_nprof_start = (start_year-year_zero)*12 + 1
+ii_nprof_end = (end_year-year_zero)*12 + 1
 
 for ii_nprof in range(ii_nprof_start, ii_nprof_end):
-    print('run simulation for', year_l[ii_nprof], ' ', month_l[ii_nprof])
-    fname_nprof = nprofile_list[ii_nprof]
-    nprof_data, zprof_data = util.get_profile_from_file(fname_nprof)
-
-    sim_prefix = os.path.basename(fname_nprof)
-    sim_prefix = sim_prefix[:-4]
-    sim_name = sim_prefix
-    fname_body = sim_prefix
-    fname_hdf0 = fname_body + '.h5'
-    fname_npy0 = fname_body + '.npy'
-    fname_hdf = dir_sim_path + fname_hdf0
-
-    tx_config = config['TRANSMITTER']
-    for key in tx_config.keys():
-        print(key)
-    txList = []
-    if 'source_depth' in tx_config.keys():
-        txList.append(float(tx_config['source_depth']))
-    elif 'fname_transmitters' in tx_config.keys():
-        txList = create_transmitter_array(fname_config)
-    elif 'source_depth' in tx_config.keys() and 'fname_transmitters' in tx_config.keys():
-        txList = create_transmitter_array(fname_config)
-    else:
-        print('error, config[TRANSMITTER] in config file must have fname_transmitters or source_depth')
-        exit()
-    nTx = len(txList)
-    tx_signal_in = create_spectrum(fname_config=fname_config,
-                                   nprof_data=nprof_data, zprof_data=zprof_data,
-                                   fname_output_h5=fname_hdf)
-
-    tx_pulse_in = tx_signal_in.pulse
-    tx_spectrum_in = tx_signal_in.spectrum_plus
-
-    freq_plus = tx_signal_in.freq_plus
-    tspace = tx_signal_in.tspace
-    nSamples = tx_signal_in.nSamples
-
-    rxList = create_rxList_from_file(fname_config)
-    nRx = len(rxList)
-    #The Script will dispatch jobs for the Frequency Range (Min to Max, i.e. 50 MHz to 450 MHz)
-    freqMin = tx_signal_in.freqMin
-    freqMax = tx_signal_in.freqMax
-    ii_min = util.findNearest(freq_plus, freqMin)
-    ii_max = util.findNearest(freq_plus, freqMax)
-    # STEP 2 -> SEND OUT SCRIPTS
-
-    print('any nans in spectrum?', np.isnan(np.any(tx_signal_in.spectrum_plus)))
-    #Write the Name of the File
-    fname_list = fname_body + '_list.txt'
-
-    fout_list = open(dir_sim_path + fname_list, 'w')
-    fout_list.write(dir_sim_path+ '\t' + fname_hdf0 + '\t' + fname_npy0 +'\n')
-    fout_list.write(str(nTx) + '\t' + str(nRx) + '\t' + str(nSamples) + '\n')
-    fout_list.write('ID_TX\tID_Freq\tFreq_GHz\tfname_npy\n')
-    #TODO: Make this more multi-TX compatible, as in
-    for ii_tx in range(nTx):
-        z_tx = txList[ii_tx]
-        for ii_freq in range(ii_min, ii_max):
-            freq_ii = freq_plus[ii_freq]
-            fname_txt_i = fname_body + '_' + str(ii_tx).zfill(2) + '_' + str(ii_freq) + '.txt'
-            fname_txt_i = fname_txt_i
-            fname_txt_path = os.path.join(dir_sim_path, fname_txt_i)
-            print('create job for, z_tx = ', z_tx, ' m, f = ', freq_ii*1e3, ' MHz')
-
-            line = str(ii_tx) + '\t' + str(ii_freq) + '\t' + str(round(freq_ii,3)) + '\t' + fname_txt_i + '\n'
-            fout_list.write(line)
-
-            cmd = 'python runSim_ascan_rx_from_txt.py ' + fname_config + ' '
-            cmd += fname_txt_path + ' ' + fname_hdf + ' ' + fname_nprof + ' '
-            cmd += str(ii_freq) + ' ' + str(ii_tx)
-
-            suffix = 'fid_' + str(ii_tx).zfill(2) + '_' + str(int(freq_ii*1e3))
-
-            jobname = dir_sim_path + suffix
-            fname_sh_in = 'sim_CFM_' + suffix + '.sh'
-
-            fname_sh_out0 = 'sim_CFM_' + sim_name + '_' + suffix + '.out'
-            fname_sh_out = dir_sim_path + fname_sh_out0
-
-            make_job(fname_shell=fname_sh_in, fname_outfile=fname_sh_out, jobname=jobname, command=cmd)
-            submit_job(fname_sh_in)
-            os.system('rm ' + fname_sh_in)
-            if ii_freq % 100 == 0 and ii_freq > 0:
-                print('wait ', t_wait_freq, 's, nJobs = ', countuserjobs())
-                time.sleep(t_wait_freq)
-        nJobs1 = countuserjobs()
-        if nJobs1 > 0:
-            t_waiting = t_wait_it
-            proceed_bool = False
-            while proceed_bool == False:
-                nJobs = countjobs()
-                print('nJobs = ', nJobs)
-                if t_waiting < max_wait_time:
-                    if nJobs > 0:
-                        print('Waiting for', t_wait_it, 's', ', total wait = ', t_waiting, 's')
-                        time.sleep(t_wait_it)
-                        t_waiting += t_wait_it
-                    else:
-                        print('Jobs complete, proceed')
-                        proceed_bool = True
-                else:
-                    print('Time out! Not all jobs terminatied after', max_wait_time, 's')
-                    print('Abort, shut down all remaining jobs')
-                    system('./kill_jobs.sh')
-                    exit()
-    fout_list.close()
-    print('all jobs submitted',year_l[ii_nprof], ' ', month_l[ii_nprof])
-    line_l = [str(ii_nprof),
-              str(year_l[ii_nprof]),
-              str(month_l[ii_nprof]),
-              path2profiles,
-              fname_nprof,
-              dir_sim_path,
-              fname_config_new]
-    line_out = ''
-    for k in range(len(line_l)):
-        if k < len(line_l) -1:
-            line_out += line_l[k] + '\t'
+    proceed_loop = False
+    if year_l[ii_nprof] == 2015 or year_l[ii_nprof] == 2014:
+        if month_l[ii_nprof] % 2 != 0:
+            proceed_loop = True
         else:
-            line_out += line_l[k]
-    line_out += '\n'
-    f_log = open('log_file_' + datetime_str + '.txt', 'a')
-    f_log.write(line_out)
-    f_log.close()
-    
+            proceed_loop = False
+    else:
+        if month_l[ii_nprof] == 1 or month_l[ii_nprof] == 7:
+            proceed_loop = True
+        else:
+            proceed_loop = False
+    if proceed_loop == True:
+        print('run simulation for', year_l[ii_nprof], ' ', month_l[ii_nprof])
+        fname_nprof = nprofile_list[ii_nprof]
+        nprof_data, zprof_data = util.get_profile_from_file(fname_nprof)
 
-    system('python add_spectrum_to_hdf.py ' + dir_sim_path + fname_list)
-    system('python add_npy_to_hdf.py ' + dir_sim_path)
-    print('Sim complete:', year_l[ii_nprof], ' ', month_l[ii_nprof], '\n')
+        sim_prefix = os.path.basename(fname_nprof)
+        sim_prefix = sim_prefix[:-4]
+        sim_name = sim_prefix
+        fname_body = sim_prefix
+        fname_hdf0 = fname_body + '.h5'
+        fname_npy0 = fname_body + '.npy'
+        fname_hdf = dir_sim_path + fname_hdf0
+
+        tx_config = config['TRANSMITTER']
+        for key in tx_config.keys():
+            print(key)
+        txList = []
+        if 'source_depth' in tx_config.keys():
+            txList.append(float(tx_config['source_depth']))
+        elif 'fname_transmitters' in tx_config.keys():
+            txList = create_transmitter_array(fname_config)
+        elif 'source_depth' in tx_config.keys() and 'fname_transmitters' in tx_config.keys():
+            txList = create_transmitter_array(fname_config)
+        else:
+            print('error, config[TRANSMITTER] in config file must have fname_transmitters or source_depth')
+            exit()
+        nTx = len(txList)
+        tx_signal_in = create_spectrum(fname_config=fname_config,
+                                       nprof_data=nprof_data, zprof_data=zprof_data,
+                                       fname_output_h5=fname_hdf)
+
+        tx_pulse_in = tx_signal_in.pulse
+        tx_spectrum_in = tx_signal_in.spectrum_plus
+
+        freq_plus = tx_signal_in.freq_plus
+        tspace = tx_signal_in.tspace
+        nSamples = tx_signal_in.nSamples
+
+        rxList = create_rxList_from_file(fname_config)
+        nRx = len(rxList)
+        #The Script will dispatch jobs for the Frequency Range (Min to Max, i.e. 50 MHz to 450 MHz)
+        freqMin = tx_signal_in.freqMin
+        freqMax = tx_signal_in.freqMax
+        ii_min = util.findNearest(freq_plus, freqMin)
+        ii_max = util.findNearest(freq_plus, freqMax)
+        # STEP 2 -> SEND OUT SCRIPTS
+
+        print('any nans in spectrum?', np.isnan(np.any(tx_signal_in.spectrum_plus)))
+        #Write the Name of the File
+        fname_list = fname_body + '_list.txt'
+
+        fout_list = open(dir_sim_path + fname_list, 'w')
+        fout_list.write(dir_sim_path+ '\t' + fname_hdf0 + '\t' + fname_npy0 +'\n')
+        fout_list.write(str(nTx) + '\t' + str(nRx) + '\t' + str(nSamples) + '\n')
+        fout_list.write('ID_TX\tID_Freq\tFreq_GHz\tfname_npy\n')
+        #TODO: Make this more multi-TX compatible, as in
+        for ii_tx in range(nTx):
+            z_tx = txList[ii_tx]
+            for ii_freq in range(ii_min, ii_max):
+                freq_ii = freq_plus[ii_freq]
+                fname_txt_i = fname_body + '_' + str(ii_tx).zfill(2) + '_' + str(ii_freq) + '.txt'
+                fname_txt_i = fname_txt_i
+                fname_txt_path = os.path.join(dir_sim_path, fname_txt_i)
+                print('create job for, z_tx = ', z_tx, ' m, f = ', freq_ii*1e3, ' MHz')
+
+                line = str(ii_tx) + '\t' + str(ii_freq) + '\t' + str(round(freq_ii,3)) + '\t' + fname_txt_i + '\n'
+                fout_list.write(line)
+
+                cmd = 'python runSim_ascan_rx_from_txt.py ' + fname_config + ' '
+                cmd += fname_txt_path + ' ' + fname_hdf + ' ' + fname_nprof + ' '
+                cmd += str(ii_freq) + ' ' + str(ii_tx)
+
+                suffix = 'fid_' + str(ii_tx).zfill(2) + '_' + str(int(freq_ii*1e3))
+
+                jobname = dir_sim_path + suffix
+                fname_sh_in = 'sim_CFM_' + suffix + '.sh'
+
+                fname_sh_out0 = 'sim_CFM_' + sim_name + '_' + suffix + '.out'
+                fname_sh_out = dir_sim_path + fname_sh_out0
+
+                make_job(fname_shell=fname_sh_in, fname_outfile=fname_sh_out, jobname=jobname, command=cmd)
+                submit_job(fname_sh_in)
+                os.system('rm ' + fname_sh_in)
+                if ii_freq % 100 == 0 and ii_freq > 0:
+                    print('wait ', t_wait_freq, 's, nJobs = ', countuserjobs())
+                    time.sleep(t_wait_freq)
+            nJobs1 = countuserjobs()
+            if nJobs1 > 0:
+                t_waiting = t_wait_it
+                proceed_bool = False
+                while proceed_bool == False:
+                    nJobs = countjobs()
+                    print('nJobs = ', nJobs)
+                    if t_waiting < max_wait_time:
+                        if nJobs > 0:
+                            print('Waiting for', t_wait_it, 's', ', total wait = ', t_waiting, 's')
+                            time.sleep(t_wait_it)
+                            t_waiting += t_wait_it
+                        else:
+                            print('Jobs complete, proceed')
+                            proceed_bool = True
+                    else:
+                        print('Time out! Not all jobs terminatied after', max_wait_time, 's')
+                        print('Abort, shut down all remaining jobs')
+                        system('./kill_jobs.sh')
+                        exit()
+        fout_list.close()
+        print('all jobs submitted',year_l[ii_nprof], ' ', month_l[ii_nprof])
+        line_l = [str(ii_nprof),
+                  str(year_l[ii_nprof]),
+                  str(month_l[ii_nprof]),
+                  path2profiles,
+                  fname_nprof,
+                  dir_sim_path,
+                  fname_config_new]
+        line_out = ''
+        for k in range(len(line_l)):
+            if k < len(line_l) -1:
+                line_out += line_l[k] + '\t'
+            else:
+                line_out += line_l[k]
+        line_out += '\n'
+        f_log = open('log_file_' + datetime_str + '.txt', 'a')
+        f_log.write(line_out)
+        f_log.close()
+
+
+        system('python add_spectrum_to_hdf.py ' + dir_sim_path + fname_list)
+        system('python add_npy_to_hdf.py ' + dir_sim_path)
+        print('Sim complete:', year_l[ii_nprof], ' ', month_l[ii_nprof], '\n')
