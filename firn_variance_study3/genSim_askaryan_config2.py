@@ -211,7 +211,9 @@ with open(fname_nprofile_all) as all_profiles:
         cols = line.split()
         year_l.append(int(cols[0]))
         month_l.append(int(cols[1]))
-        fname_nprof_i = os.path.join(path2profiles, cols[2])
+        #fname_nprof_i = os.path.join(path2profiles, cols[2])
+        #print(fname_nprof_i, os.path.isfile(fname_nprof_i))
+        fname_nprof_i = cols[2]
         if os.path.isfile(fname_nprof_i) == True:
             nprofile_list.append(fname_nprof_i)
         else:
