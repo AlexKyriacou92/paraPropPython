@@ -79,7 +79,12 @@ def run_ascan_rx_txt(fname_config, n_profile, z_profile, z_tx, freq_in, fname_hd
     rxList = create_rxList_from_file(fname_config)
     nRx = len(rxList)
 
-    txList = create_transmitter_array(fname_config)
+    #txList = create_transmitter_array(fname_config)
+    #Get Freq Centre!
+    config_in = configparser.ConfigParser()
+    config_in.read(fname_config)
+    config_tx_signal = config_in['TX_SIGNAL']
+    freq_centre = float(config_tx_signal['freq_centre'])
 
     sim.set_n(nVec=n_profile, zVec=z_profile)  # Set Refractive Index Profile
 
@@ -95,7 +100,7 @@ def run_ascan_rx_txt(fname_config, n_profile, z_profile, z_tx, freq_in, fname_hd
     amp_ii = spectrum[ii_freq]
     print('amplitude:', amp_ii, 'index:', ii_freq, 'freq=', freq_plus[ii_freq])
 
-    sim.set_dipole_source_profile(centerFreq=freq_in, depth=z_tx, A=amp_ii)  # Set Source Profile
+    sim.set_dipole_source_profile(centerFreq=freq_centre, depth=z_tx, A=amp_ii)  # Set Source Profile
     sim.set_cw_source_signal(freq=freq_in)
     sim.do_solver()
     with open(fname_txt, 'w') as fout:
