@@ -19,14 +19,19 @@ def create_sim(fname_config): #Creates Simulation from config file using parser
     config = configparser.ConfigParser()
     config.read(fname_config)
     geometry = config['GEOMETRY']
-    if 'refDepth' in geometry:
+    if 'refIndex' in geometry:
         sim = ppp.paraProp(iceDepth=float(geometry['iceDepth']), iceLength=float(geometry['iceLength']),
                            dx=float(geometry['dx']), dz=float(geometry['dz']), airHeight=float(geometry['airHeight']),
-                           refDepth=float(geometry['refDepth']))
+                           refIndex=float(geometry['refIndex']))
     else:
-        sim = ppp.paraProp(iceDepth=float(geometry['iceDepth']), iceLength=float(geometry['iceLength']),
-                           dx=float(geometry['dx']), dz=float(geometry['dz']),
-                           airHeight=float(geometry['airHeight']))
+        if 'refDepth' in geometry:
+            sim = ppp.paraProp(iceDepth=float(geometry['iceDepth']), iceLength=float(geometry['iceLength']),
+                               dx=float(geometry['dx']), dz=float(geometry['dz']), airHeight=float(geometry['airHeight']),
+                               refDepth=float(geometry['refDepth']))
+        else:
+            sim = ppp.paraProp(iceDepth=float(geometry['iceDepth']), iceLength=float(geometry['iceLength']),
+                               dx=float(geometry['dx']), dz=float(geometry['dz']),
+                               airHeight=float(geometry['airHeight']))
     return sim
 
 def get_IR_from_config(fname_config, antenna='TX'):
@@ -297,7 +302,12 @@ class ascan:
             output_hdf.create_dataset("source_depths", data=self.tx_depths)
             output_hdf.create_dataset('rxSpectrum', data=self.spectrum_array)
             output_hdf.create_dataset('rxSignal', data=self.ascan_array)
-    def save_sim_to_hdf2(self, sim, tx_signal_in, rxList, tx_depths, fname_hdf):
+    def save_sim_to_hdf_init(self, sim, tx_signal_in, rxList, tx_depths, fname_hdf, ii_tx=0):
+        '''
+        This function initiates and saves the Ascan simulation for mutliple transmitters
+        This function will be called multiple times (in a TX loop) - so it should be have two modes - writing and appending
+        '''
+
         self.fname = fname_hdf
         self.sim = sim
         self.rxList = rxList
@@ -310,16 +320,16 @@ class ascan:
 
         self.rxArray = np.ones((self.nRX, 2))
         for i in range(self.nRX):
-            self.rxArray[i,0] = self.rxList[i].x
-            self.rxArray[i,1] = self.rxList[i].z
-
+            self.rxArray[i, 0] = self.rxList[i].x
+            self.rxArray[i, 1] = self.rxList[i].z
         self.nSamples = self.tx_signal.nSamples
+
         self.spectrum_array = np.zeros((self.nTX, self.nRX, self.nSamples), dtype='complex')
         self.ascan_array = np.zeros((self.nTX, self.nRX, self.nSamples), dtype='complex')
         for i in range(self.nRX):
             rx_i = rxList[i]
-            self.ascan_array[0,i] = rx_i.get_signal()
-            self.spectrum_array[0,i] = rx_i.spectrum
+            self.ascan_array[ii_tx, i] = rx_i.get_signal()
+            self.spectrum_array[ii_tx, i] = rx_i.spectrum
 
         with h5py.File(fname_hdf, 'w') as output_hdf:
             output_hdf.attrs["iceDepth"] = self.sim.iceDepth
@@ -344,11 +354,30 @@ class ascan:
             output_hdf.attrs["tSample"] = self.tx_signal.tmax
             output_hdf.attrs["dt"] = self.tx_signal.dt
             output_hdf.attrs["nSamples"] = self.tx_signal.nSamples
-
             output_hdf.create_dataset("rxArray", data=self.rxArray)
             output_hdf.create_dataset("source_depths", data=self.tx_depths)
             output_hdf.create_dataset('rxSpectrum', data=self.spectrum_array)
             output_hdf.create_dataset('rxSignal', data=self.ascan_array)
+
+    def save_sim_to_hdf_append(self, rxList, z_tx, fname_hdf):
+        self.nRX = len(rxList)
+        with h5py.File(fname_hdf, 'a') as output_hdf:
+            ascan_array = output_hdf['rxSignal']
+            spectrum_array = output_hdf['rxSpectrum']
+            tx_depths = np.array(output_hdf["source_depths"])
+
+            if z_tx in tx_depths:
+                ii_tx = util.findNearest(tx_depths, z_tx)
+                print(f'Saving data at z_tx = {z_tx}, index = {ii_tx}')
+                for i in range(self.nRX):
+                    rx_i = rxList[i]
+                    ascan_array[ii_tx, i, :] = rx_i.get_signal()
+                    spectrum_array[ii_tx, i, :] = rx_i.spectrum
+            else:
+                print(f'Error: z_tx = {z_tx} not found in tx_depth array: {tx_depths}')
+
+
+
     def load_from_hdf(self, fname_hdf):
         with h5py.File(fname_hdf, 'r') as input_hdf:
             self.fname = fname_hdf
