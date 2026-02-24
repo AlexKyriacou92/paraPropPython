@@ -281,6 +281,8 @@ class ascan:
             output_hdf.attrs["dx"] = self.sim.dx
             output_hdf.attrs["dz"] = self.sim.dz
             output_hdf.attrs["centerFreq"] = self.sim.centerFreq
+            output_hdf.attrs['refIndex'] = self.sim.n0
+
             output_hdf.create_dataset('z_profile', data=self.sim.z)
             output_hdf.create_dataset('n_profile', data=self.sim.get_n(x=0))
             output_hdf.create_dataset('signalPulse', data=self.tx_signal.pulse)
