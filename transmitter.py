@@ -5,6 +5,8 @@ from inspect import signature
 from scipy.interpolate import interp1d
 from scipy import signal
 from scipy.signal.windows import tukey
+from scipy.signal import butter, lfilter, sawtooth, hilbert
+
 # A. Kyriacou
 from math import pi
 '''
@@ -59,6 +61,7 @@ class tx_signal:
         self.pulse[jj] = self.amplitude
         self.spectrum = np.fft.fft(self.pulse)
         self.spectrum_plus = util.doFFT(np.flip(self.pulse))
+        self.nSamples = len(self.pulse) # TODO: Find a better way to define nSamples
         return self.pulse
 
     def get_spectrum_plus(self):
@@ -292,6 +295,30 @@ class tx_signal:
             self.pulse = np.fft.ifft(self.spectrum)
             #self.pulse += self.noise
             #self.spectrum = np.fft.fft(self.pulse)
+
+    def fmcw_like_pulse(self, freq_start, freq_end, t_modulation, t0=0, noise = 0, min_magnitude = 1e-12):
+        t_chirp = np.arange(0, t_modulation, self.dt)
+        bandwidth = freq_start-freq_end
+        freq_modulation = 1/t_modulation
+        freq_mid = (freq_start + freq_end)/2
+        freq_fmcw = freq_mid + (bandwidth/2)*sawtooth(2*pi*freq_modulation*(t_chirp-t0))
+        phase_fmcw = 2*pi*np.cumsum(freq_fmcw)
+        signal_fmcw = self.amplitude * np.cos(phase_fmcw) + noise
+        spec_fmcw = abs(util.doFFT(signal_fmcw))
+        magnitude = np.maximum(spec_fmcw, min_magnitude)
+        log_mag = np.log(magnitude)
+        phase_2 = -np.imag(hilbert(log_mag))
+
+        S = magnitude * np.exp(1j*phase_2)
+        pulse_fmcw = util.doIFFT(S)
+
+        ii_shift = int(self.t_centre/self.dt)
+        pulse_fmcw = np.roll(pulse_fmcw, ii_shift)
+        self.pulse = pulse_fmcw[:self.nSamples]
+        self.spectrum = util.doFFT(self.pulse)
+        return self.pulse
+
+
     #TODO -> Add Data Defined Noise Spectrum
     #TODO: White Noise?
 
