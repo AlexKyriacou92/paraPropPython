@@ -370,7 +370,8 @@ def convert_rxPulses(rxPulses_in, tspace, rxList_in, x_limits=[None, None], z_li
     return rxPulses_out, rxList_out
 
 # Amp and Time Matrices
-def get_fluence_matrix(rxPulse_matrix, tspace_in, t_cut, t_ratio, eV_mode=False, n_matrix=None, ppp_mode=True, tot_mode=False, t_limit_in=[]):
+def get_fluence_matrix(rxPulse_matrix, tspace_in, t_cut, t_ratio, f1=None, f2=None, eV_mode=False, n_matrix=None, ppp_mode=True, tot_mode=False, t_limit_in=[], print_mode = False):
+    print('f1', f1, 'f2', f2)
     if ppp_mode == False:
         nRx = len(rxPulse_matrix)
     else:
@@ -387,6 +388,7 @@ def get_fluence_matrix(rxPulse_matrix, tspace_in, t_cut, t_ratio, eV_mode=False,
     else:
         fluence_arr = np.zeros((nRx, 2))
     for i in range(nRx):
+        #print('rx', i)
         pulse_rx_j = rxPulse_matrix[i]
         #Cut Array
         if len(t_limit_in) > 0:
@@ -402,17 +404,42 @@ def get_fluence_matrix(rxPulse_matrix, tspace_in, t_cut, t_ratio, eV_mode=False,
             pulse_rx_c = pulse_rx_r + 1j * pulse_rx_i
         else:
             pulse_rx_c = pulse_rx_j
+
+        # Filter the pulse:
+        pulse_rx_c2 = pulse_rx_c
+        if f1 == None and f2 == None:
+            if print_mode == True and i == 0:
+                print('No filter')
+            pulse_rx_c2 = pulse_rx_c
+        else:
+            if print_mode == True and i == 0:
+                print('filter')
+            dt = tspace[1] - tspace[0]
+            fs = 1/dt
+            if f1 != None and f2 != None:
+                if print_mode == True and i == 0:
+                    print('bandpass filter')
+                pulse_rx_c2 = util.butterBandpassFilter(pulse_rx_c, lowcut=f1, highcut=f2, fs=fs)
+            elif f1 == None and f2 != None:
+                if print_mode == True and i == 0:
+                    print('lowpass filter')
+                pulse_rx_c2 = util.butterLowpassFilter(pulse_rx_c, highcut=f2, fs=fs)
+            elif f1 != None and f2 == None:
+                if print_mode == True and i == 0:
+                    print('highpass filter')
+                pulse_rx_c2 = util.butterHighpassFilter(pulse_rx_c, cutoff=f1, fs=fs)
+
         if tot_mode == True:
             if eV_mode == False:
-                fluence_arr[i] = fluence(pulse_rx_c, tspace)
+                fluence_arr[i] = fluence(pulse_rx_c2, tspace)
             else:
                 if n_matrix == None:
-                    fluence_arr[i] = fluence_eVm2(pulse_rx_c, tspace)
+                    fluence_arr[i] = fluence_eVm2(pulse_rx_c2, tspace)
                 else:
-                    fluence_arr[i] = fluence_eVm2(pulse_rx_c, tspace, n_local=n_matrix[i])
+                    fluence_arr[i] = fluence_eVm2(pulse_rx_c2, tspace, n_local=n_matrix[i])
         else:
             #TODO: Add n_matrix here
-            output_l = get_2peaks(pulse_rx=pulse_rx_c,
+            output_l = get_2peaks(pulse_rx=pulse_rx_c2,
                                   tspace=tspace,
                                   t_cut=t_cut,
                                   t_ratio=t_ratio,
@@ -424,7 +451,7 @@ def get_fluence_matrix(rxPulse_matrix, tspace_in, t_cut, t_ratio, eV_mode=False,
             fluence_arr[i, 1] = fluence_R
     return fluence_arr
 
-def get_fluence_matrix_list(rxPulses_l, rxList, tspace, t_cut, t_ratio, eV_mode=False, n_matrix=None, fname_npy=None, override=True, ppp_mode=True, tot_mode=False, xCut=None, t_limit_in=[]):
+def get_fluence_matrix_list(rxPulses_l, rxList, tspace, t_cut, t_ratio, f1=None, f2=None, eV_mode=False, n_matrix=None, fname_npy=None, override=True, ppp_mode=True, tot_mode=False, xCut=None, t_limit_in=[], print_mode = False):
     nSims = len(rxPulses_l)
     nRx = len(rxList)
     if tot_mode == True:
@@ -437,8 +464,8 @@ def get_fluence_matrix_list(rxPulses_l, rxList, tspace, t_cut, t_ratio, eV_mode=
                 rxPulse_matrix = rxPulses_l[i].ascan_array[0,:]
             else:
                 rxPulse_matrix = rxPulses_l[i]
-            fluence_arr[i] = get_fluence_matrix(rxPulse_matrix, tspace, t_cut, t_ratio,
-                                                ppp_mode=ppp_mode,tot_mode=tot_mode, eV_mode=eV_mode, n_matrix=n_matrix, t_limit_in=t_limit_in)
+            fluence_arr[i] = get_fluence_matrix(rxPulse_matrix, tspace, t_cut, t_ratio, f1=f1, f2=f2,
+                                                ppp_mode=ppp_mode,tot_mode=tot_mode, eV_mode=eV_mode, n_matrix=n_matrix, t_limit_in=t_limit_in, print_mode=print_mode)
     else:
         file_exist = os.path.isfile(fname_npy)
         if file_exist == False or override == True:
@@ -447,8 +474,8 @@ def get_fluence_matrix_list(rxPulses_l, rxList, tspace, t_cut, t_ratio, eV_mode=
                     rxPulse_matrix = rxPulses_l[i].ascan_array[0,:]
                 else:
                     rxPulse_matrix = rxPulses_l[i]
-                fluence_arr[i] = get_fluence_matrix(rxPulse_matrix, tspace, t_cut, t_ratio,
-                                                ppp_mode=ppp_mode,tot_mode=tot_mode, eV_mode=eV_mode, n_matrix=n_matrix, t_limit_in=t_limit_in)
+                fluence_arr[i] = get_fluence_matrix(rxPulse_matrix, tspace, t_cut, t_ratio, f1=f1, f2=f2,
+                                                    ppp_mode=ppp_mode,tot_mode=tot_mode, eV_mode=eV_mode, n_matrix=n_matrix, t_limit_in=t_limit_in, print_mode=True)
             np.save(fname_npy, fluence_arr)
         else:
             fluence_arr = np.load(fname_npy,'r')
@@ -480,9 +507,7 @@ def get_tpeak_matrix(rxPulse_matrix, tspace_in, t_cut, t_ratio, eV_mode=False, p
     time_arr = np.zeros((nRx,2))
     for i in range(nRx):
         pulse_rx_j = rxPulse_matrix[i]
-
         #Cut Array
-
         if len(t_limit_in) > 0:
             t_low = t_limit_arr[i,0]
             t_high = t_limit_arr[i,1]
@@ -517,6 +542,62 @@ def get_tpeak_matrix_l(rxPulses_l, rxList, tspace_in, t_cut, t_ratio, eV_mode=Fa
         else:
             rxPulse_matrix = rxPulses_l[i]
         time_arr[i] = get_tpeak_matrix(rxPulse_matrix, tspace_in, t_cut, t_ratio, eV_mode, ppp_mode, t_limit_in)
+    if xCut != None:
+        x_rx_arr = rxList[:, 0]
+        x_rx_un = np.unique(x_rx_arr)
+        ii_nearest = util.findNearest(x_rx_un, xCut)
+        xCut2 = x_rx_un[ii_nearest]
+        for i in range(len(x_rx_arr)):
+            if x_rx_arr[i] == xCut2:
+                j_cut = i
+                break
+        time_arr_out = time_arr[:, j_cut:]
+        rxList_out = rxList[j_cut:]
+    else:
+        rxList_out = rxList
+        time_arr_out = time_arr
+    return time_arr_out, rxList_out
+
+def get_t_thres_matrix(rxPulse_matrix, tspace_in, thres_cs = 0.05, ppp_mode=True, t_limit_in=[]):
+    nRx = len(rxPulse_matrix)
+    t_limit_arr = np.ones(nRx)
+    if len(t_limit_in) > 0:
+        t_limit_arr = t_limit_in
+    else:
+        t_limit_arr[:] *= max(tspace_in)
+
+    time_arr = np.zeros(nRx)
+    for i in range(nRx):
+        pulse_rx_j = rxPulse_matrix[i]
+        if len(t_limit_in) > 0:
+            t_low = t_limit_arr[i,0]
+            t_high = t_limit_arr[i,1]
+            pulse_rx_j, tspace = cut_arr2(pulse_rx_j, tspace_in, t_low, t_high)
+        else:
+            tspace = tspace_in
+        if ppp_mode == False:
+            pulse_rx_r = pulse_rx_j.real
+            pulse_rx_i = util.hilbertTransform(pulse_rx_r)
+            pulse_rx_c = pulse_rx_r + 1j * pulse_rx_i
+        else:
+            pulse_rx_c = pulse_rx_j
+
+        pulse_norm = np.sum(abs(pulse_rx_c))
+        pulse_cs_norm = np.cumsum(abs(pulse_rx_c))/pulse_norm
+        ii_thres = findNearest(pulse_cs_norm, thres_cs)
+        time_arr[i] = tspace[ii_thres]
+    return time_arr
+
+def get_t_thres_matrix_l(rxPulses_l, rxList, tspace_in,thres_cs=0.05, ppp_mode=True, xCut=None, t_limit_in=[]):
+    nSims = len(rxPulses_l)
+    nRx = len(rxList)
+    time_arr = np.zeros((nSims, nRx))
+    for i in range(nSims):
+        if ppp_mode == True:
+            rxPulse_matrix = rxPulses_l[i].ascan_array[0, :]
+        else:
+            rxPulse_matrix = rxPulses_l[i]
+        time_arr[i] = get_t_thres_matrix(rxPulse_matrix=rxPulse_matrix, tspace_in=tspace_in, thres_cs=thres_cs, ppp_mode=ppp_mode, t_limit_in=t_limit_in)
     if xCut != None:
         x_rx_arr = rxList[:, 0]
         x_rx_un = np.unique(x_rx_arr)
@@ -632,10 +713,10 @@ def plot_fluence_map(rxPulses_l, rxList, sourceDepth, ii_select=0, var_mode=True
     else:
         if tot_mode:
             z_symbol = '$\Delta \phi^{E}_{tot}/\phi^{E}_{tot}$'
-            title_prefix = 'Total (tot) Fluence Variance'
+            title_prefix = 'Total (tot) Fluence variation'
         else:
             z_symbol = '$\Delta \phi^{E}_{R}/\phi^{E}_{R}$' if R_mode else '$\Delta \phi^{E}_{D}/\phi^{E}_{D}$'
-            title_prefix = 'Secondary (R) Fluence Variance' if R_mode else 'Primary (D) Fluence Variance'
+            title_prefix = 'Secondary (R) Fluence variation' if R_mode else 'Primary (D) Fluence variation'
 
     if eV_mode:
         z_symbol += ' [$\mathrm{eV/m^{2}}$]'
@@ -793,15 +874,15 @@ def plot_fluence_map(rxPulses_l, rxList, sourceDepth, ii_select=0, var_mode=True
                 title_prefix = 'Primary (D) Fluence '
     else:
         if tot_mode == True:
-            z_symbol = '$\Delta \phi^{E}_{tot}/\phi^{E}_{tot}$'
-            title_prefix = 'Total (tot) Fluence Variance '
+            z_symbol = '$\delta \phi^{E}_{tot}/\phi^{E}_{tot}$'
+            title_prefix = 'Total (tot) Fluence variation '
         else:
             if R_mode == True:
-                z_symbol = '$\Delta \phi^{E}_{R}/\phi^{E}_{R}$'
-                title_prefix = 'Secondary (R) Fluence Variance '
+                z_symbol = '$\delta \phi^{E}_{R}/\phi^{E}_{R}$'
+                title_prefix = 'Secondary (R) Fluence variation '
             else:
-                z_symbol = '$\Delta \phi^{E}_{D}/\phi^{E}_{D}$'
-                title_prefix = 'Primary (D) Fluence Variance '
+                z_symbol = '$\delta \phi^{E}_{D}/\phi^{E}_{D}$'
+                title_prefix = 'Primary (D) Fluence variation '
     title_pl = title_prefix + str(z_symbol) + ', $z_{tx} = ' + str(sourceDepth) + '\,  \mathrm{m}$'
     if eV_mode == True:
         z_symbol += ' [$\mathrm{eV/m^{2}}$]'
@@ -969,7 +1050,7 @@ def get_fluence_at_depth(rxPulses_l, rxList, sourceDepth, z_rx_l, color_list, er
             low_symbol = 'D'
     ax.set_yscale('log')
     if error_mode == True:
-        y_symbol = '$\Delta \phi_{' + low_symbol + '}/\phi_{' + low_symbol + '}$'
+        y_symbol = '$\delta \phi_{' + low_symbol + '}/\phi_{' + low_symbol + '}$'
     else:
         y_symbol = '$\phi_{' + low_symbol + '}$ [$\mathrm{eV/m^{2}}$]'
     ax.set_ylabel(y_symbol,fontsize=fontsize)
@@ -1514,11 +1595,11 @@ def plot_t_map(rxPulses_l, rxList, sourceDepth, ii_select=0, var_mode=True,
             title_prefix = 'Primary (D) prop. time '
     else:
         if R_mode == True:
-            z_symbol = '$\Delta t_{R}$'
-            title_prefix = 'Secondary (R) prop. time variance '
+            z_symbol = '$\delta t_{R}$'
+            title_prefix = 'Secondary (R) prop. time variation '
         else:
-            z_symbol = '$\Delta t_{D}$'
-            title_prefix = 'Primary (D) prop. time variance '
+            z_symbol = '$\delta t_{D}$'
+            title_prefix = 'Primary (D) prop. time variation '
     title_pl = title_prefix + str(z_symbol) + ', $z_{tx} = ' + str(sourceDepth) + '\,  \mathrm{m}$'
     z_symbol += ' [ns]'
     if ppp_mode == True:
@@ -1609,7 +1690,7 @@ def plot_dt_map(rxPulses_l, rxList, sourceDepth, ii_select=0, var_mode=True,
         else:
             plot_ranges.append(map_cut[k])
     z_symbol = '$\Delta t_{DR}$'
-    title_prefix = 'Relative time offset ' + z_symbol + ' prop. time variance '
+    title_prefix = 'Relative time offset ' + z_symbol + ' prop. time variation '
     title_pl = title_prefix + str(z_symbol) + ', $z_{tx} = ' + str(sourceDepth) + '\,  \mathrm{m}$'
     z_symbol += ' [ns]'
     if ppp_mode == True:
@@ -1672,9 +1753,12 @@ def plot_dt_map2(rxPulses_l, rxList, sourceDepth, ii_select=0, var_mode=True,
                fname_out = None, path2plots = '', vmin=None, vmax=None,
                cmap='viridis', interp_mode='spline36', title_suffix = None,
                figsize =(12, 6),fontsize=16, labelsize=12):
-
-    time_w2 = rxPulses_l[:,1]
-    time_w1 = rxPulses_l[:,0]
+    if var_mode == False:
+        time_w2 = rxPulses_l[ii_select, :, 1]
+        time_w1 = rxPulses_l[ii_select, :, 0]
+    else:
+        time_w2 = rxPulses_l[:,1]
+        time_w1 = rxPulses_l[:,0]
     x_rx_arr = rxList[:,0]
     x_rx_un = np.unique(x_rx_arr)
     z_rx_arr = rxList[:,1]
@@ -1702,8 +1786,104 @@ def plot_dt_map2(rxPulses_l, rxList, sourceDepth, ii_select=0, var_mode=True,
             plot_ranges.append(map_ranges[k])
         else:
             plot_ranges.append(map_cut[k])
-    z_symbol = '$\Delta t_{DR}$'
-    title_prefix = 'Relative time offset ' + z_symbol + ' prop. time variance '
+    if var_mode == True:
+        z_symbol = '$\delta\Delta t_{DR}$'
+    else:
+        z_symbol = '$\Delta t_{DR}$'
+    title_prefix = 'Relative time offset ' + z_symbol + ' prop. time variation '
+    title_pl = title_prefix + str(z_symbol) + ', $z_{tx} = ' + str(sourceDepth) + '\,  \mathrm{m}$'
+    z_symbol += ' [ns]'
+    if ppp_mode == True:
+        title_pl += ' (paraProp)'
+    else:
+        title_pl += ' (Meep)'
+    if title_suffix != None:
+        title_pl += ' ' + title_suffix
+
+    fig = pl.figure(figsize=figsize, dpi=120)
+    ax = fig.add_subplot(111)
+    ax.set_title(title_pl, fontsize=fontsize)
+    if log_mode == True:
+        pmesh = ax.imshow(hist2d, extent=[X_min, X_max, Z_max, Z_min], aspect='auto',
+                          interpolation=interp_mode, cmap=cmap, norm=LogNorm(vmin=vmin, vmax=vmax))
+    else:
+        pmesh = ax.imshow(hist2d, extent=[X_min, X_max, Z_max, Z_min], aspect='auto',
+                          interpolation=interp_mode, cmap=cmap, vmin=vmin, vmax=vmax)
+    cbar = fig.colorbar(pmesh)
+    cbar.set_label(z_symbol, fontsize=fontsize)
+    cbar.ax.tick_params(labelsize=labelsize)
+
+    #ax.set_aspect(1)
+    ax.set_xlabel('Range $x_{rx}$ [m]', fontsize=fontsize)
+    ax.set_ylabel('Depth $z_{rx}$ [m]', fontsize=fontsize)
+    ax.set_xlim(plot_ranges[0], plot_ranges[1])
+    ax.set_ylim(plot_ranges[3], plot_ranges[2])
+    ax.tick_params(axis='both', labelsize=labelsize)
+    #print('plot complete')
+    if fname_out != None:
+        if len(path2plots) > 0:
+            fname_img = join(path2plots, fname_out)
+            nDir = len(path2plots.split('/'))
+            if nDir == 1:
+                if os.path.isdir(path2plots) == False:
+                    os.system('mkdir ' + path2plots)
+            else:
+                path_l = path2plots.split('/')
+                dir_accum = ''
+                for k in range(nDir):
+                    dir_accum += path_l[k]
+                    if os.path.isdir(dir_accum) == False:
+                        os.system('mkdir ' + path2plots)
+                fname_img = join(path2plots, fname_out)
+        else:
+            fname_img = fname_out
+        fig.savefig(fname_img, bbox_inches='tight')
+    if show_mode == True:
+        pl.show()
+    else:
+        if cl_mode == True:
+            pl.close(fig)
+        else:
+            return pl, ax
+
+
+def plot_t_thres_map(rxPulses_l, rxList, sourceDepth, ii_select=0, var_mode=True,
+               ppp_mode=True,
+               log_mode=True, show_mode = True, cl_mode = False, map_cut = [100, 290, None, 170],
+               fname_out = None, path2plots = '', vmin=None, vmax=None,
+               cmap='viridis', interp_mode='spline36', title_suffix = None,
+               figsize =(12, 6),fontsize=16, labelsize=12):
+    if var_mode == True:
+        time_w = rxPulses_l
+    else:
+        time_w = rxPulses_l[ii_select]
+    x_rx_arr = rxList[:,0]
+    x_rx_un = np.unique(x_rx_arr)
+    z_rx_arr = rxList[:,1]
+    z_rx_un = np.unique(z_rx_arr)
+    nBins_x = len(x_rx_un)
+    nBins_z = len(z_rx_un)
+    hist2d, x_bins, z_bins = np.histogram2d(x_rx_arr, z_rx_arr,
+                                            bins=(nBins_x, nBins_z),
+                                            weights=time_w)
+    hist2d = np.transpose(hist2d)
+
+    X_max = max(x_bins)
+    X_min = min(x_bins)
+    Z_max = max(z_bins)
+    Z_min = min(z_bins)
+    map_ranges = [X_min, X_max, Z_min, Z_max]
+    plot_ranges = []
+    for k in range(len(map_cut)):
+        if map_cut[k] == None:
+            plot_ranges.append(map_ranges[k])
+        else:
+            plot_ranges.append(map_cut[k])
+    if var_mode == True:
+        z_symbol = '$\delta t_{D,0.04}$'
+    else:
+        z_symbol = '$t_{D,0.05}$'
+    title_prefix = 'Direct time (thresold method)\n' + z_symbol + ' prop. time variation '
     title_pl = title_prefix + str(z_symbol) + ', $z_{tx} = ' + str(sourceDepth) + '\,  \mathrm{m}$'
     z_symbol += ' [ns]'
     if ppp_mode == True:
